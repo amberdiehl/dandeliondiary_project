@@ -1,0 +1,37 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+
+{% load account_tags %}
+{% load i18n %}
+
+{% block title %}{% trans "Account Login" %}{% endblock %}
+{% block static %}
+		<!-- PAGE LEVEL SCRIPTS -->
+		<link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+		<link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+{% endblock %}
+
+<body {% block body_attributes %}{% endblock %}>
+{% block body_container %}
+
+    <div class="col-md-6 col-md-offset-3">
+        <form  id="login_form" class="margin-top-30 sky-form boxed" method="POST" action="{% url "account_logout" %}">
+            {% csrf_token %}
+
+            <header><i class="fa fa-users"> {% trans "Log Out" %}</i></header>
+
+            <div class="box-static box-transparent box-bordered padding-30">
+
+                <fieldset>
+                    <p>{% trans "Are you sure you want to log out?" %}</p>
+                    <button type="submit" class="btn btn-primary">{% trans "Log out" %}</button>
+                </fieldset>
+
+            </div>
+
+        </form>
+
+    </div>
+
+{% endblock %}
+</body>

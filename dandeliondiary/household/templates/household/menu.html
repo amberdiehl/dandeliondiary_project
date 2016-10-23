@@ -1,0 +1,35 @@
+{% block page_navigation %}
+
+			<!--
+				PAGE MENU
+
+				AVAILABLE CLASSES:
+					.page-menu-light
+					.page-menu-dark
+					.page-menu-transparent
+					.page-menu-color
+
+					.noborder - optional - used for .page-menu-transparent
+			-->
+			<div id="page-menu" class="page-menu-color noborder">
+				<div class="container">
+
+					<nav class="pull-right"><!-- page menu -->
+						<button id="page-menu-mobile" class="fa fa-bars"></button>
+						<!--
+							.menu-scrollTo - for scrollto page menu / no external links
+						-->
+						<ul class="list-inline">
+							<li><a href={% url "household:household_dashboard" %}>Overview</a></li>
+							<li><a href={% url "household:my_info" %}>My Info</a></li>
+							<li><a href={% url "household:maintain_household" %}>Household Profile</a></li>
+							<li><a href={% url "household:maintain_vehicles" %}>Vehicles</a></li>
+                            <li><a href="#">Subscription</a></li>
+						</ul>
+					</nav><!-- /page menu -->
+
+				</div>
+			</div>
+			<!-- /PAGE MENU -->
+
+{% endblock %}

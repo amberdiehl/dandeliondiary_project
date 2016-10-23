@@ -1,0 +1,142 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% load household_extras %}
+
+{% block title %}{% trans "Account + Household Overview" %}{% endblock %}
+{% block static %}
+    <!-- PAGE LEVEL SCRIPTS -->
+	<link href="{% static "css/plugin-hover-buttons.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+{% endblock %}
+
+{% block body_attributes %}{% endblock %}
+
+{% block body_container %}
+
+    {% include "menu.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+            <div class="margin-top-30 box-static box-transparent box-bordered box-white">
+
+                <h2>{% trans page_title %}</h2>
+
+                <h4>{{ summary.greeting }}</h4>
+
+                <div class="row">
+
+	                <div class="col-md-6">
+		                <div class="box-icon box-icon-side box-icon-color box-icon-round">
+			                <i class="fa fa-user"></i>
+                            <a class="box-icon-title" href={% url "household:my_info" %}><h2>My Info</h2></a>
+                            {% if summary.need_myinfo %}
+                                <div class="alert alert-info margin-bottom-30">
+                                    {{ summary.need_myinfo }}
+                                </div>
+                            {% else %}
+                                <table>
+                                    <tr><td>Name: </td><td>{{ summary.first_name }} {{ summary.last_name }} </td></tr>
+                                    <tr><td>Phone number:&nbsp;&nbsp;</td><td>{{ summary.phone_number }} </td></tr>
+                                    <tr><td>Owner:</td><td><strong>{{ summary.owner }} </strong></td></tr>
+                                </table>
+                            {% endif %}
+			                <a class="box-icon-more font-lato weight-300" href={% url "household:my_info" %}>
+                                Update My Info</a>
+		                </div>
+	                </div>
+
+	                <div class="col-md-6">
+		                <div class="box-icon box-icon-side box-icon-color box-icon-round">
+                            <i class="fa fa-users"></i>
+                            <a class="box-icon-title" href={% url "household:maintain_household" %}>
+                                <h2>Household Profile</h2></a>
+                            {% if summary.need_household %}
+                                <div class="alert alert-danger margin-bottom-30">
+                                    {{ summary.need_household }}
+                                </div>
+                            {% else %}
+                                <table>
+			                        <tr><td>RV'ing since:&nbsp;&nbsp;</td><td>{{ summary.start_year }}</td></tr>
+                                    <tr><td>Adults:</td><td>{{ summary.members_in_household }}</td></tr>
+                                    <tr><td>Rig:</td><td>{{ summary.rig_type }}</td></tr>
+                                    <tr><td>Use:</td><td>{{ summary.use_type }}</td></tr>
+                                    <tr><td>Children:</td><td>{{ summary.children }}</td></tr>
+                                    <tr><td>Pets:</td><td>{{ summary.pets }}</td></tr>
+                                </table>
+                            {% endif %}
+			                <a class="box-icon-more font-lato weight-300" href={% url "household:maintain_household" %}>
+                                Update Household Profile</a>
+                        </div>
+	                </div>
+
+                </div>
+                {% if not summary.need_household %}
+                <div class="row">
+                    <!-- vehicles -->
+	                <div class="col-md-6">
+		                <div class="box-icon box-icon-side box-icon-color box-icon-round">
+			                <i class="fa fa-bus"></i>
+			                <a class="box-icon-title" href={% url "household:maintain_vehicles" %}>
+                                <h2>Household Vehicles</h2></a>
+                            {% if summary.need_vehicles %}
+                                <div class="alert alert-danger margin-bottom-30">
+                                    {{ summary.need_vehicles }}
+                                </div>
+                            {% else %}
+                                <table>
+			                        <tr><td>Active vehicles:&nbsp;&nbsp;</td><td>{{ summary.total_vehicles }}</td></tr>
+                                    <tr><td colspan="2">Vehicles:</td></tr>
+                                    {% for vehicle in summary.vehicles %}
+                                        <tr><td></td><td>{{ vehicle }}</td></tr>
+                                    {% endfor %}
+                                </table>
+                            {% endif %}
+			                <a class="box-icon-more font-lato weight-300" href={% url "household:maintain_vehicles" %}>
+                                Update Vehicles</a>
+		                </div>
+                    </div>
+                    <!-- payments -->
+	                <div class="col-md-6">
+		                <div class="box-icon box-icon-side box-icon-color box-icon-round">
+			                <i class="fa fa-credit-card"></i>
+			                <a class="box-icon-title" href="#"><h2>Subscription</h2></a>
+                            {% if summary.activate_trial %}
+                                <div class="alert alert-danger margin-bottom-30">
+                                    {{ summary.activate_trial }}
+                                </div>
+                            {% endif %}
+                            {% if summary.free_trial and not summary.expired %}
+                                <div class="alert alert-success margin-bottom-30">
+                                    {{ summary.free_trial }}
+                                </div>
+                            {% endif %}
+                            {% if summary.need_payment %}
+                                <div class="alert alert-warning margin-bottom-30">
+                                    {{ summary.need_payment }}
+                                </div>
+                            {% endif %}
+                            {% if summary.expired %}
+                                <div class="alert alert-danger margin-bottom-30">
+                                    {{ summary.expired }}
+                                </div>
+                            {% endif %}
+                            {%  if not summary.activate_trial %}
+                                <p>Your subscription is paid through {{ summary.paid_through }}.</p>
+			                    <a class="box-icon-more font-lato weight-300" href="#">Make Payment</a>
+                            {% endif %}
+		                </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

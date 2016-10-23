@@ -1,0 +1,138 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% load capture_extras %}
+
+{% block title %}{% trans "Capture - New Expense" %}{% endblock %}
+
+{% block static %}
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
+          rel="stylesheet" type="text/css" />
+
+	<link href="{% static "css/plugin-hover-buttons.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+
+    <script src="{% static 'capture/QueryData.compressed.js' %}"></script>
+
+    <script type="text/javascript">
+
+        function getGeo() {  
+            var getData = new QueryData();  
+            if ('lat' in getData) {  
+                var yes = 'yes'
+            } else { 
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (ppos) { 
+                        window.location.href = window.location.href + 
+                            '?lat=' + ppos.coords.latitude +
+                            '&lon=' + ppos.coords.longitude;},  
+                        function (err) { 
+                            switch (err.code) { 
+                                case err.TIMEOUT:
+                                    break; 
+                                case err.POSITION_UNAVAILABLE:
+                                    break; 
+                                case err.PERMISSION_DENIED:
+                                     break; 
+                                default:
+                                    break;
+                            }
+                            } );
+                 }
+             }
+        }
+     
+    </script>
+
+    <script>
+        $(function() {
+            $( "#id_expense_date" ).datepicker({
+                dateFormat: 'yy-mm-dd'
+            });
+        });
+    </script>
+
+{% endblock %}
+
+{% block body_attributes %}onload="getGeo();"{% endblock %}
+
+{% block body_container %}
+
+    {% include "./menu.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+        <form id="new_expense" class="margin-top-30 sky-form boxed centered" method="POST"
+              action="{% url url %}" {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+            {% csrf_token %}
+
+            <div class="box-static box-transparent box-bordered">
+
+                <h2>{% trans page_title %}</h2>
+
+                <!-- ALERTS -->
+                {% if not messages %}
+                <span class="alert alert-{{ location_message.0 }} margin-bottom-30">{{ location_message.1 }}</span>
+                </br></br>
+                {% endif %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="alert alert-{{msg.level_tag}} margin-bottom-30" role="alert">
+                            {{msg.message}}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <!-- /ALERTS -->
+
+                <fieldset>
+                    {% for field in form.visible_fields %}
+                    <div class="row">
+                        <div class="form-group">
+                            <div class="col-md-6 col-sm-6">
+                                <label>{{ field.label }}</label>
+                                {% if field.field.widget|get_widget_class == "DateInput" %}
+                                    <label class="input margin-bottom-10">
+                                        {{ field }}
+                                    <b class="tooltip tooltip-bottom-right">{{ field.help_text }}</b>
+                                    </label>
+                                {% else %}
+                                    <label class="input margin-bottom-10">
+                                        {{ field }}
+                                    <b class="tooltip tooltip-bottom-right">{{ field.help_text }}</b>
+                                    </label>
+                                {% endif %}
+                                {% if field.errors %}
+                                <div class="alert alert-mini alert-danger margin-bottom-15">
+                                    {% for error in field.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </fieldset>
+
+                <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-hvr hvr-bounce-to-right"><i class="fa fa-check"></i>
+                                {% trans "Save" %}</button>
+                        </div>
+                    </div>
+
+                </div>
+
+        </form>
+
+
+    </div>
+
+{% endblock %}
+
+{% block scripts %}{% endblock %}

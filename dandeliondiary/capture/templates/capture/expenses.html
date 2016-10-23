@@ -1,0 +1,57 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% block title %}{% trans "Compare - Groups + Categories" %}{% endblock %}
+
+{% block static %}
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
+          rel="stylesheet" type="text/css" />
+
+	<link href="{% static "css/plugin-hover-buttons.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+
+    <script src={% static 'capture/QueryData.compressed.js' %}></script>
+
+    <script language='JavaScript'>
+
+    </script>
+
+{% endblock %}
+
+{% block body_attributes %}{% endblock %}
+
+{% block body_container %}
+
+    {% include "./menu.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+        <div class="margin-top-30 box-static box-transparent box-bordered box-white">
+
+            <h2>{% trans page_title %}</h2>
+
+            <p>Explore expenses</br>
+
+            {% if form %}
+
+                <form action="/capture/" method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    </br></br>
+                    <input type="submit" value="Submit" />
+                </form>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block scripts %}{% endblock %}

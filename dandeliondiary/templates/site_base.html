@@ -1,0 +1,180 @@
+{% load static from staticfiles %}
+{% load account_tags %}
+{% load bootstrap3 %}
+
+<!DOCTYPE html>
+<!--[if IE 8]>			<html class="ie ie8"> <![endif]-->
+<!--[if IE 9]>			<html class="ie ie9"> <![endif]-->
+<!--[if gt IE 9]><!-->	<html> <!--<![endif]-->
+
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}{% endblock %}</title>
+        <meta name="keywords" content="expense tracking, personal budgeting" />
+        <meta name="description" content="Powerful budget and expense reporting for everyone." />
+
+        <!-- mobile settings -->
+        <meta name="viewport" content="width=device-width, maximum-scale=1, initial-scale=1, user-scalable=0" />
+        <!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+
+        <!-- WEB FONTS : use %7C instead of | (pipe) -->
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400%7CRaleway:300,400,500,600,700%7CLato:300,400,400italic,600,700" rel="stylesheet" type="text/css" />
+
+        <!-- CORE CSS -->
+        <link href={% static "plugins/bootstrap/css/bootstrap.min.css" %} rel="stylesheet" type="text/css" />
+
+        <!-- THEME CSS -->
+        <link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
+        <link href="{% static "css/layout.css" %}" rel="stylesheet" type="text/css" />
+
+        {% block static %}{% endblock %}
+
+    </head>
+
+    <body class="smoothscroll enable-animation bg-grey" {% block body_attributes %}{% endblock %}>
+
+        {% block slidetop %}{% endblock %}
+
+        <div id="wrapper">
+
+            <!-- Top Bar -->
+			<div id="topBar" class="light">
+
+				<div class="container">
+
+					<!-- right -->
+					<ul class="top-links list-inline pull-right">
+                        {% if user.is_authenticated %}
+						<li class="text-welcome hidden-xs">Welcome to Dandelion Diary,
+                            <strong>{% user_display request.user %}</strong></li>
+						<li>
+							<a class="dropdown-toggle no-text-underline" data-toggle="dropdown" href="#">
+                                <i class="fa fa-user hidden-xs"></i> My Account</a>
+							<ul class="dropdown-menu pull-right">
+								<li><a tabindex="-1" href="#"><i class="fa fa-history"></i> Recent Expenses</a></li>
+								<li class="divider"></li>
+								<li><a tabindex="-1" href="#"><i class="fa fa-bookmark"></i> Month at a Glance</a></li>
+								<li><a tabindex="-1" href="#"><i class="fa fa-edit"></i> My Comments</a></li>
+								<li><a tabindex="-1" href={% url "household:household_dashboard" %}><i class="fa fa-cog"></i> My Settings</a></li>
+								<li class="divider"></li>
+								<li><a tabindex="-1" href={% url "account_logout" %}><i class="glyphicon glyphicon-off"></i> Logout</a></li>
+							</ul>
+						</li>
+                        {% else %}
+						<li class="hidden-xs"><a href={% url "account_login" %}>Login</a></li>
+						<li class="hidden-xs"><a href={% url "account_signup" %}>Create Account</a></li>
+                        {% endif %}
+					</ul>
+
+					<!-- left -->
+					<ul class="top-links list-inline">
+						<li class="hidden-xs"><a href="page-faq-1.html">FAQ</a></li>
+					</ul>
+
+				</div>
+			</div>
+			<!-- /Top Bar -->
+
+            <!-- used header-md shadow-after-3 but it block sub-menus from being selectable -->
+            <div id="header" class="sticky clearfix header-md ">
+                <!-- TOP NAV -->
+				<header id="topNav">
+
+					<div class="container">
+
+						<!-- Mobile Menu Button -->
+						<button class="btn btn-mobile" data-toggle="collapse" data-target=".nav-main-collapse">
+							<i class="fa fa-bars"></i>
+						</button>
+
+						<!-- BUTTONS -->
+						<ul class="pull-right nav nav-pills nav-second-main">
+
+							<!-- SEARCH -->
+							<li class="search">
+								<a href="javascript:;">
+									<i class="fa fa-search"></i>
+								</a>
+								<div class="search-box">
+									<form action="page-search-result-1.html" method="get">
+										<div class="input-group">
+											<input type="text" name="src" placeholder="Search" class="form-control" />
+											<span class="input-group-btn">
+												<button class="btn btn-primary" type="submit">Search</button>
+											</span>
+										</div>
+									</form>
+								</div>
+							</li>
+							<!-- /SEARCH -->
+
+						</ul>
+						<!-- /BUTTONS -->
+
+						<!-- Logo -->
+						<a class="logo pull-left" href="index.html">
+							<img src={% static "images/logo_light.png" %} alt=""/>
+						</a>
+
+						<div class="navbar-collapse pull-right nav-main-collapse collapse submenu-light">
+							<nav class="nav-main">
+
+								<ul id="topMain" class="nav nav-pills nav-main">
+                                    <li>
+                                        <a href={% url "public:home" %}>HOME</a>
+                                    </li>
+                                    <li>
+                                        <a href={% url "capture:new_expense" %}}>CAPTURE</a>
+                                    </li>
+                                    <li>
+                                        <a href={% url "compare:compare_dashboard" %}>COMPARE</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">CONTRIBUTE</a>
+                                    </li>
+									<li class="dropdown"><!-- BLOG -->
+										<a class="dropdown-toggle" href="#">
+											BLOG
+										</a>
+									</li>
+									<li class="dropdown"><!-- ABOUT -->
+										<a class="dropdown-toggle" href="#">
+											ABOUT
+										</a>
+									</li>
+								</ul>
+
+							</nav>
+						</div>
+
+					</div>
+
+				</header>
+
+            </div>
+
+            {% block page_navigation %}
+
+                <!-- menus specific to pages -->
+
+            {% endblock %}
+
+            {% block body_container %}
+
+                <!-- page content -->
+
+            {% endblock %}
+
+            <footer id="footer">
+
+                {% block footer %}{% endblock %}
+
+            </footer>
+
+        </div>
+
+        {% block scripts %}{% endblock %}
+
+    </body>
+
+</html>

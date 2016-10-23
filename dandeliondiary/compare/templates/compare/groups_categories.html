@@ -1,0 +1,293 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% block title %}{% trans "Compare - Groups + Categories" %}{% endblock %}
+
+{% block static %}
+    <!-- PAGE LEVEL SCRIPTS -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
+          rel="stylesheet" type="text/css" />
+
+    <!-- Include jTable style and jTable script. -->
+    <link href="{% static "plugins/jtable/themes/metro/green/jtable.min.css" %}" rel="stylesheet" type="text/css" />
+    <script src="{% static "plugins/jtable/jquery.jtable.min.js" %}" type="text/javascript"></script>
+
+	<link href="{% static "css/plugin-hover-buttons.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+
+{% endblock %}
+
+{% block body_attributes %}{% endblock %}
+
+{% block body_container %}
+
+    {% include "./menu.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+            <div class="margin-top-30 box-static box-transparent box-bordered box-white">
+
+                <h2>{% trans page_title %}</h2>
+
+                <div id="Groups_Categories_Container"></div>
+
+            </div>
+
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+    <script type="text/javascript">
+
+    $(document).ready(function () {
+        $.ajaxSetup({beforeSend: function(xhr, settings){
+            xhr.setRequestHeader('X-CSRFToken',
+                         '{{ csrf_token }}');
+        }});
+        $('#Groups_Categories_Container').jtable({
+            title: 'Budget Groups and Categories',
+            actions: {
+                listAction: '/compare/ajax/list_groups/',
+                createAction: '/compare/ajax/create_group/',
+                updateAction: '/compare/ajax/update_group/',
+                deleteAction: '/compare/ajax/delete_group/'
+            },
+            fields: {
+                id: {
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                // Child table for parent categories
+                Categories: {
+                    title: '',
+                    width: '5%',
+                    sorting: false,
+                    edit: false,
+                    create: false,
+                    listClass: 'child-opener-image-column',
+                    display: function (groupData) {
+                        //Create an image that will be used to open child table
+                        var $img = $('<img src="{% static "images/dande/add_list-48.png" %}" height="20" title="Edit categories" />');
+                        //Open child table when user clicks the image
+                        $img.click(function () {
+                            $('#Groups_Categories_Container').jtable('openChildTable', $img.closest('tr'), {
+                                title: ' > ' + groupData.record.my_group_name + ' Categories',
+                                actions: {
+                                    listAction: '/compare/ajax/list_categories/p/' + groupData.record.id + '/',
+                                    deleteAction: '/compare/ajax/delete_category/',
+                                    updateAction: '/compare/ajax/update_category/',
+                                    createAction: '/compare/ajax/create_category/' + groupData.record.id + '/'
+                                },
+                                fields: {
+                                    id: {
+                                        key: true,
+                                        create: false,
+                                        edit: false,
+                                        list: false
+                                    },
+                                    ChildCategories: {
+                                        title: '',
+                                        width: '5%',
+                                        sorting: false,
+                                        edit: false,
+                                        create: false,
+                                        listClass: 'child-opener-image-column',
+                                        display: function (categoryData) {
+                                            //Create an image that will be used to open child table
+                                            var $img = $('<img src="{% static "images/dande/add_list-48.png" %}" height="20" title="Edit categories" />');
+                                            //Open child table when user clicks the image
+                                            $img.click(function () {
+                                                $('#Groups_Categories_Container').jtable('openChildTable', $img.closest('tr'), {
+                                                    title: ' >> ' + categoryData.record.my_category_name + ' Child Categories',
+                                                    actions: {
+                                                        listAction: '/compare/ajax/list_categories/c/' + categoryData.record.id + '/',
+                                                        deleteAction: '/compare/ajax/delete_category/',
+                                                        updateAction: '/compare/ajax/update_category/',
+                                                        createAction: '/compare/ajax/create_child_category/' + categoryData.record.id + '/'
+                                                    },
+                                                    fields: {
+                                                        id: {
+                                                            key: true,
+                                                            create: false,
+                                                            edit: false,
+                                                            list: false
+                                                        },
+                                                        my_category_name: {
+                                                            title: 'Child Category Name',
+                                                            width: '100%',
+                                                            input: function (data) {
+                                                                var input = '<input type="text" name="my_category_name" style="width:200px" maxlength="50" ';
+                                                                if (data.record) {
+                                                                    input += 'value="' + data.record.my_category_name + '" />';
+                                                                } else {
+                                                                    input += 'value="" />';
+                                                                }
+                                                                input += '<span style="color: red;"> *</span>';
+                                                                return input;
+                                                            }
+                                                        }
+                                                    },
+                                                    //Validate form when it is being submitted
+                                                    formSubmitting: function (event, data) {
+                                                        var ok = true;
+                                                        var message = '';
+                                                        var $temp = '';
+
+                                                        $temp = $('input[name="my_category_name"]').val();
+                                                        if ($temp == ''){
+                                                            ok = false;
+                                                            message += 'Specify category name.\n';
+                                                        }
+                                                        if (message) {
+                                                            alert(message);
+                                                        }
+                                                        return ok;
+                                                    },
+                                                    //Don't show delete button for core categories
+                                                    rowInserted: function(event, data){
+                                                        if (data.record.core == 'yes'){
+                                                            //data.row.find('.jtable-edit-command-button').hide();
+                                                            data.row.find('.jtable-delete-command-button').hide();
+                                                        }
+                                                    }
+                                                }, function (data) { //opened handler
+                                                    data.childTable.jtable('load');
+                                                });
+                                            });
+                                            //Return image to show on the person row
+                                            return $img;
+                                        }
+                                            },
+                                    my_category_name: {
+                                        title: 'Category Name',
+                                        width: '95%',
+                                        input: function (data) {
+                                            var input = '<input type="text" name="my_category_name" style="width:200px" maxlength="50" ';
+                                            if (data.record) {
+                                                input += 'value="' + data.record.my_category_name + '" />';
+                                            } else {
+                                                input += 'value="" />';
+                                            }
+                                            input += '<span style="color: red;"> *</span>';
+                                            return input;
+                                        }
+                                    }
+                                },
+                                //Validate form when it is being submitted
+                                formSubmitting: function (event, data) {
+                                    var ok = true;
+                                    var message = '';
+                                    var $temp = '';
+
+                                    $temp = $('input[name="my_category_name"]').val();
+                                    if ($temp == ''){
+                                        ok = false;
+                                        message += 'Specify category name.\n';
+                                    }
+                                    if (message) {
+                                        alert(message);
+                                    }
+                                    return ok;
+                                },
+                                //Don't show delete button for core categories
+                                rowInserted: function(event, data){
+                                    if (data.record.core == 'yes'){
+                                        //data.row.find('.jtable-edit-command-button').hide();
+                                        data.row.find('.jtable-delete-command-button').hide();
+                                    }
+                                }
+                            }, function (data) { //opened handler
+                                data.childTable.jtable('load');
+                            });
+                        });
+                        //Return image to show on the person row
+                        return $img;
+                    }
+                },
+                my_group_name: {
+                    title: 'Group Name',
+                    width: '20%',
+                    input: function (data) {
+                        var input = '<input type="text" name="my_group_name" style="width:200px" maxlength="20" ';
+                        if (data.record) {
+                            input += 'value="' + data.record.my_group_name + '" />';
+                        } else {
+                            input += 'value="" />';
+                        }
+                        input += '<span style="color: red;"> *</span>';
+                        return input;
+                    }
+                },
+                group_description: {
+                    title: 'Description',
+                    type: 'textarea',
+                    width: '65%'
+                },
+                group_list_order: {
+                    title: 'List Order',
+                    width: '10%',
+                    input: function (data) {
+                        var input = '<input type="number" name="group_list_order" style="width:75px" min="1" step="1" ';
+                        if (data.record) {
+                            input += 'value="' + data.record.group_list_order + '" />';
+                        } else {
+                            input += 'value="" />';
+                        }
+                        input += '<span style="color: red;"> *</span>';
+                        return input;
+                    }
+                },
+            },
+            //Validate form when it is being submitted
+            formSubmitting: function (event, data) {
+                var ok = true;
+                var message = '';
+                var $temp = '';
+
+                $temp = $('input[name="my_group_name"]').val();
+                if ($temp == ''){
+                    ok = false;
+                    message += 'Specify a group name.\n';
+                }
+
+                $temp = $('input[name="group_list_order"]').val();
+                if ($temp == '') {
+                    ok = false;
+                    message += 'Specify the list order for this group; list order must be a whole number.'
+                }else{
+                    if ( $temp % 1 == 0 ) {
+                        //Field is okay; not checking for duplicate list order numbers
+                    }else{
+                        ok = false;
+                        message += 'Specify a whole number for group list order.'
+                    }
+                }
+                if (message) {
+                    alert(message);
+                }
+                return ok;
+            },
+            //Don't show delete button for core groups
+            rowInserted: function(event, data){
+              if (data.record.core == 'yes'){
+                //data.row.find('.jtable-edit-command-button').hide();
+                data.row.find('.jtable-delete-command-button').hide();
+              }
+            }
+        });
+        $('#Groups_Categories_Container').jtable('load');
+    });
+
+    </script>
+
+
+{% endblock %}

@@ -1,0 +1,325 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+
+{% block title %}Dandelion Diary{% endblock %}
+{% block static %}
+
+    <!-- PAGE LEVEL SCRIPTS -->
+    <link href={% static "css/header-1.css" %} rel="stylesheet" type="text/css" />
+    <link href={% static "css/color_scheme/green.css" %} rel="stylesheet" type="text/css" id="color_scheme" />
+
+    <!-- REVOLUTION SLIDER -->
+    <link href={% static "plugins/slider.revolution/css/extralayers.css" %} rel="stylesheet" type="text/css" />
+    <link href={% static "plugins/slider.revolution/css/settings.css" %} rel="stylesheet" type="text/css" />
+
+{% endblock %}
+<body {% block body_attributes %}{% endblock %}>
+
+    {% block slidetop %}
+		<div id="slidetop">
+
+			<div class="container">
+
+				<div class="row">
+
+					<div class="col-md-4">
+						<h6><i class="icon-heart"></i> Why Dandelion Diary?</h6>
+						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas metus nulla, commodo a
+                            sodales sed, dignissim pretium nunc. Nam et lacus neque. Ut enim massa, sodales tempor
+                            convallis et, iaculis ac massa. </p>
+					</div>
+
+					<div class="col-md-4">
+						<h6><i class="icon-attachment"></i> Recently Visited</h6>
+						<ul class="list-unstyled">
+							<li><a href="#"><i class="fa fa-angle-right"></i> Consectetur adipiscing elit amet</a></li>
+							<li><a href="#"><i class="fa fa-angle-right"></i> This is a very long text, very very very
+                                very very very very very very very very very </a></li>
+							<li><a href="#"><i class="fa fa-angle-right"></i> Lorem ipsum dolor sit amet</a></li>
+							<li><a href="#"><i class="fa fa-angle-right"></i> Dolor sit amet,consectetur adipiscing
+                                elit amet</a></li>
+							<li><a href="#"><i class="fa fa-angle-right"></i> Consectetur adipiscing elit amet,
+                                consectetur adipiscing elit</a></li>
+						</ul>
+					</div>
+
+					<div class="col-md-4">
+						<h6><i class="icon-envelope"></i> Contact Information</h6>
+						<ul class="list-unstyled">
+							<li><b>Address:</b> PO Box 21132 <br /> Greenbrae, CA 94904 USA</li>
+							<li><b>Phone:</b> 1-800-555-5555</li>
+							<li><b>Email:</b> <a href="mailto:support@yourname.com">support@yourname.com</a></li>
+						</ul>
+					</div>
+
+				</div>
+
+			</div>
+
+			<a class="slidetop-toggle" href="#"><!-- toggle button --></a>
+
+		</div>
+    {% endblock %}
+
+    {% block body_container %}
+
+        <!-- REVOLUTION SLIDER -->
+        <section id="slider" class="fullwidthbanner-container roundedcorners">
+				<!--
+					Navigation Styles:
+
+						data-navigationStyle="" theme default navigation
+
+						data-navigationStyle="preview1"
+						data-navigationStyle="preview2"
+						data-navigationStyle="preview3"
+						data-navigationStyle="preview4"
+
+					Bottom Shadows
+						data-shadow="1"
+						data-shadow="2"
+						data-shadow="3"
+
+					Slider Height (do not use on fullscreen mode)
+						data-height="300"
+						data-height="350"
+						data-height="400"
+						data-height="450"
+						data-height="500"
+						data-height="550"
+						data-height="600"
+						data-height="650"
+						data-height="700"
+						data-height="750"
+						data-height="800"
+				-->
+				<div class="fullscreenbanner" data-navigationStyle="preview4">
+					<ul class="hide">
+
+						<!-- SLIDE  -->
+						<li data-transition="random" data-slotamount="1" data-masterspeed="1000"
+                            data-saveperformance="off" data-title="Slide title 1"
+                            data-thumb={% static "images/demo/150x99/27-min.jpg" %}>
+
+							<img src={% static "images/1x1.png" %} data-lazyload={% static "images/home/coffee-983955.jpg" %}
+                                 alt="" data-bgfit="cover" data-bgposition="center bottom" data-bgrepeat="no-repeat" />
+
+							<div class="overlay dark-4"><!-- dark overlay [1 to 9 opacity] --></div>
+
+							<div class="tp-caption customin ltl tp-resizeme text_white"
+								data-x="center"
+								data-y="180"
+								data-customin="x:0;y:150;z:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
+								data-speed="800"
+								data-start="1000"
+								data-easing="easeOutQuad"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="1000"
+								data-endeasing="Power4.easeIn" style="z-index: 10;">
+								<span class="weight-300">DEVELOPMENT / MARKETING / DESIGN / PHOTO</span>
+							</div>
+
+							<div class="tp-caption customin ltl tp-resizeme large_bold_white"
+								data-x="center"
+								data-y="230"
+								data-customin="x:0;y:150;z:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
+								data-speed="800"
+								data-start="1200"
+								data-easing="easeOutQuad"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="1000"
+								data-endeasing="Power4.easeIn" style="z-index: 10;">
+								WELCOME TO DANDELION DIARY
+							</div>
+
+							<div class="tp-caption customin ltl tp-resizeme small_light_white"
+								data-x="center"
+								data-y="350"
+								data-customin="x:0;y:150;z:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
+								data-speed="800"
+								data-start="1400"
+								data-easing="easeOutQuad"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="1000"
+								data-endeasing="Power4.easeIn" style="z-index: 10; width: 750px; max-width: 750px; white-space: normal; text-align:center;">
+								Expense tracking that's fun, easy and helps you acheive your life goals.
+							</div>
+
+							<div class="tp-caption customin ltl tp-resizeme"
+								data-x="center"
+								data-y="438"
+								data-customin="x:0;y:150;z:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
+								data-speed="800"
+								data-start="1550"
+								data-easing="easeOutQuad"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="1000"
+								data-endeasing="Power4.easeIn" style="z-index: 10;">
+								<a href="#purchase" class="btn btn-default btn-lg">
+									<span>Start Using Dandelion Diary Now</span>
+								</a>
+							</div>
+
+						</li>
+
+						<!-- SLIDE -->
+						<li data-transition="fade" data-slotamount="1" data-masterspeed="1000" data-saveperformance="off"
+                            data-title="Slide title 2" data-thumb={% static "images/demo/video/neuron_thumb.jpg" %}>
+
+							<img src={% static "images/1x1.png" %} data-lazyload={% static "images/home/pacific-coast-highway-1597725.jpg" %}
+                                 alt="" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat">
+
+							<div class="tp-caption customin ltl tp-resizeme text_white"
+								data-x="center"
+								data-y="180"
+								data-customin="x:0;y:150;z:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
+								data-speed="800"
+								data-start="1000"
+								data-easing="easeOutQuad"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="1000"
+								data-endeasing="Power4.easeIn" style="z-index: 3;">
+								<span class="weight-300">YOUR FAVORITE MULTIPURPOSE TEMPLATE</span>
+							</div>
+
+							<div class="tp-caption customin ltl tp-resizeme large_bold_white"
+								data-x="center"
+								data-y="230"
+								data-customin="x:0;y:150;z:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
+								data-speed="800"
+								data-start="1200"
+								data-easing="easeOutQuad"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="1000"
+								data-endeasing="Power4.easeIn" style="z-index: 3;">
+								WELCOME TO DANDELION DIARY
+							</div>
+
+							<div class="tp-caption customin ltl tp-resizeme small_light_white"
+								data-x="center"
+								data-y="350"
+								data-customin="x:0;y:150;z:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
+								data-speed="800"
+								data-start="1400"
+								data-easing="easeOutQuad"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="1000"
+								data-endeasing="Power4.easeIn" style="z-index: 3; width: 750px; max-width: 750px; white-space: normal; text-align:center;">
+								Capture your expenses as they happen!
+							</div>
+
+							<div class="tp-caption customin ltl tp-resizeme"
+								data-x="center"
+								data-y="438"
+								data-customin="x:0;y:150;z:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
+								data-speed="800"
+								data-start="1550"
+								data-easing="easeOutQuad"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="1000"
+								data-endeasing="Power4.easeIn" style="z-index: 3;">
+								<a href="#purchase" class="btn btn-default btn-lg">
+									<span>Sign up now for a free trial!</span>
+								</a>
+							</div>
+
+						</li>
+
+						<!-- SLIDE  -->
+						<li data-transition="random" data-slotamount="1" data-masterspeed="1000" data-saveperformance="off"
+                            data-title="Slide title 3" data-thumb={% static "images/demo/150x99/11-min.jpg" %}>
+
+							<img src={% static "images/1x1.png" %} data-lazyload={% static "images/demo/1200x800/11-min.jpg" %}
+                                 alt="" data-bgfit="cover" data-bgposition="center bottom" data-bgrepeat="no-repeat" />
+
+							<div class="overlay dark-4"><!-- dark overlay [1 to 9 opacity] --></div>
+
+							<div class="tp-caption very_large_text lfb ltt tp-resizeme"
+								data-x="right" data-hoffset="-100"
+								data-y="center" data-voffset="-100"
+								data-speed="600"
+								data-start="800"
+								data-easing="Power4.easeOut"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="500"
+								data-endeasing="Power4.easeIn">
+								It's fun! Seriously!
+							</div>
+
+							<div class="tp-caption medium_light_white lfb ltt tp-resizeme"
+								data-x="right" data-hoffset="-100"
+								data-y="center" data-voffset="10"
+								data-speed="600"
+								data-start="900"
+								data-easing="Power4.easeOut"
+								data-splitin="none"
+								data-splitout="none"
+								data-elementdelay="0.01"
+								data-endelementdelay="0.1"
+								data-endspeed="500"
+								data-endeasing="Power4.easeIn">
+								Happiness is an accident of nature,<br/>
+								a beautiful and flawless aberration.<br/>
+								<span style="font-size:24px;font-weight:400;">&ndash; Pat Conroy</span>
+							</div>
+
+						</li>
+
+					</ul>
+				</div>
+			</section>
+        <!-- /REVOLUTION SLIDER -->
+
+    {% endblock %}
+
+    {% block scripts %}
+
+        <!-- PRELOADER -->
+		<div id="preloader">
+			<div class="inner">
+				<span class="loader"></span>
+			</div>
+		</div>
+        <!-- /PRELOADER -->
+
+        <!-- JAVASCRIPT FILES -->
+		<script type="text/javascript">var plugin_path = "plugins/";</script>
+		<script type="text/javascript" src={% static "plugins/jquery/jquery-2.2.3.min.js" %}></script>
+        <script type="text/javascript" src={% static "plugins/bootstrap/js/bootstrap.min.js" %}></script>
+		<script type="text/javascript" src={% static "js/scripts.js" %}></script>
+
+		<!-- REVOLUTION SLIDER -->
+		<script type="text/javascript" src={% static "plugins/slider.revolution/js/jquery.themepunch.tools.min.js" %}></script>
+		<script type="text/javascript" src={% static "plugins/slider.revolution/js/jquery.themepunch.revolution.min.js" %}></script>
+		<script type="text/javascript" src={% static "js/view/demo.revolution_slider.js" %}></script>
+
+    {% endblock %}
+
+</body>

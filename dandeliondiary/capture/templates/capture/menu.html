@@ -1,0 +1,32 @@
+{% block page_navigation %}
+
+			<!--
+				PAGE MENU
+
+				AVAILABLE CLASSES:
+					.page-menu-light
+					.page-menu-dark
+					.page-menu-transparent
+					.page-menu-color
+
+					.noborder - optional - used for .page-menu-transparent
+			-->
+			<div id="page-menu" class="page-menu-color noborder">
+				<div class="container">
+
+					<nav class="pull-right"><!-- page menu -->
+						<button id="page-menu-mobile" class="fa fa-bars"></button>
+						<!--
+							.menu-scrollTo - for scrollto page menu / no external links
+						-->
+						<ul class="list-inline">
+							<li><a href={% url "capture:new_expense" %}>New Expense</a></li>
+							<li><a href={% url "capture:expenses" %}>Expenses</a></li>
+						</ul>
+					</nav><!-- /page menu -->
+
+				</div>
+			</div>
+			<!-- /PAGE MENU -->
+
+{% endblock %}
