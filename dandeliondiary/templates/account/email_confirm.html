@@ -1,0 +1,47 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+
+{% load account_tags %}
+{% load i18n %}
+
+{% block title %}{% trans "Create Account" %}{% endblock %}
+{% block static %}
+		<!-- PAGE LEVEL SCRIPTS -->
+		<link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+		<link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+{% endblock %}
+
+<body {% block body_attributes %}{% endblock %}>
+    {% block body_container %}
+
+    <div class="col-md-6 col-md-offset-3">
+
+        <form  class="margin-top-30 sky-form boxed centered" method="post" action="{% url "account_confirm_email" key=confirmation.key %}">
+        {% csrf_token %}
+
+        <header><i class="fa fa-user"> {% trans "Confirm Your Email" %}</i></header>
+
+            <div class="box-static box-transparent box-bordered padding-30">
+                <fieldset>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <p>{% blocktrans with email=confirmation.email_address.email %}Thank you for confirming your email address at: <b>{{ email }}</b>{% endblocktrans %}</p>
+                            <button type="submit" class="btn btn-primary">{% trans "Continue" %}</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+</body>
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#id_username').focus();
+        });
+    </script>
+{% endblock %}

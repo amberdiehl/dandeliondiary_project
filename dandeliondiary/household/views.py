@@ -65,7 +65,7 @@ def household_dashboard(request):
 
     except ObjectDoesNotExist:
         household = None
-        summary['need_household'] = "To activiate your trial, please setup your household information."
+        summary['need_household'] = "To activate your trial, please setup your household information."
 
     # Show summary of vehicle information; if missing indicate it is desirable to provide
     if household:
