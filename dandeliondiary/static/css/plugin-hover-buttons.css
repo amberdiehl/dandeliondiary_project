@@ -12,13 +12,13 @@
  */
  
 .btn-hvr {
-	display: inline-block; */
+	display: inline-block;
 	margin: .4em;
 	padding: 1em;
 	cursor: pointer;
-	background: #e1e1e1;
+	background: #FA490F;
 	text-decoration: none;
-	color: #666;
+	color: #FFF;
 	-webkit-tap-highlight-color: rgba(0,0,0,0);
 	margin-top:6px;
 	line-height:1 !important;
