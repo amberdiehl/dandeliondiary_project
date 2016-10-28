@@ -25,13 +25,14 @@
         function getGeo() {  
             var getData = new QueryData();  
             if ('lat' in getData) {  
-                var yes = 'yes'
+                // nothing to do
             } else { 
                 if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function (ppos) { 
-                        window.location.href = window.location.href + 
+                    navigator.geolocation.getCurrentPosition(
+                        function (ppos) { window.location.href = window.location.href + 
                             '?lat=' + ppos.coords.latitude +
-                            '&lon=' + ppos.coords.longitude;},  
+                            '&lon=' + ppos.coords.longitude;
+                        },  
                         function (err) { 
                             switch (err.code) { 
                                 case err.TIMEOUT:
@@ -43,7 +44,8 @@
                                 default:
                                     break;
                             }
-                            } );
+                        } 
+                    );
                  }
              }
         }
