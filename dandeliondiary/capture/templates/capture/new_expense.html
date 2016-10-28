@@ -18,37 +18,35 @@
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
     <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 
-    <script src="{% static 'capture/QueryData.compressed.js' %}"></script>
+    <script href="{% static 'capture/QueryData.compressed.js' %}"></script>
 
-    <script type="text/javascript">
+    <script>
 
-        function getGeo() {  
-            var getData = new QueryData();  
-            if ('lat' in getData) {  
-                // nothing to do
-            } else { 
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        function (ppos) { window.location.href = window.location.href + 
-                            '?lat=' + ppos.coords.latitude +
-                            '&lon=' + ppos.coords.longitude;
-                        },  
-                        function (err) { 
-                            switch (err.code) { 
-                                case err.TIMEOUT:
-                                    break; 
-                                case err.POSITION_UNAVAILABLE:
-                                    break; 
-                                case err.PERMISSION_DENIED:
-                                     break; 
-                                default:
-                                    break;
-                            }
-                        } 
-                    );
-                 }
-             }
-        }
+        window.onload = function() {
+
+            var startPos;
+            var geoOptions = {
+                timeout: 10 * 1000,
+                enableHighAccuracy: true
+            };
+
+            var geoSuccess = function(position) {
+                startPos = position;
+                document.getElementById('startLat').innerHTML = startPos.coords.latitude;
+                document.getElementById('startLon').innerHTML = startPos.coords.longitude;
+            };
+
+            var geoError = function(error) {
+                console.log('Error occurred. Error code: ' + error.code);
+                // error.code can be:
+                //   0: unknown error
+                //   1: permission denied
+                //   2: position unavailable (error response from location provider)
+                //   3: timed out
+            };
+
+        navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions);
+    };
      
     </script>
 
@@ -62,7 +60,7 @@
 
 {% endblock %}
 
-{% block body_attributes %}onload="getGeo();"{% endblock %}
+{% block body_attributes %}{% endblock %}
 
 {% block body_container %}
 
@@ -131,8 +129,9 @@
 
                 </div>
 
-        </form>
+            <input id="startLat" value="" readonly /><input id="startLon" value="" readonly />
 
+        </form>
 
     </div>
 
