@@ -18,7 +18,7 @@
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
     <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 
-    <script href="{% static 'capture/QueryData.compressed.js' %}"></script>
+    <script src="{% static 'capture/QueryData.compressed.js' %}"></script>
 
     <script>
 
@@ -32,8 +32,10 @@
 
             var geoSuccess = function(position) {
                 startPos = position;
-                document.getElementById('startLat').innerHTML = startPos.coords.latitude;
-                document.getElementById('startLon').innerHTML = startPos.coords.longitude;
+                //document.getElementById('startLat').innerHTML = startPos.coords.latitude;
+                //document.getElementById('startLon').innerHTML = startPos.coords.longitude;
+                window.location.href = window.location.href +  
+                        '?lat=' + startPos.coords.latitude +  '&lon=' + startPos.coords.longitude;
             };
 
             var geoError = function(error) {
@@ -45,8 +47,12 @@
                 //   3: timed out
             };
 
-        navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions);
-    };
+            var getData = new QueryData();
+            if (!('lat' in getData)) {
+                navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions);
+            };
+
+        };
      
     </script>
 
@@ -128,8 +134,6 @@
                     </div>
 
                 </div>
-
-            <input id="startLat" value="" readonly /><input id="startLon" value="" readonly />
 
         </form>
 
