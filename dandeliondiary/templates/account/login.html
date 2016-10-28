@@ -9,6 +9,7 @@
 		<!-- PAGE LEVEL SCRIPTS -->
 		<link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
 		<link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+        <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 {% endblock %}
 
 <body {% block body_attributes %}{% endblock %}>
@@ -41,7 +42,8 @@
                                 <label class="input margin-bottom-10">
                                     <i class="ico-append fa fa-user"></i>
                                     {{ form.username }}
-                                    <b class="tooltip tooltip-bottom-right"></b>
+                                    <b class="tooltip tooltip-bottom-right">Your user name which may be different than
+                                        your email address.</b>
                                 </label>
                             </div>
                         </div>

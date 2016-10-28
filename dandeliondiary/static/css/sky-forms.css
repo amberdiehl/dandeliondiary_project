@@ -418,8 +418,8 @@
 	font-size: 11px;
 	line-height: 16px;
 	font-weight: 400;
-	background: rgba(0,0,0,0.9);
-	color: #fff;
+	background: rgba(139, 152, 166,0.4);
+	color: #000;
 	opacity: 0;
 	transition: margin 0.3s, opacity 0.3s;
 	-o-transition: margin 0.3s, opacity 0.3s;
@@ -443,7 +443,7 @@
 .sky-form .tooltip-top-right:after {
 	top: 100%;
 	right: 16px;	
-	border-top: 4px solid rgba(0,0,0,0.9);
+	border-top: 4px solid rgba(142,175,23,0.4);
 	border-right: 4px solid transparent;
 	border-left: 4px solid transparent;
 }
@@ -461,7 +461,7 @@
 .sky-form .tooltip-top-left:after {
 	top: 100%;
 	left: 16px;
-	border-top: 4px solid rgba(0,0,0,0.9);
+	border-top: 4px solid rgba(142,175,23,0.4);
 	border-right: 4px solid transparent;
 	border-left: 4px solid transparent;
 }
@@ -481,7 +481,7 @@
 	top: 6px;
 	right: 100%;
 	border-top: 4px solid transparent;
-	border-right: 4px solid rgba(0,0,0,0.9);
+	border-right: 4px solid rgba(142,175,23,0.4);
 	border-bottom: 4px solid transparent;
 }
 .sky-form .input input:focus + .tooltip-right,
@@ -500,7 +500,7 @@
 	left: 100%;
 	border-top: 4px solid transparent;
 	border-bottom: 4px solid transparent;
-	border-left: 4px solid rgba(0,0,0,0.9);
+	border-left: 4px solid rgba(142,175,23,0.4);
 }
 .sky-form .input input:focus + .tooltip-left,
 .sky-form .textarea textarea:focus + .tooltip-left {
@@ -517,7 +517,7 @@
 	bottom: 100%;
 	right: 16px;	
 	border-right: 4px solid transparent;
-	border-bottom: 4px solid rgba(0,0,0,0.9);
+	border-bottom: 4px solid rgba(142,175,23,0.4);
 	border-left: 4px solid transparent;
 }
 .sky-form .input input:focus + .tooltip-bottom-right,
@@ -535,7 +535,7 @@
 	bottom: 100%;
 	left: 16px;
 	border-right: 4px solid transparent;
-	border-bottom: 4px solid rgba(0,0,0,0.9);
+	border-bottom: 4px solid rgba(142,175,23,0.4);
 	border-left: 4px solid transparent;
 }
 .sky-form .input input:focus + .tooltip-bottom-left,
