@@ -119,7 +119,7 @@
 
 						<!-- Logo -->
 						<a class="logo pull-left" href="index.html">
-							<img src={% static "images/logo_light.png" %} alt=""/>
+							<img src="{% static "images/logo_light.png" %}" alt=""/>
 						</a>
 
 						<div class="navbar-collapse pull-right nav-main-collapse collapse submenu-light">
@@ -127,13 +127,13 @@
 
 								<ul id="topMain" class="nav nav-pills nav-main">
                                     <li>
-                                        <a href={% url "public:home" %}>HOME</a>
+                                        <a href="{% url "public:home" %}">HOME</a>
                                     </li>
                                     <li>
-                                        <a href={% url "capture:new_expense" %}}>CAPTURE</a>
+                                        <a href="{% url "capture:new_expense" %}">CAPTURE</a>
                                     </li>
                                     <li>
-                                        <a href={% url "compare:compare_dashboard" %}>COMPARE</a>
+                                        <a href="{% url "compare:compare_dashboard" %}">COMPARE</a>
                                     </li>
                                     <li>
                                         <a href="#">CONTRIBUTE</a>
