@@ -11,11 +11,6 @@ class CategoryCustomChoiceField(forms.ChoiceField):
 
 class NewExpenseForm(forms.Form):
 
-    choose_place = forms.ChoiceField(
-        label='Found nearby places:',
-        required=False
-    )
-
     amount = forms.DecimalField(
         label=_("Amount:"),
         max_digits=11,
@@ -32,6 +27,10 @@ class NewExpenseForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'Optional brief purchase note.'}),
         required=False,
         help_text=_("Optional brief note to remember something about this purchase.")
+    )
+    choose_category_place = CategoryCustomChoiceField(
+        label=_("Budget place category:"),
+        help_text=_("Apply this purchase to a budget category.")
     )
     choose_category = CategoryCustomChoiceField(
         label=_("Budget category:"),

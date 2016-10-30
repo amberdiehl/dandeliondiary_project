@@ -8,7 +8,7 @@ from django import forms
 from google import get_nearby_places, byteify
 
 from household.helpers import helper_get_me
-from .helpers import helper_categories_without_geo, get_remaining_budget
+from .helpers import helper_budget_categories, get_remaining_budget
 
 from .forms import NewExpenseForm
 from compare.models import MyBudgetCategory
@@ -69,24 +69,28 @@ def new_expense(request):
         if request.GET.get('lat') and request.GET.get('lon'):
             position = (request.GET.get('lat'),request.GET.get('lon'))
 
-        places = []
+        places = ''  # if using for choice, change to []
+        place_types = []
         if position:
             nearby_json = byteify(get_nearby_places(position, 75))
             for place in nearby_json['results']:
-                item = (place['place_id'], place['name'])
-                places.append(item)
-                places.sort(key=lambda items: items[1])
+                # item = (place['place_id'], place['name']) <-- use for choice in the future
+                places += place['name'] + ' '
+                place_types.append(place['types'])  # this is an array of arrays
+            # places.sort(key=lambda items: items[1])
 
         if places:
             location_message = ('success','Geolocation information used for category selection assistance.')
-            form.fields['choose_place'].choices = places
         else:
             location_message = ('warning','Geolocation information not available. Unable to provide category selection assistance.')
-            form.fields['choose_place'].widget = forms.HiddenInput()
-            form.fields['choose_category'].choices = helper_categories_without_geo(me.get('household_key'))
+
+        category_choices = helper_budget_categories(me.get('household_key'), place_types)
+        form.fields['choose_category_place'].choices = category_choices[0]
+        form.fields['choose_category'].choices = category_choices[1]
 
         context = {
             'form': form,
+            'places': places,
             'page_title': 'Capture New Expense',
             'url': 'capture:new_expense',
             'location_message': location_message,
