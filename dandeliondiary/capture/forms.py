@@ -5,8 +5,10 @@ from django.utils.translation import ugettext_lazy as _
 
 class CategoryCustomChoiceField(forms.ChoiceField):
     def validate(self, value):
-        if int(value) == 0:
-            raise validators.ValidationError(u'Select a budget category.')
+        pass
+        # if int(value) == 0:
+        #    raise validators.ValidationError(u'Select a budget category.')
+        # With two potential choices, validation must happen at the form level
 
 
 class NewExpenseForm(forms.Form):
@@ -42,3 +44,9 @@ class NewExpenseForm(forms.Form):
         required=False,
         help_text=_("Defaults to today; otherwise, select date to apply to budget.")
     )
+
+    def clean(self):
+        value1 = int(self.cleaned_data['choose_category_place'])
+        value2 = int(self.cleaned_data['choose_category'])
+        if value1 == 0 and value2 == 0:
+            self.add_error('choose_category', "Select a budget category.")

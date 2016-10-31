@@ -22,12 +22,13 @@
 
     <script>
 
-        window.onload = function() {
+        // window.onload = function() {
+        function getGeoLocation() {
 
             var startPos;
             var geoOptions = {
                 timeout: 100 * 1000,
-                // enableHighAccuracy: true
+                enableHighAccuracy: true
             };
 
             var geoSuccess = function(position) {
@@ -66,7 +67,7 @@
 
 {% endblock %}
 
-{% block body_attributes %}{% endblock %}
+{% block body_attributes %} onload="getGeoLocation();" {% endblock %}
 
 {% block body_container %}
 
@@ -75,7 +76,7 @@
     <div class="col-md-8 col-md-offset-2">
 
         <form id="new_expense" class="margin-top-30 sky-form boxed centered" method="POST"
-              action="{% url url %}" {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+              action="{% url url %}{% if geo %}{{ geo }}{% endif %}" {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
             {% csrf_token %}
 
             <div class="box-static box-transparent box-bordered">

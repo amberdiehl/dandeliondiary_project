@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, render, render_to_response, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect
 from django import forms
 
@@ -29,6 +29,7 @@ def new_expense(request):
     else:
 
         location_message = None
+        geo = None
 
         if request.method == 'POST':
 
@@ -42,12 +43,15 @@ def new_expense(request):
                 expense.amount = form.cleaned_data.get('amount')
                 expense.household = me.get('household_obj')
                 expense.who = me.get('account_obj')
-                expense.category = MyBudgetCategory.objects.get(pk=form.cleaned_data.get('choose_category'))
+                category = int(form.cleaned_data.get('choose_category_place'))
+                if category == 0:
+                    category = int(form.cleaned_data.get('choose_category'))
+                expense.category = MyBudgetCategory.objects.get(pk=category)
                 #expense.google_place = ''
                 expense.save()
                 messages.success(request, 'Your information has been saved.')
 
-                remaining_budget = get_remaining_budget(form.cleaned_data.get('choose_category'))
+                remaining_budget = get_remaining_budget(category)
                 message = 'You have {} left in your budget.'.format(remaining_budget)
                 if remaining_budget > 0:
                     messages.success(request, message)
@@ -68,6 +72,7 @@ def new_expense(request):
         position = ()
         if request.GET.get('lat') and request.GET.get('lon'):
             position = (request.GET.get('lat'),request.GET.get('lon'))
+            geo = '?lat={}&lon={}'.format(request.GET.get('lat'),request.GET.get('lon'))
 
         places = ''  # if using for choice, change to []
         place_types = []
@@ -77,12 +82,11 @@ def new_expense(request):
                 # item = (place['place_id'], place['name']) <-- use for choice in the future
                 places += place['name'] + ' '
                 place_types.append(place['types'])  # this is an array of arrays
-            # places.sort(key=lambda items: items[1])
+                # places.sort(key=lambda items: items[1])
 
+        location_message = ('warning', 'Geolocation failed; category selection assistance unavailable.')
         if places:
             location_message = ('success','Geolocation information used for category selection assistance.')
-        else:
-            location_message = ('warning','Geolocation information not available. Unable to provide category selection assistance.')
 
         category_choices = helper_budget_categories(me.get('household_key'), place_types)
         form.fields['choose_category_place'].choices = category_choices[0]
@@ -93,6 +97,7 @@ def new_expense(request):
             'places': places,
             'page_title': 'Capture New Expense',
             'url': 'capture:new_expense',
+            'geo': geo,
             'location_message': location_message,
         }
 
