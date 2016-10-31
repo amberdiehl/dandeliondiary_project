@@ -1,0 +1,125 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% block title %}{% trans "Explore Expenses" %}{% endblock %}
+
+{% block static %}
+    <!-- PAGE LEVEL SCRIPTS -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
+          rel="stylesheet" type="text/css" />
+
+    <!-- Include jTable style and jTable script. -->
+    <link href="{% static "plugins/jtable/themes/metro/green/jtable.min.css" %}" rel="stylesheet" type="text/css" />
+    <script src="{% static "plugins/jtable/jquery.jtable.min.js" %}" type="text/javascript"></script>
+
+	<link href="{% static "css/plugin-hover-buttons.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+
+{% endblock %}
+
+{% block body_attributes %}{% endblock %}
+
+{% block body_container %}
+
+    {% include "./menu.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+            <div class="margin-top-30 box-static box-transparent box-bordered box-white">
+
+                <h2>{% trans page_title %}</h2>
+
+                <div id="Explore_Expenses_Container"></div>
+
+            </div>
+
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+    <script type="text/javascript">
+
+    $(document).ready(function () {
+        $.ajaxSetup({beforeSend: function(xhr, settings){
+            xhr.setRequestHeader('X-CSRFToken',
+                         '{{ csrf_token }}');
+        }});
+        $('#Explore_Expenses_Container').jtable({
+            title: '',
+            paging: true,
+            actions: {
+                listAction: '/capture/ajax/list_expenses/',
+                createAction: '',
+                updateAction: '/capture/ajax/change_expense/u/',
+                deleteAction: '/capture/ajax/change_expense/d/'
+            },
+            fields: {
+                id: {
+                    key: true,
+                    create: false,
+                    edit: false,
+                    list: false
+                },
+                expense_date: {
+                    title: 'Date',
+                    type: 'date',
+                    width: '15%'
+                },
+                amount: {
+                    title: 'Amount',
+                    type: 'number',
+                    width: '10%'
+                },
+                category:{
+                    title: 'Category',
+                    width: '25%',
+                    edit: false
+                },
+                note: {
+                    title: 'Note',
+                    type: 'textarea',
+                    width: '50%'
+                }
+            },
+            //Validate form when it is being submitted
+            formSubmitting: function (event, data) {
+                var ok = true;
+                var message = '';
+                var $temp = '';
+
+                $temp = $('input[name="amount"]').val();
+                if ($temp == ''){
+                    ok = false;
+                    message += 'Amount must be greater than zero.\n';
+                }
+
+                if (message) {
+                    alert(message);
+                }
+                return ok;
+            },
+            //Conditionally show edit and delete buttons
+            rowInserted: function(event, data){
+              if (data.record.amount == 0){
+                //data.row.find('.jtable-edit-command-button').hide();
+                //data.row.find('.jtable-delete-command-button').hide();
+              }
+            },
+            recordUpdated: function (event, data) {
+                $('#Explore_Expenses_Container').jtable('reload')
+            }
+        });
+        $('#Explore_Expenses_Container').jtable('load');
+    });
+
+    </script>
+
+
+{% endblock %}

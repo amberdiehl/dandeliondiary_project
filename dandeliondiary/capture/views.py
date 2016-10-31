@@ -2,8 +2,9 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponseRedirect
-from django import forms
+from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+
 
 from google import get_nearby_places, byteify
 
@@ -14,12 +15,16 @@ from .forms import NewExpenseForm
 from compare.models import MyBudgetCategory
 from .models import MyExpenseItem
 
+from hashids import Hashids
+
+HASH_SALT = 'nowis Ag00d tiM3for tW0BR3wskies'
+HASH_MIN_LENGTH = 16
+
 # from uscampgrounds.models import *
 # camps = Campground.objects.all().distance(origin).order_by('distance')
 
 
 # Capture a new expense item
-@csrf_protect
 @login_required
 def new_expense(request):
     # Get household, validate active subscription
@@ -105,7 +110,7 @@ def new_expense(request):
 
 
 @login_required
-def expenses(request):
+def explore_expenses(request):
     # Get household, validate active subscription
     me = helper_get_me(request.user.pk)
     if me.get('redirect'):
@@ -113,8 +118,85 @@ def expenses(request):
     else:
 
         context = {
-         'page_title': 'Expenses',
-         'url': 'capture:expenses',
+         'page_title': 'Explore Expenses',
+         'url': 'capture:explore_expenses',
         }
 
-    return render(request, 'capture/expenses.html', context)
+    return render(request, 'capture/explore_expenses.html', context)
+
+
+@login_required
+def ajax_list_expenses(request):
+
+    response_data = {}
+
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+    else:
+        data = []
+
+        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+
+        expenses = MyExpenseItem.objects.filter(household=me.get('household_key')).order_by('-expense_date')
+        for expense in expenses:
+            record = {}
+            record['id'] = hashids.encode(expense.pk)
+            record['expense_date'] = expense.expense_date
+            record['amount'] = expense.amount
+            expense_category = MyBudgetCategory.objects.get(pk=expense.category.pk)
+            record['category'] = expense_category.my_category_name
+            record['note'] = expense.note
+            data.append(record)
+
+        response_data['Result'] = 'OK'
+        response_data['Records'] = data
+        response_data['TotalRecordCount'] = len(record)
+
+    return JsonResponse(response_data)
+
+
+@login_required
+def ajax_change_expense(request, s):
+
+    response_data = {}
+
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+    else:
+        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+        id_hashed = request.POST.get('id')
+        this=hashids.decode(id_hashed)[0]
+        try:
+            expense = MyExpenseItem.objects.get(pk=this)
+        except ObjectDoesNotExist:
+            response_data['Result'] = 'ERROR'
+            response_data['Message'] = 'Error getting expense.'
+        else:
+            if not expense.household.pk == me.get('household_key'):
+                response_data['Result'] = 'ERROR'
+                response_data['Message'] = 'Invalid request for expense.'
+            else:
+                if s == 'd':
+                    expense.delete()
+                    response_data['Result'] = 'OK'
+                    response_data['Record'] = ''
+                else:
+                    record = {}
+                    if not expense.expense_date == request.POST.get('expense_date'):
+                        expense.expense_date=request.POST.get('expense_date')
+                        record['expense_date'] = request.POST.get('expense_date')
+                    if not expense.amount == request.POST.get('amount'):
+                        expense.amount = request.POST.get('amount')
+                        record['amount'] = request.POST.get('amount')
+                    if not expense.note == request.POST.get('note'):
+                        expense.note = request.POST.get('note')
+                        record['note'] = request.POST.get('note')
+                    expense.save()
+                    response_data['Result'] = 'OK'
+                    response_data['Record'] = record
+
+    return JsonResponse(response_data)
