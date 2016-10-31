@@ -75,15 +75,16 @@ def new_expense(request):
 
         # Attempt to get geolocation information to preselect categories
         position = ()
-        location_message = ('warning', 'Geolocation failed; category selection assistance unavailable.')
         if request.GET.get('lat') and request.GET.get('lon'):
             position = (request.GET.get('lat'),request.GET.get('lon'))
             geo = '?lat={}&lon={}'.format(request.GET.get('lat'),request.GET.get('lon'))
+            location_message = ('success','Geolocation information used for category selection assistance.')
+        else:
+            location_message = ('warning', 'Geolocation failed; category selection assistance unavailable.')
 
         places = ''  # if using for place choice, change to [] for array of tuples
         place_types = []
         if position:
-            location_message = ('success','Geolocation information used for category selection assistance.')
             try:
                 nearby_json = byteify(get_nearby_places(position, 75))
                 if nearby_json['status'] == 'OK':
