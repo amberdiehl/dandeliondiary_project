@@ -31,7 +31,7 @@ def get_nearby_places(location, radius):
         response = requests.get(url)
         return response.json()
     except Exception as err:
-        raise ResponseError('Something went wrong fetching nearby places: {}'.format(err))
+        raise ResponseError('Error executing Google API: {}'.format(err))
 
 
 def byteify(input):

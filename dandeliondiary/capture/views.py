@@ -75,23 +75,27 @@ def new_expense(request):
 
         # Attempt to get geolocation information to preselect categories
         position = ()
+        location_message = ('warning', 'Geolocation failed; category selection assistance unavailable.')
         if request.GET.get('lat') and request.GET.get('lon'):
             position = (request.GET.get('lat'),request.GET.get('lon'))
             geo = '?lat={}&lon={}'.format(request.GET.get('lat'),request.GET.get('lon'))
 
-        places = ''  # if using for choice, change to []
+        places = ''  # if using for place choice, change to [] for array of tuples
         place_types = []
         if position:
-            nearby_json = byteify(get_nearby_places(position, 75))
-            for place in nearby_json['results']:
-                # item = (place['place_id'], place['name']) <-- use for choice in the future
-                places += place['name'] + ' '
-                place_types.append(place['types'])  # this is an array of arrays
-                # places.sort(key=lambda items: items[1])
-
-        location_message = ('warning', 'Geolocation failed; category selection assistance unavailable.')
-        if places:
             location_message = ('success','Geolocation information used for category selection assistance.')
+            try:
+                nearby_json = byteify(get_nearby_places(position, 75))
+                if nearby_json['status'] == 'OK':
+                    for place in nearby_json['results']:
+                        # item = (place['place_id'], place['name']) <-- use for choice in the future
+                        places += place['name'] + ' '
+                        place_types.append(place['types'])  # this is an array of arrays
+                        # places.sort(key=lambda items: items[1])
+                else:
+                    places = 'status: {} error message: {}'.format(nearby_json['status'], nearby_json['error_message'])
+            except Exception as err:
+                pass
 
         category_choices = helper_budget_categories(me.get('household_key'), place_types)
         form.fields['choose_category_place'].choices = category_choices[0]
