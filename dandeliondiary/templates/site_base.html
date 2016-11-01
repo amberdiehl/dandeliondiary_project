@@ -66,9 +66,6 @@
 								<li><a tabindex="-1" href={% url "account_logout" %}><i class="glyphicon glyphicon-off"></i> Logout</a></li>
 							</ul>
 						</li>
-                        {% else %}
-						<li class="hidden-xs"><a href={% url "account_login" %}>Login</a></li>
-						<li class="hidden-xs"><a href={% url "account_signup" %}>Create Account</a></li>
                         {% endif %}
 					</ul>
 
@@ -118,7 +115,7 @@
 						<!-- /BUTTONS -->
 
 						<!-- Logo -->
-						<a class="logo pull-left" href="index.html">
+						<a class="logo pull-left" href="{% url "public:home" %}">
 							<img src="{% static "images/logo_light.png" %}" alt=""/>
 						</a>
 
@@ -126,9 +123,7 @@
 							<nav class="nav-main">
 
 								<ul id="topMain" class="nav nav-pills nav-main">
-                                    <li>
-                                        <a href="{% url "public:home" %}">HOME</a>
-                                    </li>
+                                    {% if user.is_authenticated %}
                                     <li>
                                         <a href="{% url "capture:new_expense" %}">CAPTURE</a>
                                     </li>
@@ -138,17 +133,24 @@
                                     <li>
                                         <a href="#">CONTRIBUTE</a>
                                     </li>
-									<li class="dropdown"><!-- BLOG -->
-										<a class="dropdown-toggle" href="#">
-											BLOG
-										</a>
-									</li>
+                                    {% endif %}
 									<li class="dropdown"><!-- ABOUT -->
 										<a class="dropdown-toggle" href="#">
 											ABOUT
 										</a>
 									</li>
-								</ul>
+									<li class="dropdown"><!-- BLOG -->
+										<a class="dropdown-toggle" href="#">
+											BLOG
+										</a>
+									</li>
+                                    {% if user.is_authenticated %}
+                                        <li><a href="{% url "account_logout" %}">LOGOUT</a></li>
+                                    {% else %}
+                                        <li><a href="{% url "account_login" %}">LOGIN</a></li>
+						                <li><a href="{% url "account_signup" %}">CREATE ACCOUNT</a></li>
+								    {% endif %}
+                                </ul>
 
 							</nav>
 						</div>
