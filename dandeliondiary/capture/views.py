@@ -144,7 +144,42 @@ def ajax_list_expenses(request):
 
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
 
+        start_index = int(request.GET['jtStartIndex'])
+        page_size = int(request.GET['jtPageSize'])
+
+        # Get all recorded expenses--this may need to be limited in the future to past three years, or in kind
         expenses = MyExpenseItem.objects.filter(household=me.get('household_key')).order_by('-expense_date')
+
+        # Filter, if specified by user; for now this acts as an 'AND'.
+        if request.POST:
+            filters = request.POST
+            if filters['frDate']:
+                if filters['toDate']:
+                    expenses = expenses.filter(expense_date__gte=filters['frDate']).filter(expense_date__lte=filters['toDate'])
+                else:
+                    expenses = expenses.filter(expense_date=filters['frDate'])
+
+            if filters['frAmount']:
+                from_amount = float(filters['frAmount'])
+                if filters['toAmount']:
+                    to_amount = float(filters['toAmount'])
+                    expenses = expenses.filter(amount__gte=from_amount).filter(amount__lte=to_amount)
+                else:
+                    expenses = expenses.filter(amount=from_amount)
+
+            if filters['inCategory']:
+                expenses = expenses.filter(category__my_category_name__icontains=filters['inCategory'])
+
+            if filters['inNote']:
+                expenses = expenses.filter(note__icontains=filters['inNote'])
+
+        record_count = len(expenses)
+
+        if (start_index + page_size) > record_count:
+            expenses = expenses[start_index:None]
+        else:
+            expenses = expenses[start_index:page_size]
+
         for expense in expenses:
             record = {}
             record['id'] = hashids.encode(expense.pk)
@@ -157,7 +192,7 @@ def ajax_list_expenses(request):
 
         response_data['Result'] = 'OK'
         response_data['Records'] = data
-        response_data['TotalRecordCount'] = len(record)
+        response_data['TotalRecordCount'] = record_count
 
     return JsonResponse(response_data)
 

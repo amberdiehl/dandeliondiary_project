@@ -20,6 +20,41 @@
     <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 
+    <script>
+    function showHide(){
+        $("#selectFilters").toggle();
+    }
+    function clearFilter(){
+        $("#frDate").val('');
+        $("#toDate").val('');
+        $("#frAmount").val('');
+        $("#toAmount").val('');
+        $("#inCategory").val('');
+        $("#inNote").val('');
+        $('#buttonFilter').removeClass('btn-amber').addClass('btn-default');
+        showHide();
+        $("#LoadRecordsButton").click();
+    }
+    $(function() {
+        $( "#frDate" ).datepicker({
+            dateFormat: 'yy-mm-dd'
+        });
+        $( "#toDate" ).datepicker({
+            dateFormat: 'yy-mm-dd'
+        });
+    });
+    </script>
+
+    <style>
+        table, th, td {
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 5px;
+            text-align: left;
+        }
+    </style>
+
 {% endblock %}
 
 {% block body_attributes %}{% endblock %}
@@ -34,10 +69,45 @@
 
                 <h2>{% trans page_title %}</h2>
 
+                <button class='btn btn-default' id="buttonFilter" name="buttonFilter"
+                        onclick="showHide();">Hide/Show Filter</button>
+
+                <form class="margin-top-0 sky-form centered" id="formFilter" name="formFilter">
+
+                    <div id="selectFilters" name="selectFilters" style="display:none;">
+
+                        <div class="box-static box-transparent box-bordered">
+                            <table style="border-spacing: 5px;">
+                                <tr>
+                                    <td>From Date:</td><td><input type="date" name="frDate" id="frDate" /></td>
+                                    <td>To Date:</td><td><input type="date" name="toDate" id="toDate" /></td>
+                                    <td rowspan="3" width="20%">
+                                        To filter by a specific date or amount, enter something for "from" and leave
+                                        "to" empty. Filters for category and notes are not case sensitive.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>From Amount:</td><td><input type="number" name="frAmount" id="frAmount" /></td>
+                                    <td>To Amount:</td><td><input type="number" name="toAmount" id="toAmount" /></td>
+                                </tr>
+                                <tr>
+                                    <td>Category Contains:</td><td><input type="text" name="inCategory" id="inCategory" /></td>
+                                    <td>Note Contains:</td><td><input type="text" name="inNote" id="inNote" /></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">
+                                        <button class='btn btn-amber' type="submit" id="LoadRecordsButton"
+                                            name="LoadRecordsButton">Filter</button>
+                                        <button class='btn btn-aqua' id='clearFilter' name='clearFilter'
+                                            onclick='clearFilter();'>Reset</button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </form>
                 <div id="Explore_Expenses_Container"></div>
-
             </div>
-
     </div>
 
 {% endblock %}
@@ -116,10 +186,23 @@
                 $('#Explore_Expenses_Container').jtable('reload')
             }
         });
+        //Re-load records when user clicks 'load records' button.
+        $('#LoadRecordsButton').click(function (e) {
+            e.preventDefault();
+            $('#buttonFilter').removeClass('btn-default').addClass('btn-amber');
+            showHide();
+            $('#Explore_Expenses_Container').jtable('load', {
+                frDate: $('#frDate').val(),
+                toDate: $('#toDate').val(),
+                frAmount: $('#frAmount').val(),
+                toAmount: $('#toAmount').val(),
+                inCategory: $('#inCategory').val(),
+                inNote: $('#inNote').val()
+            });
+        });
         $('#Explore_Expenses_Container').jtable('load');
     });
 
     </script>
-
 
 {% endblock %}
