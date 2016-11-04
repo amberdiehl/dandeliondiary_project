@@ -53,10 +53,11 @@ def new_expense(request):
                     category = int(form.cleaned_data.get('choose_category'))
                 expense.category = MyBudgetCategory.objects.get(pk=category)
                 #expense.google_place = ''
+                expense.expense_date = form.cleaned_data.get('expense_date')
                 expense.save()
                 messages.success(request, 'Your information has been saved.')
 
-                remaining_budget = get_remaining_budget(category)
+                remaining_budget = get_remaining_budget(category, expense.expense_date)
                 message = 'You have {} left in your budget.'.format(remaining_budget)
                 if remaining_budget > 0:
                     messages.success(request, message)

@@ -92,22 +92,21 @@ def display_name(name):
         return name
 
 
-def get_remaining_budget(c_id):
+def get_remaining_budget(c_id, date):
     """
     Get amount remaining in category budget.
     """
-    # Get current budget amount
-    budget = MyBudget.objects.filter(category=c_id).order_by('-effective_date')
+
+    # Get 'current' budget amount based on expense date
+    budget = MyBudget.objects.filter(category=c_id).filter(effective_date__lte=date).order_by('-effective_date')
     if budget:
         current_budget = budget[0].amount
     else:
         current_budget = 0
 
     # Get current expenses already recorded for this budget, for the month
-    today = datetime.date.today()
-    start_date = today.replace(day=1)
-
-    current_expenses = MyExpenseItem.objects.filter(category=c_id).filter(expense_date__gte=start_date) \
+    current_expenses = MyExpenseItem.objects.filter(category=c_id)\
+        .filter(expense_date__year=date.year, expense_date__month=date.month) \
         .aggregate(Sum('amount'))
     if not current_expenses:
         current_expenses = 0
