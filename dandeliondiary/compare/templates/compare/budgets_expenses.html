@@ -90,7 +90,7 @@
                          '{{ csrf_token }}');
             }});
             $('#Budget_Container').jtable({
-                title: 'Group Categories',
+                title: 'Category Summary',
                 openChildAsAccordion: false,
                 actions: {
                     listAction: function (postData) {
@@ -131,6 +131,7 @@
                     budget: {
                         title: 'Budget',
                         width: '15%',
+                        listClass: 'text-right',
                         create: false,
                         edit: false,
                         list: true
@@ -138,6 +139,7 @@
                     expense: {
                         title: 'Expense',
                         width: '15%',
+                        listClass: 'text-right',
                         create: false,
                         edit: false,
                         list: true
@@ -145,6 +147,7 @@
                     balance: {
                         title: 'Balance',
                         width: '15%',
+                        listClass: 'text-right',
                         create: false,
                         edit: false,
                         list: true
@@ -158,7 +161,7 @@
             });
             $('#Budget_Container').jtable('load');
             $('#Budget_Summary').jtable({
-                title: 'Summary by Group',
+                title: 'Summary',
                 actions: {
                     listAction: function (postData) {
                         return $.Deferred(function ($dfd) {

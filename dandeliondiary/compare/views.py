@@ -242,6 +242,16 @@ def ajax_be_categories(request, pid):
             record['balance'] = amounts['budget'] - amounts['expenses']
             data.append(record)
 
+            budget_total += amounts['budget']
+            expense_total += amounts['expenses']
+
+        record = {}
+        record['my_category_name'] = '<b>** Total</b>'
+        record['budget'] = '<b>{}</b>'.format(budget_total)
+        record['expense'] = '<b>{}</b>'.format(expense_total)
+        record['balance'] = '<b>{}</b>'.format(budget_total-expense_total)
+        data.append(record)
+
         response_data['Result'] = 'OK'
         response_data['Records'] = data
 

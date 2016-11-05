@@ -6,10 +6,11 @@ from .models import MyBudgetCategory, MyBudget
 def helper_get_category_budget_and_expenses(category, from_date=None, to_date=None, fetch_expenses=False):
 
     budget_amount = 0
-    expense_total = -1
+    expense_total = 0
 
     children = MyBudgetCategory.objects.filter(parent_category=category)
     if children:
+
         for child in children:
             child_budgets = MyBudget.objects.filter(category=child).order_by('-effective_date')
             if child_budgets:
