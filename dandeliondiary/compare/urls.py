@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^budget/$', views.budget, name='budget'),
     url(r'^budgets_expenses/$', views.budgets_and_expenses, name='budgets_expenses'),
     url(r'^ajax/dash_budget/$', views.ajax_dash_budget),
+    url(r'^ajax/dash_budget_and_expenses/$', views.ajax_dash_budget_and_expenses),
     url(r'^ajax/list_groups/$', views.ajax_list_groups),
     url(r'^ajax/create_group/$', views.ajax_create_group),
     url(r'^ajax/update_group/$', views.ajax_update_group),

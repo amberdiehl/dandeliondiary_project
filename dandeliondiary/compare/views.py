@@ -163,6 +163,40 @@ def ajax_dash_budget(request):
 
 
 @login_required
+def ajax_dash_budget_and_expenses(request):
+
+    response_data = {}
+
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        pass
+    else:
+
+        cols = [
+            {'id': 'groups', 'label': 'Groups', 'type': 'string'},
+            {'id': 'budget', 'label': 'Budget', 'type': 'number'},
+            {'id': 'expenses', 'label': 'Expenses', 'type': 'number'}
+        ]
+
+        budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
+
+        rows = []
+
+        for group in budget_groups:
+
+            amounts = helper_get_group_budget_and_expenses(group)
+
+            row = {'c': [{'v': group.my_group_name}, {'v': int(amounts['group_budget'])},
+                         {'v': int(amounts['group_expenses'])}]}
+            rows.append(row)
+
+        response_data['cols'] = cols
+        response_data['rows'] = rows
+
+    return JsonResponse(response_data)
+
+
+@login_required
 def ajax_be_groups(request):
     """
     Budgets + Expenses: Show current or past budget and expense information
