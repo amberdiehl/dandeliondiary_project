@@ -113,3 +113,27 @@ def get_remaining_budget(c_id, date):
 
     # Note: New expense should be captured and included in 'current_expenses'
     return current_budget - current_expenses.get('amount__sum')
+
+
+def get_expenses_for_period(category, from_date=None, to_date=None):
+
+    # If no dates are supplied assume current date
+    if not from_date and not to_date:
+        from_date = datetime.date.today()
+        to_date = datetime.date.today()
+
+    # If no "to" date is provided use from date for range
+    if not to_date:
+        to_date = from_date
+
+    expenses = MyExpenseItem.objects.filter(category=category) \
+        .filter(expense_date__year__gte=from_date.year, expense_date__month__gte=from_date.month) \
+        .filter(expense_date__year__lte=to_date.year, expense_date__month__lte=to_date.month) \
+        .aggregate(Sum('amount'))
+    if not expenses.get('amount__sum') == None:
+        expense_total = expenses.get('amount__sum')
+    else:
+        expense_total = 0
+
+    return expense_total
+

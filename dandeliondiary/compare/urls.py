@@ -5,6 +5,7 @@ urlpatterns = [
     url(r'^dashboard/$', views.compare_dashboard, name='compare_dashboard'),
     url(r'^groups_categories/$', views.groups_and_categories, name='groups_categories'),
     url(r'^budget/$', views.budget, name='budget'),
+    url(r'^budgets_expenses/$', views.budgets_and_expenses, name='budgets_expenses'),
     url(r'^ajax/dash_budget/$', views.ajax_dash_budget),
     url(r'^ajax/list_groups/$', views.ajax_list_groups),
     url(r'^ajax/create_group/$', views.ajax_create_group),
@@ -19,4 +20,6 @@ urlpatterns = [
     url(r'^ajax/create_budget/(?P<pid>\w+)/?', views.ajax_create_budget),
     url(r'^ajax/change_budget/(?P<s>\w+)/?', views.ajax_change_budget),
     url(r'^ajax/budget_summary/$', views.ajax_budget_summary),
+    url(r'^ajax/be_groups/$', views.ajax_be_groups),
+    url(r'^ajax/be_categories/(?P<pid>\w+)/$', views.ajax_be_categories),
 ]

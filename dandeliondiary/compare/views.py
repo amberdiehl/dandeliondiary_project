@@ -2,13 +2,14 @@ import datetime
 
 from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_safe, require_POST
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 
 from hashids import Hashids
 
 from household.helpers import  helper_get_me
-from .helpers import helper_get_category_budget
+from .helpers import helper_get_category_budget_and_expenses, helper_get_group_budget_and_expenses
 
 from .models import MyBudgetGroup, MyBudgetCategory, MyBudget
 
@@ -36,6 +37,38 @@ def compare_dashboard(request):
         }
 
         return render(request, 'compare/compare_dashboard.html', context)
+
+
+@login_required
+def budgets_and_expenses(request):
+    """
+    Show current (or past)budgets and associated expenses, balance.
+    :param request:
+    :return:
+    """
+    # Get household, validate active subscription
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        return redirect('household:household_dashboard')
+    else:
+
+        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+
+        budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
+        group_tabs = []
+        group_keys = ''
+        for group in budget_groups:
+            group_tabs.append(group.my_group_name)
+            group_keys += hashids.encode(group.pk) + ','
+
+        context = {
+            'page_title': 'Budgets + Expenses',
+            'url': 'compare:budgets_expenses',
+            'tabs': group_tabs,
+            'keys': group_keys,
+        }
+
+        return render(request, 'compare/budgets_expenses.html', context)
 
 
 @login_required
@@ -117,7 +150,7 @@ def ajax_dash_budget(request):
             categories = MyBudgetCategory.objects.filter(my_budget_group=group).filter(parent_category=None)
             for category in categories:
 
-                category_budget = helper_get_category_budget(category)
+                category_budget = helper_get_category_budget_and_expenses(category, fetch_expenses=False)['budget']
                 group_total += category_budget
 
             row = {'c': [{'v': group.my_group_name}, {'v': int(group_total)}]}
@@ -125,6 +158,92 @@ def ajax_dash_budget(request):
 
         response_data['cols'] = cols
         response_data['rows'] = rows
+
+    return JsonResponse(response_data)
+
+
+@login_required
+def ajax_be_groups(request):
+    """
+    Budgets + Expenses: Show current or past budget and expense information
+
+    :param request:
+    :return:
+    """
+    response_data = {}
+
+    # Get household, validate active subscription
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+    else:
+
+        data = []
+
+        budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
+
+        budget_total = 0
+        expense_total = 0
+
+        for group in budget_groups:
+
+            record = {}
+            record['group'] = group.my_group_name
+            amounts = helper_get_group_budget_and_expenses(group)
+            record['budget'] = amounts['group_budget']
+            record['expense'] = amounts['group_expenses']
+            record['balance'] = amounts['group_budget'] - amounts['group_expenses']
+            data.append(record)
+
+            budget_total += amounts['group_budget']
+            expense_total += amounts['group_expenses']
+
+        record = {}
+        record['group'] = '<b>** Total</b>'
+        record['budget'] = '<b>{}</b>'.format(budget_total)
+        record['expense'] = '<b>{}</b>'.format(expense_total)
+        record['balance'] = '<b>{}</b>'.format(budget_total-expense_total)
+        data.append(record)
+
+        response_data['Result'] = 'OK'
+        response_data['Records'] = data
+
+    return JsonResponse(response_data)
+
+
+@login_required
+def ajax_be_categories(request, pid):
+
+    response_data = {}
+
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+    else:
+        data = []
+
+        budget_total = 0
+        expense_total = 0
+
+        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+        id=hashids.decode(pid)[0]
+
+        budget_categories = MyBudgetCategory.objects.filter(my_budget_group=id).filter(parent_category=None)\
+            .order_by('my_category_name')
+        for category in budget_categories:
+
+            record = {}
+            record['my_category_name'] = category.my_category_name
+            amounts = helper_get_category_budget_and_expenses(category, fetch_expenses=True)
+            record['budget'] = amounts['budget']
+            record['expense'] = amounts['expenses']
+            record['balance'] = amounts['budget'] - amounts['expenses']
+            data.append(record)
+
+        response_data['Result'] = 'OK'
+        response_data['Records'] = data
 
     return JsonResponse(response_data)
 
@@ -610,7 +729,7 @@ def ajax_budget_summary(request):
 
             for category in categories:
 
-                category_budget = helper_get_category_budget(category)
+                category_budget = helper_get_category_budget_and_expenses(category)['budget']
                 group_total += category_budget
 
                 record = template.copy()
@@ -634,4 +753,3 @@ def ajax_budget_summary(request):
         response_data['Records'] = data
 
     return JsonResponse(response_data)
-

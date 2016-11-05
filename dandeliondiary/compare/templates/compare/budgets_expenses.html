@@ -1,0 +1,240 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% load compare_extras %}
+
+{% block title %}{% trans "Budgets + Expenses" %}{% endblock %}
+
+{% block static %}
+    <!-- PAGE LEVEL SCRIPTS -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
+          rel="stylesheet" type="text/css" />
+
+    <!-- Include jTable style and jTable script. -->
+    <link href="{% static "plugins/jtable/themes/metro/green/jtable.min.css" %}" rel="stylesheet" type="text/css" />
+    <script src="{% static "plugins/jtable/jquery.jtable.min.js" %}" type="text/javascript"></script>
+
+
+	<link href="{% static "css/plugin-hover-buttons.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+
+{% endblock %}
+
+{% block body_attributes %}{% endblock %}
+
+{% block body_container %}
+
+    {% include "./menu.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+        <div class="margin-top-30 box-static box-transparent box-bordered box-white">
+
+            <h2>{% trans page_title %}</h2>
+
+            <div class="row">
+
+                <!-- tabs -->
+                <div class="col-md-3 col-sm-3 nopadding">
+                    <ul class="nav nav-tabs nav-stacked">
+                        <li class="active"><a href="#Budget_Summary" data-toggle="tab" onclick="refreshSummary();">Summary</a></li>
+                        {% for tab in tabs %}
+                            <li><a href="#Budget_Container" data-toggle="tab"
+                                   onclick="getIndex({{ forloop.counter }});">{{ tab }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- tabs content -->
+                <div class="col-md-9 col-sm-9 nopadding">
+                    <div class="tab-content tab-stacked">
+                        <div id="Budget_Summary" class="tab-pane active">
+                        </div>
+                        <div id="Budget_Container" class="tab-pane">
+                            <input name="container_pointer" value="{{ keys }}" type="hidden" />
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="inner">
+            <span class="loader"></span>
+        </div>
+    </div>
+    <!-- /PRELOADER -->
+
+    <script type="text/javascript">
+
+        var index = 0;
+
+        $(document).ready(function () {
+            $.ajaxSetup({beforeSend: function(xhr, settings){
+                xhr.setRequestHeader('X-CSRFToken',
+                         '{{ csrf_token }}');
+            }});
+            $('#Budget_Container').jtable({
+                title: 'Group Categories',
+                openChildAsAccordion: false,
+                actions: {
+                    listAction: function (postData) {
+                        return $.Deferred(function ($dfd) {
+                            var $temp = $('#Budget_Container input[name="container_pointer"]').val().split(",");
+                            $.ajax({
+                                url: '/compare/ajax/be_categories/' + $temp[index] + '/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+                                success: function (data) {
+                                    $dfd.resolve(data);
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    },
+                    createAction: '',
+                    updateAction: '',
+                    deleteAction: ''
+                },
+                fields: {
+                    id: {
+                        key: true,
+                        create: false,
+                        edit: false,
+                        list: false
+                    },
+                    my_category_name: {
+                        title: 'Category',
+                        width: '55%',
+                        create: false,
+                        edit: false,
+                        list: true
+                    },
+                    budget: {
+                        title: 'Budget',
+                        width: '15%',
+                        create: false,
+                        edit: false,
+                        list: true
+                    },
+                    expense: {
+                        title: 'Expense',
+                        width: '15%',
+                        create: false,
+                        edit: false,
+                        list: true
+                    },
+                    balance: {
+                        title: 'Balance',
+                        width: '15%',
+                        create: false,
+                        edit: false,
+                        list: true
+                    }
+                },
+                //Don't show update or delete buttons here
+                rowInserted: function(event, data){
+                    data.row.find('.jtable-edit-command-button').hide();
+                    data.row.find('.jtable-delete-command-button').hide();
+                }
+            });
+            $('#Budget_Container').jtable('load');
+            $('#Budget_Summary').jtable({
+                title: 'Summary by Group',
+                actions: {
+                    listAction: function (postData) {
+                        return $.Deferred(function ($dfd) {
+                            $.ajax({
+                                url: '/compare/ajax/be_groups/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: postData,
+                                success: function (data) {
+                                    $dfd.resolve(data);
+                                },
+                                error: function () {
+                                    $dfd.reject();
+                                }
+                            });
+                        });
+                    },
+                    createAction: '',
+                    updateAction: '',
+                    deleteAction: ''
+                },
+                fields: {
+                    group: {
+                        title: 'Group',
+                        width: '55%',
+                        create:false,
+                        edit: false,
+                        list: true
+                    },
+                    budget: {
+                        title: 'Budget',
+                        width: '15%',
+                        listClass: 'text-right',
+                        create: false,
+                        edit: false,
+                        list: true
+                    },
+                    expense: {
+                        title: 'Expense',
+                        width: '15%',
+                        listClass: 'text-right',
+                        create: false,
+                        edit: false,
+                        list: true
+                    },
+                    balance: {
+                        title: 'Balance',
+                        width: '15%',
+                        listClass: 'text-right',
+                        create: false,
+                        edit: false,
+                        list: true
+                    }
+                },
+                //Don't show update or delete buttons here
+                rowInserted: function(event, data){
+                    data.row.find('.jtable-edit-command-button').hide();
+                    data.row.find('.jtable-delete-command-button').hide();
+                }
+            });
+            $('#Budget_Summary').jtable('load');
+        });
+
+        function getIndex(i) {
+            index = i - 1;
+            $('#Budget_Container').jtable('reload');
+        }
+
+        function refreshSummary() {
+            $('#Budget_Summary').jtable('reload');
+        }
+
+    </script>
+
+    <!-- JAVASCRIPT FILES -->
+    <script type="text/javascript">var plugin_path = "/static/plugins/";</script>
+    <script type="text/javascript" src={% static "js/scripts.js" %}></script>
+
+{% endblock %}
