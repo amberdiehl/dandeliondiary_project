@@ -1,8 +1,6 @@
-import datetime
-from django.db.models import F, Sum
-from compare.models import MyBudgetGroup, MyBudgetCategory, MyBudget
-from .models import MyExpenseItem
+from compare.models import MyBudgetGroup, MyBudgetCategory
 from core.helpers import helpers_get_current_location_categories
+from compare.helpers import helper_get_category_budget_and_expenses
 
 
 def helper_budget_categories(household, place_types=None):
@@ -97,43 +95,7 @@ def get_remaining_budget(c_id, date):
     Get amount remaining in category budget.
     """
 
-    # Get 'current' budget amount based on expense date
-    budget = MyBudget.objects.filter(category=c_id).filter(effective_date__lte=date).order_by('-effective_date')
-    if budget:
-        current_budget = budget[0].amount
-    else:
-        current_budget = 0
+    # Get budget amount and related expenes based on expense effective date
+    result = helper_get_category_budget_and_expenses(c_id, filter_date=date, fetch_expenses=True)
 
-    # Get current expenses already recorded for this budget, for the month
-    current_expenses = MyExpenseItem.objects.filter(category=c_id)\
-        .filter(expense_date__year=date.year, expense_date__month=date.month) \
-        .aggregate(Sum('amount'))
-    if not current_expenses:
-        current_expenses = 0
-
-    # Note: New expense should be captured and included in 'current_expenses'
-    return current_budget - current_expenses.get('amount__sum')
-
-
-def get_expenses_for_period(category, from_date=None, to_date=None):
-
-    # If no dates are supplied assume current date
-    if not from_date and not to_date:
-        from_date = datetime.date.today()
-        to_date = datetime.date.today()
-
-    # If no "to" date is provided use from date for range
-    if not to_date:
-        to_date = from_date
-
-    expenses = MyExpenseItem.objects.filter(category=category) \
-        .filter(expense_date__year__gte=from_date.year, expense_date__month__gte=from_date.month) \
-        .filter(expense_date__year__lte=to_date.year, expense_date__month__lte=to_date.month) \
-        .aggregate(Sum('amount'))
-    if not expenses.get('amount__sum') == None:
-        expense_total = expenses.get('amount__sum')
-    else:
-        expense_total = 0
-
-    return expense_total
-
+    return result['budget'] - result['expenses']

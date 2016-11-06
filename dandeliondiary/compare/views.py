@@ -1,8 +1,8 @@
 import datetime
+from datetime import timedelta
 
 from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_safe, require_POST
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -61,11 +61,23 @@ def budgets_and_expenses(request):
             group_tabs.append(group.my_group_name)
             group_keys += hashids.encode(group.pk) + ','
 
+        options = []
+        dt = datetime.date.today()
+        dt = dt.replace(day=1)
+        while True:
+            option = ('{}-{}-{}'.format(dt.year, dt.month, dt.day), dt.strftime("%B"))
+            options.append(option)
+            if len(options) == 12:
+                break
+            dt_a = dt - timedelta(days=1)
+            dt = dt_a.replace(day=1)
+
         context = {
             'page_title': 'Budgets + Expenses',
             'url': 'compare:budgets_expenses',
             'tabs': group_tabs,
             'keys': group_keys,
+            'options': options,
         }
 
         return render(request, 'compare/budgets_expenses.html', context)
