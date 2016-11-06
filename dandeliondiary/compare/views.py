@@ -1,5 +1,4 @@
 import datetime
-from datetime import timedelta
 
 from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
@@ -62,14 +61,13 @@ def budgets_and_expenses(request):
             group_keys += hashids.encode(group.pk) + ','
 
         options = []
-        dt = datetime.date.today()
-        dt = dt.replace(day=1)
+        dt = datetime.date.today().replace(day=1)
         while True:
             option = ('{}-{}-{}'.format(dt.year, dt.month, dt.day), dt.strftime("%B"))
             options.append(option)
             if len(options) == 12:
                 break
-            dt_a = dt - timedelta(days=1)
+            dt_a = dt - datetime.timedelta(days=1)
             dt = dt_a.replace(day=1)
 
         context = {
@@ -209,7 +207,7 @@ def ajax_dash_budget_and_expenses(request):
 
 
 @login_required
-def ajax_be_groups(request):
+def ajax_be_groups(request, dt):
     """
     Budgets + Expenses: Show current or past budget and expense information
 
@@ -225,18 +223,19 @@ def ajax_be_groups(request):
         response_data['Message'] = 'Invalid request.'
     else:
 
-        data = []
+        filter_date = datetime.datetime.strptime(dt, '%Y-%m-%d').date()
 
-        budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
+        data = []
 
         budget_total = 0
         expense_total = 0
 
+        budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
         for group in budget_groups:
 
             record = {}
             record['group'] = group.my_group_name
-            amounts = helper_get_group_budget_and_expenses(group)
+            amounts = helper_get_group_budget_and_expenses(group, filter_date=filter_date)
             record['budget'] = amounts['group_budget']
             record['expense'] = amounts['group_expenses']
             record['balance'] = amounts['group_budget'] - amounts['group_expenses']
@@ -259,7 +258,7 @@ def ajax_be_groups(request):
 
 
 @login_required
-def ajax_be_categories(request, pid):
+def ajax_be_categories(request, pid, dt):
 
     response_data = {}
 
@@ -268,13 +267,16 @@ def ajax_be_categories(request, pid):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
     else:
+
+        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+        id=hashids.decode(pid)[0]
+
+        filter_date = datetime.datetime.strptime(dt, '%Y-%m-%d').date()
+
         data = []
 
         budget_total = 0
         expense_total = 0
-
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        id=hashids.decode(pid)[0]
 
         budget_categories = MyBudgetCategory.objects.filter(my_budget_group=id).filter(parent_category=None)\
             .order_by('my_category_name')
@@ -282,7 +284,7 @@ def ajax_be_categories(request, pid):
 
             record = {}
             record['my_category_name'] = category.my_category_name
-            amounts = helper_get_category_budget_and_expenses(category, fetch_expenses=True)
+            amounts = helper_get_category_budget_and_expenses(category, filter_date=filter_date, fetch_expenses=True)
             record['budget'] = amounts['budget']
             record['expense'] = amounts['expenses']
             record['balance'] = amounts['budget'] - amounts['expenses']

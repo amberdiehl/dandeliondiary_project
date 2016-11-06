@@ -21,6 +21,6 @@ urlpatterns = [
     url(r'^ajax/create_budget/(?P<pid>\w+)/?', views.ajax_create_budget),
     url(r'^ajax/change_budget/(?P<s>\w+)/?', views.ajax_change_budget),
     url(r'^ajax/budget_summary/$', views.ajax_budget_summary),
-    url(r'^ajax/be_groups/$', views.ajax_be_groups),
-    url(r'^ajax/be_categories/(?P<pid>\w+)/$', views.ajax_be_categories),
+    url(r'^ajax/be_groups/(?P<dt>\d{4}-\d{1,2}-\d{1,2})/$', views.ajax_be_groups),
+    url(r'^ajax/be_categories/(?P<pid>\w+)/(?P<dt>\d{4}-\d{1,2}-\d{1,2})/$', views.ajax_be_categories),
 ]

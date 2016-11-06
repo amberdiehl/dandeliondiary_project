@@ -43,7 +43,7 @@ def helper_get_category_budget_and_expenses(category, filter_date=None, fetch_ex
     return {'budget': budget_amount, 'expenses': expense_total}
 
 
-def helper_get_group_budget_and_expenses(group, filter_date=None):
+def helper_get_group_budget_and_expenses(group, filter_date=None, fetch_expenses=True):
     """
     Get and return budget for a group.
     :param group:
@@ -55,7 +55,8 @@ def helper_get_group_budget_and_expenses(group, filter_date=None):
 
     categories = MyBudgetCategory.objects.filter(my_budget_group=group).filter(parent_category=None)
     for category in categories:
-        amounts = helper_get_category_budget_and_expenses(category, fetch_expenses=True)
+        amounts = helper_get_category_budget_and_expenses(category, filter_date=filter_date,
+                                                          fetch_expenses=fetch_expenses)
         group_budget += amounts['budget']
         group_expenses += amounts['expenses']
 
