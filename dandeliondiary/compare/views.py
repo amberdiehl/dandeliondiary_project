@@ -136,7 +136,7 @@ def groups_and_categories(request):
 
 
 @login_required
-def ajax_dash_budget(request):
+def ajax_dashboard_budget(request):
 
     response_data = {}
 
@@ -145,63 +145,45 @@ def ajax_dash_budget(request):
         pass
     else:
 
-        cols = [
+        # setup columns for budget pie chart, initialize row variable
+        budget_piechart = {}
+        cols_budget_piechart = [
             {'id': 'groups', 'label': 'Groups', 'type': 'string'},
             {'id': 'amount', 'label': 'Amount', 'type': 'number'}
         ]
+        rows_budget_piechart = []
 
-        budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
-        rows = []
-
-        for group in budget_groups:
-
-            group_total = 0
-
-            categories = MyBudgetCategory.objects.filter(my_budget_group=group).filter(parent_category=None)
-            for category in categories:
-
-                category_budget = helper_get_category_budget_and_expenses(category, fetch_expenses=False)['budget']
-                group_total += category_budget
-
-            row = {'c': [{'v': group.my_group_name}, {'v': int(group_total)}]}
-            rows.append(row)
-
-        response_data['cols'] = cols
-        response_data['rows'] = rows
-
-    return JsonResponse(response_data)
-
-
-@login_required
-def ajax_dash_budget_and_expenses(request):
-
-    response_data = {}
-
-    me = helper_get_me(request.user.pk)
-    if me.get('redirect'):
-        pass
-    else:
-
-        cols = [
+        # setup columns for budget and expenses column chart, initialize row variable
+        budget_expense_columnchart = {}
+        cols_budget_expense_columnchart = [
             {'id': 'groups', 'label': 'Groups', 'type': 'string'},
             {'id': 'budget', 'label': 'Budget', 'type': 'number'},
             {'id': 'expenses', 'label': 'Expenses', 'type': 'number'}
         ]
+        rows_budget_expense_columnchart = []
 
+        # fetch the data for charts
         budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
-
-        rows = []
-
         for group in budget_groups:
+            amounts = helper_get_group_budget_and_expenses(group, fetch_expenses=True)
 
-            amounts = helper_get_group_budget_and_expenses(group)
+            row_budget_piechart = {'c': [{'v': group.my_group_name},
+                                         {'v': int(amounts['group_budget'])}]}
+            rows_budget_piechart.append(row_budget_piechart)
 
-            row = {'c': [{'v': group.my_group_name}, {'v': int(amounts['group_budget'])},
-                         {'v': int(amounts['group_expenses'])}]}
-            rows.append(row)
+            row_budget_expense_columnchart = {'c': [{'v': group.my_group_name},
+                                                    {'v': int(amounts['group_budget'])},
+                                                    {'v': int(amounts['group_expenses'])}]}
+            rows_budget_expense_columnchart.append(row_budget_expense_columnchart)
 
-        response_data['cols'] = cols
-        response_data['rows'] = rows
+        budget_piechart['cols'] = cols_budget_piechart
+        budget_piechart['rows'] = rows_budget_piechart
+
+        budget_expense_columnchart['cols'] = cols_budget_expense_columnchart
+        budget_expense_columnchart['rows'] = rows_budget_expense_columnchart
+
+        response_data['budgetPiechart'] = budget_piechart
+        response_data['budgetExpenseColumnchart'] = budget_expense_columnchart
 
     return JsonResponse(response_data)
 

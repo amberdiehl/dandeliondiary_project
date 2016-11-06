@@ -15,46 +15,31 @@
       google.charts.load('current', {'packages':['corechart']});
 
       // Set callbacks to run when the Google Visualization API is loaded.
-      google.charts.setOnLoadCallback(drawBudgetChart);
-      google.charts.setOnLoadCallback(drawBudgetToExpensesChart);
+      google.charts.setOnLoadCallback(drawBudgetCharts);
 
-      // Callback creates and populates a data table, instantiates the pie chart, passes in the data and draws it.
-      function drawBudgetChart() {
+      // Callback creates and populates a data table, instantiates the charts, passes in the data and draws.
+      function drawBudgetCharts() {
 
           var jsonData = $.ajax({
-              url: "/compare/ajax/dash_budget/",
+              url: "/compare/ajax/dashboard_budget/",
               dataType: "json",
               async: false
           }).responseText;
+          var data = JSON.parse(jsonData);
 
-          // Create our data table out of JSON data loaded from server.
-          var data = new google.visualization.DataTable(jsonData);
-
-          // Set chart options
-          var options = {
+          // Instantiate and draw budget pie chart
+          var data1 = new google.visualization.DataTable(data.budgetPiechart);
+          var options1 = {
               title:'Current Budget Allocation',
               is3D: true,
               width:500,
               height:300};
+          var chart1 = new google.visualization.PieChart(document.getElementById('chart_budget'));
+          chart1.draw(data1, options1);
 
-          // Instantiate and draw our chart, passing in some options.
-          var chart = new google.visualization.PieChart(document.getElementById('chart_budget'));
-          chart.draw(data, options);
-      }
-
-      function drawBudgetToExpensesChart() {
-
-          var jsonData = $.ajax({
-              url: "/compare/ajax/dash_budget_and_expenses/",
-              dataType: "json",
-              async: false
-          }).responseText;
-
-          // Create our data table out of JSON data loaded from server.
-          var data = new google.visualization.DataTable(jsonData);
-
-          // Set chart options
-          var options = {
+          // Instantiate and draw budget and expense column chart
+          var data2 = new google.visualization.DataTable(data.budgetExpenseColumnchart);
+          var options2 = {
               title:'Expenses to Budget',
               width:750,
               height:400,
@@ -66,10 +51,8 @@
               hAxis: {title: 'Budget Groups'},
               vAxis: {title: 'Dollars'}
           };
-
-          // Instantiate and draw our chart, passing in some options.
-          var chart = new google.visualization.ColumnChart(document.getElementById('chart_current_expenses'));
-          chart.draw(data, options);
+          var chart2 = new google.visualization.ColumnChart(document.getElementById('chart_current_expenses'));
+          chart2.draw(data2, options2);
 
       }
 
