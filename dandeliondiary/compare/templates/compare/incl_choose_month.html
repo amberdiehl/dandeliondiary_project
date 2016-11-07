@@ -1,0 +1,5 @@
+                For Month: <select id="chooseMonth" name="chooseMonth" >
+                {% for option in options %}
+                    <option value="{{ option.0 }}">{{ option.1 }}</option>
+                {% endfor %}
+                </select>

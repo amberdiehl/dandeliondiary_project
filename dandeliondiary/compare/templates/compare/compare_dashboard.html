@@ -10,51 +10,52 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <script type="text/javascript">
+        // Load the Visualization API and the corechart package.
+        google.charts.load('current', {'packages':['corechart']});
 
-      // Load the Visualization API and the corechart package.
-      google.charts.load('current', {'packages':['corechart']});
+        // Set callbacks to run when the Google Visualization API is loaded.
+        google.charts.setOnLoadCallback(drawBudgetCharts);
 
-      // Set callbacks to run when the Google Visualization API is loaded.
-      google.charts.setOnLoadCallback(drawBudgetCharts);
+        // Callback creates and populates a data table, instantiates the charts, passes in the data and draws.
+        function drawBudgetCharts() {
 
-      // Callback creates and populates a data table, instantiates the charts, passes in the data and draws.
-      function drawBudgetCharts() {
+            var date = document.getElementById('chooseMonth').value;
 
-          var jsonData = $.ajax({
-              url: "/compare/ajax/dashboard_budget/",
-              dataType: "json",
-              async: false
-          }).responseText;
-          var data = JSON.parse(jsonData);
+            var jsonData = $.ajax({
+                url: "/compare/ajax/dashboard_budget/" + date + '/',
+                dataType: "json",
+                async: false
+            }).responseText;
+            var data = JSON.parse(jsonData);
 
-          // Instantiate and draw budget pie chart
-          var data1 = new google.visualization.DataTable(data.budgetPiechart);
-          var options1 = {
-              title:'Current Budget Allocation',
-              is3D: true,
-              width:500,
-              height:300};
-          var chart1 = new google.visualization.PieChart(document.getElementById('chart_budget'));
-          chart1.draw(data1, options1);
+            // Draw budget pie chart
+            var data1 = new google.visualization.DataTable(data.budgetPiechart);
+            var options1 = {
+                title:'Current Budget Allocation',
+                is3D: true,
+                width:500,
+                height:300};
+            var chart1 = new google.visualization.PieChart(document.getElementById('chart_budget'));
+            chart1.draw(data1, options1);
 
-          // Instantiate and draw budget and expense column chart
-          var data2 = new google.visualization.DataTable(data.budgetExpenseColumnchart);
-          var options2 = {
-              title:'Expenses to Budget',
-              width:750,
-              height:400,
-              animation:{
-                  startup: true,
-                  duration: 1000,
-                  easing: 'out',
-              },
-              hAxis: {title: 'Budget Groups'},
-              vAxis: {title: 'Dollars'}
-          };
-          var chart2 = new google.visualization.ColumnChart(document.getElementById('chart_current_expenses'));
-          chart2.draw(data2, options2);
+            // Draw budget and expense column chart
+            var data2 = new google.visualization.DataTable(data.budgetExpenseColumnchart);
+            var options2 = {
+                title:'Expenses to Budget',
+                width:750,
+                height:400,
+                animation:{
+                    startup: true,
+                    duration: 1000,
+                    easing: 'out',
+                },
+                hAxis: {title: 'Budget Groups'},
+                vAxis: {title: 'Dollars'}
+            };
+            var chart2 = new google.visualization.ColumnChart(document.getElementById('chart_current_expenses'));
+            chart2.draw(data2, options2);
 
-      }
+        }
 
     </script>
 
@@ -75,6 +76,12 @@
             <div class="margin-top-30 box-static box-transparent box-bordered box-white">
 
                 <h2>{% trans page_title %}</h2>
+                {% include "./incl_choose_month.html" %}
+                <script>
+                    document.getElementById("chooseMonth").onchange = function () {
+                        drawBudgetCharts();
+                    };
+                </script>
                 <div id="chart_current_expenses"></div>
                 <div id="chart_budget"></div>
 

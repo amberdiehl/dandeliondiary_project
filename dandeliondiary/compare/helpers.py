@@ -81,3 +81,16 @@ def get_expenses_for_period(category, from_date=None, to_date=None):
         expense_total = expenses.get('amount__sum')
 
     return expense_total
+
+
+def get_month_options():
+    options = []
+    dt = datetime.date.today().replace(day=1)
+    while True:
+        option = ('{}-{}-{}'.format(dt.year, dt.month, dt.day), dt.strftime("%B"))
+        options.append(option)
+        if len(options) == 12:
+            break
+        dt_a = dt - datetime.timedelta(days=1)
+        dt = dt_a.replace(day=1)
+    return options

@@ -7,8 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from hashids import Hashids
 
-from household.helpers import  helper_get_me
-from .helpers import helper_get_category_budget_and_expenses, helper_get_group_budget_and_expenses
+from household.helpers import helper_get_me
+from .helpers import *
 
 from .models import MyBudgetGroup, MyBudgetCategory, MyBudget
 
@@ -33,6 +33,7 @@ def compare_dashboard(request):
         context = {
             'page_title': 'Compare Dashboard',
             'url': 'compare:compare_dashboard',
+            'options': get_month_options(),
         }
 
         return render(request, 'compare/compare_dashboard.html', context)
@@ -60,22 +61,12 @@ def budgets_and_expenses(request):
             group_tabs.append(group.my_group_name)
             group_keys += hashids.encode(group.pk) + ','
 
-        options = []
-        dt = datetime.date.today().replace(day=1)
-        while True:
-            option = ('{}-{}-{}'.format(dt.year, dt.month, dt.day), dt.strftime("%B"))
-            options.append(option)
-            if len(options) == 12:
-                break
-            dt_a = dt - datetime.timedelta(days=1)
-            dt = dt_a.replace(day=1)
-
         context = {
             'page_title': 'Budgets + Expenses',
             'url': 'compare:budgets_expenses',
             'tabs': group_tabs,
             'keys': group_keys,
-            'options': options,
+            'options': get_month_options(),
         }
 
         return render(request, 'compare/budgets_expenses.html', context)
@@ -136,7 +127,7 @@ def groups_and_categories(request):
 
 
 @login_required
-def ajax_dashboard_budget(request):
+def ajax_dashboard_budget(request, dt):
 
     response_data = {}
 
@@ -144,6 +135,8 @@ def ajax_dashboard_budget(request):
     if me.get('redirect'):
         pass
     else:
+
+        filter_date = datetime.datetime.strptime(dt, '%Y-%m-%d').date()
 
         # setup columns for budget pie chart, initialize row variable
         budget_piechart = {}
@@ -165,7 +158,7 @@ def ajax_dashboard_budget(request):
         # fetch the data for charts
         budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
         for group in budget_groups:
-            amounts = helper_get_group_budget_and_expenses(group, fetch_expenses=True)
+            amounts = helper_get_group_budget_and_expenses(group, filter_date=filter_date, fetch_expenses=True)
 
             row_budget_piechart = {'c': [{'v': group.my_group_name},
                                          {'v': int(amounts['group_budget'])}]}

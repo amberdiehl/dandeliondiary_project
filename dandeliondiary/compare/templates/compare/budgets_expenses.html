@@ -39,11 +39,7 @@
 
             <div class="row">
 
-                <select id="selPeriod" name="selPeriod" >
-                {% for option in options %}
-                    <option value="{{ option.0 }}">{{ option.1 }}</option>
-                {% endfor %}
-                </select>
+                {% include "./incl_choose_month.html" %}
 
                 <!-- tabs -->
                 <div class="col-md-3 col-sm-3 nopadding">
@@ -103,7 +99,7 @@
                         return $.Deferred(function ($dfd) {
                             var $temp = $('#Budget_Container input[name="container_pointer"]').val().split(",");
                             $.ajax({
-                                url: '/compare/ajax/be_categories/' + $temp[index] + '/' + $('#selPeriod').val() + '/',
+                                url: '/compare/ajax/be_categories/' + $temp[index] + '/' + $('#chooseMonth').val() + '/',
                                 type: 'POST',
                                 dataType: 'json',
                                 data: postData,
@@ -172,7 +168,7 @@
                     listAction: function (postData) {
                         return $.Deferred(function ($dfd) {
                             $.ajax({
-                                url: '/compare/ajax/be_groups/' + $('#selPeriod').val() + '/',
+                                url: '/compare/ajax/be_groups/' + $('#chooseMonth').val() + '/',
                                 type: 'POST',
                                 dataType: 'json',
                                 data: postData,
@@ -231,7 +227,7 @@
             $('#Budget_Summary').jtable('load');
         });
 
-        $('#selPeriod').change(function () {
+        $('#chooseMonth').change(function () {
             if ($('#Budget_Summary').hasClass('active')) {
                 $('#Budget_Summary').jtable('reload');
             } else {
