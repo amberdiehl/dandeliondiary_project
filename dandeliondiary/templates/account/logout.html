@@ -12,7 +12,7 @@
         <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 {% endblock %}
 
-<body {% block body_attributes %}{% endblock %}>
+{% block body_classes %} bg-grey {% endblock %}
 {% block body_container %}
 
     <div class="col-md-6 col-md-offset-3">
@@ -35,4 +35,4 @@
     </div>
 
 {% endblock %}
-</body>
+</>

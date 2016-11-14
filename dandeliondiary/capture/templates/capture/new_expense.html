@@ -18,45 +18,6 @@
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
     <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 
-    <script src="{% static 'js/QueryData.compressed.js' %}"></script>
-
-    <script>
-
-        // window.onload = function() {
-        function getGeoLocation() {
-
-            var startPos;
-            var geoOptions = {
-                timeout: 100 * 1000,
-                enableHighAccuracy: true
-            };
-
-            var geoSuccess = function(position) {
-                startPos = position;
-                //document.getElementById('startLat').innerHTML = startPos.coords.latitude;
-                //document.getElementById('startLon').innerHTML = startPos.coords.longitude;
-                window.location.href = window.location.href +  
-                        '?lat=' + startPos.coords.latitude +  '&lon=' + startPos.coords.longitude;
-            };
-
-            var geoError = function(error) {
-                console.log('Error occurred. Error code: ' + error.code);
-                // error.code can be:
-                //   0: unknown error
-                //   1: permission denied
-                //   2: position unavailable (error response from location provider)
-                //   3: timed out
-            };
-
-            var getData = new QueryData();
-            if (!('lat' in getData)) {
-                navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions);
-            };
-
-        };
-     
-    </script>
-
     <script>
         $(function() {
             $( "#id_expense_date" ).datepicker({
@@ -67,7 +28,7 @@
 
 {% endblock %}
 
-{% block body_attributes %} onload="getGeoLocation();" {% endblock %}
+{% block body_classes %} bg-grey {% endblock %}{% block body_attributes %} onload="getGeoLocation();" {% endblock %}
 
 {% block body_container %}
 
@@ -138,4 +99,46 @@
 
 {% endblock %}
 
-{% block scripts %}{% endblock %}
+{% block scripts %}
+
+    <script src="{% static 'js/QueryData.compressed.js' %}"></script>
+
+    <script>
+
+        // window.onload = function() {
+        function getGeoLocation() {
+
+            var startPos;
+            var geoOptions = {
+                timeout: 100 * 1000,
+                enableHighAccuracy: true
+            };
+
+            var geoSuccess = function(position) {
+                startPos = position;
+                //document.getElementById('startLat').innerHTML = startPos.coords.latitude;
+                //document.getElementById('startLon').innerHTML = startPos.coords.longitude;
+                window.location.href = window.location.href +  
+                        '?lat=' + startPos.coords.latitude +  '&lon=' + startPos.coords.longitude;
+            };
+
+            var geoError = function(error) {
+                console.log('Error occurred. Error code: ' + error.code);
+                // error.code can be:
+                //   0: unknown error
+                //   1: permission denied
+                //   2: position unavailable (error response from location provider)
+                //   3: timed out
+            };
+
+            var getData = new QueryData();
+            if (!('lat' in getData)) {
+                navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions);
+            }
+
+        }
+     
+    </script>
+
+
+{% endblock %}

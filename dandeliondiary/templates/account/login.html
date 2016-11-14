@@ -12,7 +12,7 @@
         <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 {% endblock %}
 
-<body {% block body_attributes %}{% endblock %}>
+{% block body_classes %} bg-grey {% endblock %}
 {% block body_container %}
 
     <div class="col-md-6 col-md-offset-3">
@@ -21,7 +21,7 @@
                     {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
                 {% csrf_token %}
 
-                <header><i class="fa fa-users"> {% trans "Dandelion Diary Log In" %}</i></header>
+                <header><i class="fa fa-users"> {% trans "Log In" %}</i></header>
 
                 <div class="box-static box-transparent box-bordered padding-30">
 
@@ -85,7 +85,7 @@
     </div>
 
 {% endblock %}
-</body>
+</>
 
 {% block scripts %}
     {{ block.super }}

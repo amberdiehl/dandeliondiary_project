@@ -12,7 +12,7 @@
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 {% endblock %}
 
-{% block body_attributes %}{% endblock %}
+{% block body_classes %} bg-grey {% endblock %}
 
 {% block body_container %}
 
@@ -20,7 +20,7 @@
 
     <div class="col-md-8 col-md-offset-2">
 
-            <div class="margin-top-30 box-static box-transparent box-bordered box-white">
+            <div class="margin-top-30 margin-bottom-30 box-static box-transparent box-bordered box-white">
 
                 <h2>{% trans page_title %}</h2>
 

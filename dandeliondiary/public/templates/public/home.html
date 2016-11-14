@@ -16,7 +16,7 @@
     <link href="{% static "plugins/revolution/css/navigation.css" %}" rel="stylesheet" type="text/css" >
 
 {% endblock %}
-<body {% block body_attributes %}{% endblock %}>
+{% block body_classes %}{% endblock %}
 
     {% block slidetop %}
 		<div id="slidetop">
@@ -225,7 +225,62 @@
         </div>
         <!-- /REVOLUTION SLIDER -->
 
+        <div class="container">
 
+            <h1>Easy to use, powerful tools to keep you on track.</h1>
+
+            <div class="row margin-top-0">
+
+	        <div class="col-md-4">
+
+    		    <div class="box-icon box-icon-center box-icon-transparent box-icon-large">
+	    		    <a class="box-icon-title" href="#">
+		    		    <img src="{% static "images/home/wallet.png" %}" alt="" width="150" />
+			    	    <h1>Capture</h1>
+			        </a>
+			        <p style="font-weight: 400; font-size: 110%;"> Capture your expenses where and when they happen with ease using Google Places and analytics.
+                        Keep maintenance receipts handily available electronically.</p>
+                    <a href="#" class="btn btn-default btn-bordered size-20 width-150 center-block">
+                        <span>Learn More</span>
+                    </a>
+		        </div>
+
+	        </div>
+
+	        <div class="col-md-4">
+
+		        <div class="box-icon box-icon-center box-icon-transparent box-icon-large">
+			        <a class="box-icon-title" href="#">
+                        <img src="{% static "images/home/piechart.png" %}" alt="" width="150" />
+				        <h1>Compare</h1>
+			        </a>
+                    <p style="font-weight: 400; font-size: 110%;"> Graphs and charts help you instantly see how you're tracking to your current budget and enable you to
+                        easily gain insight into changes over time.</p>
+                    <a href="#" class="btn btn-default btn-bordered size-20 width-150 center-block">
+                        <span>Learn More</span>
+                    </a>
+		        </div>
+
+	        </div>
+
+	        <div class="col-md-4">
+
+		        <div class="box-icon box-icon-center box-icon-transparent box-icon-large">
+			        <a class="box-icon-title" href="#">
+                        <img src="{% static "images/home/community.png" %}" alt="" width="150" />
+				        <h1>Contribute</h1>
+			        </a>
+			        <p style="font-weight: 400; font-size: 110%;"> Join the Dandelion Community! Share your know-how, product and service ratings. Get the most
+                        for your money and help others do the same!</p>
+                    <a href="#" class="btn btn-default btn-bordered size-20 width-150 center-block">
+                        <span>Learn More</span>
+                    </a>
+		        </div>
+
+            </div>
+
+        </div>
+        </div>
 
     {% endblock %}
 
@@ -267,5 +322,3 @@
         </script>
 
     {% endblock %}
-
-</body>
