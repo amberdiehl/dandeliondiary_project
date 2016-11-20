@@ -7,10 +7,11 @@
 {% block title %}{% trans "Account Login" %}{% endblock %}
 {% block static %}
 		<!-- PAGE LEVEL SCRIPTS -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
 		<link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
 		<link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 		<link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
-        <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css"  />
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -39,11 +40,11 @@
                     <div class="row"> <!-- username -->
                         <div class="form-group">
                             <div class="col-md-6 col-sm-6">
-                                <label>{{ form.username.label }}</label>
-                                <label class="input margin-bottom-10" id="id_username">
+                                <label>{{ form.username.label }}: *</label>
+                                <label class="input margin-bottom-5" id="id_username">
                                     <i class="ico-append fa fa-user"></i>
                                     {{ form.username }}
-                                    <b class="tooltip tooltip-bottom-right">Your user name which may be different than
+                                    <b class="tooltip tooltip-bottom-left">Your user name may be different than
                                         your email address.</b>
                                 </label>
                             </div>
@@ -52,12 +53,10 @@
                     <div class="row"> <!-- password -->
                         <div class="form-group">
                             <div class="col-md-6 col-sm-6">
-                                <label for="register:pass1">{{ form.password.label }}</label>
-                                <label class="input margin-bottom-10">
+                                <label for="register:pass1">{{ form.password.label }}: *</label>
+                                <label class="input margin-bottom-5">
                                     <i class="ico-append fa fa-lock"></i>
                                     {{ form.password }}
-                                    <b class="tooltip tooltip-bottom-right">Mininimum 8 charachters; include 1 upper
-                                        case letter and one number.</b>
                                 </label>
                             </div>
                         </div>
@@ -86,7 +85,6 @@
     </div>
 
 {% endblock %}
-</>
 
 {% block scripts %}
     {{ block.super }}

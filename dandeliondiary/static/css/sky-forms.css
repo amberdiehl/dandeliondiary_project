@@ -418,7 +418,7 @@
 	font-size: 11px;
 	line-height: 16px;
 	font-weight: 400;
-	background: rgba(139, 152, 166,0.4);
+	background: rgba(139, 152, 166, 0.4);
 	color: #000;
 	opacity: 0;
 	transition: margin 0.3s, opacity 0.3s;

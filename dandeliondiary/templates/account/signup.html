@@ -6,10 +6,14 @@
 
 {% block title %}{% trans "Create Account" %}{% endblock %}
 {% block static %}
-		<!-- PAGE LEVEL SCRIPTS -->
-		<link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
-		<link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
-        <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+
+    <!-- PAGE LEVEL SCRIPTS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+    <link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -21,7 +25,7 @@
                 {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
         {% csrf_token %}
 
-        <header><i class="fa fa-users"> {% trans "Create Account" %}</i></header>
+        <header>{% trans "Create Account" %}</header>
 
             <div class="box-static box-transparent box-bordered padding-30">
 
@@ -42,7 +46,7 @@
                                 <label class="input margin-bottom-10">
                                     <i class="ico-append fa fa-user"></i>
                                     {{ form.username }}
-                                    <b class="tooltip tooltip-bottom-right">This is what you will use to log in with.</b>
+                                    <b class="tooltip tooltip-bottom-left">This is what you will use to log in with.</b>
                                 </label>
                             </div>
                         </div>
@@ -54,7 +58,7 @@
                                 <label class="input margin-bottom-10">
                                     <i class="ico-append fa fa-envelope"></i>
                                     {{ form.email }}
-                                    <b class="tooltip tooltip-bottom-right">Your email address.</b>
+                                    <b class="tooltip tooltip-bottom-left">Your favorite email address.</b>
                                 </label>
                             </div>
                         </div>
@@ -66,7 +70,7 @@
                                 <label class="input margin-bottom-10">
                                     <i class="ico-append fa fa-lock"></i>
                                     {{ form.password }}
-                                    <b class="tooltip tooltip-bottom-right">Mininimum 8 charachters; include 1 upper
+                                    <b class="tooltip tooltip-bottom-left">Mininimum 8 charachters; include 1 upper
                                         case letter and one number.</b>
                                 </label>
                             </div>
@@ -75,7 +79,7 @@
                                 <label class="input margin-bottom-10">
                                     <i class="ico-append fa fa-lock"></i>
                                     {{ form.password_confirm }}
-                                    <b class="tooltip tooltip-bottom-right">Retype password to validate.</b>
+                                    <b class="tooltip tooltip-bottom-left">Retype password to validate.</b>
                                 </label>
                             </div>
                         </div>
@@ -98,20 +102,20 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                        <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i>
+                        <button type="submit" class="btn btn-primary btn-bordered"><i class="fa fa-check"></i>
                             {% trans "Create Account" %}</button>
                     </div>
                 </div>
 
             </div>
 
+        </form>
+
             <p class="login-signup">
                 <small>
                     {% trans "Already have an account?" %}  <strong><a href="{% urlnext 'account_login' %}">{% trans "Log in" %}</a></strong>
                 </small>
             </p>
-
-        </form>
 
     </div>
 
