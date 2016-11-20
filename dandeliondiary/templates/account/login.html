@@ -9,7 +9,8 @@
 		<!-- PAGE LEVEL SCRIPTS -->
 		<link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
 		<link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
-        <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+		<link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
+        <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css"  />
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -21,7 +22,7 @@
                     {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
                 {% csrf_token %}
 
-                <header><i class="fa fa-users"> {% trans "Log In" %}</i></header>
+                <header>{% trans "Log In" %}</header>
 
                 <div class="box-static box-transparent box-bordered padding-30">
 
@@ -39,7 +40,7 @@
                         <div class="form-group">
                             <div class="col-md-6 col-sm-6">
                                 <label>{{ form.username.label }}</label>
-                                <label class="input margin-bottom-10">
+                                <label class="input margin-bottom-10" id="id_username">
                                     <i class="ico-append fa fa-user"></i>
                                     {{ form.username }}
                                     <b class="tooltip tooltip-bottom-right">Your user name which may be different than
@@ -68,7 +69,7 @@
                         <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
                     {% endif %}
 
-                    <button type="submit" class="btn btn-primary">{% trans "Log In" %}</button>
+                    <button type="submit" class="btn btn-primary btn-bordered">{% trans "Log In" %}</button>
                     <a href="{% url "account_password_reset" %}" class="btn btn-link">{% trans "Forgot your password?" %}</a>
 
                 </div>

@@ -40,7 +40,7 @@ def compare_dashboard(request):
 
 
 @login_required
-def budgets_and_expenses(request):
+def budget_and_expenses(request):
     """
     Show current (or past)budgets and associated expenses, balance.
     :param request:
@@ -62,14 +62,14 @@ def budgets_and_expenses(request):
             group_keys += hashids.encode(group.pk) + ','
 
         context = {
-            'page_title': 'Budgets + Expenses',
+            'page_title': 'Budget + Expenses',
             'url': 'compare:budgets_expenses',
             'tabs': group_tabs,
             'keys': group_keys,
             'options': get_month_options(),
         }
 
-        return render(request, 'compare/budgets_expenses.html', context)
+        return render(request, 'compare/budget_expenses.html', context)
 
 
 @login_required

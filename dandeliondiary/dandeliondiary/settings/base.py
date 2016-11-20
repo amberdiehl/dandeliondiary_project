@@ -125,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Account package settings
 ACCOUNT_SIGNUP_REDIRECT_URL = "household:household_dashboard"
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "household:household_dashboard"
-ACCOUNT_LOGIN_REDIRECT_URL = "public:home"
+ACCOUNT_LOGIN_REDIRECT_URL = "compare:compare_dashboard"
 ACCOUNT_LOGOUT_REDIRECT_URL = "public:home"
 ACCOUNT_EMAIL_UNIQUE = True
 ACCOUNT_EMAIL_CONFIRMATION_REQUIRED = False
