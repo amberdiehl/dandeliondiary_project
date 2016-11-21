@@ -7,8 +7,6 @@
 {% block title %}{% trans "Account Login" %}{% endblock %}
 {% block static %}
 		<!-- PAGE LEVEL SCRIPTS -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-
 		<link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
 		<link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 		<link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
@@ -28,12 +26,7 @@
                 <div class="box-static box-transparent box-bordered padding-30">
 
                     <!-- ALERT -->
-                    {% if form.errors %}
-                    <div class="alert alert-mini alert-danger margin-bottom-30">
-                        {{ form.non_field_errors }}
-                        {{ form.username.errors }}
-                    </div><!-- /ALERT -->
-                    {% endif %}
+                    {% include "./inc_form_errors.html" %}
 
                     <fieldset>
 
@@ -47,6 +40,7 @@
                                     <b class="tooltip tooltip-bottom-left">Your user name may be different than
                                         your email address.</b>
                                 </label>
+                                {% include "./inc_username_errors.html" %}
                             </div>
                         </div>
                     </div>
@@ -58,6 +52,7 @@
                                     <i class="ico-append fa fa-lock"></i>
                                     {{ form.password }}
                                 </label>
+                                {% include "./inc_password_errors.html" %}
                             </div>
                         </div>
                     </div>
@@ -68,7 +63,7 @@
                         <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
                     {% endif %}
 
-                    <button type="submit" class="btn btn-primary btn-bordered">{% trans "Log In" %}</button>
+                    <button type="submit" class="btn btn-primary btn-bordered pull-right" >{% trans "Log in" %}</button>
                     <a href="{% url "account_password_reset" %}" class="btn btn-link">{% trans "Forgot your password?" %}</a>
 
                 </div>
@@ -87,10 +82,4 @@
 {% endblock %}
 
 {% block scripts %}
-    {{ block.super }}
-    <script type="text/javascript">
-        $(document).ready(function() {
-            $('#id_username').focus();
-        });
-    </script>
 {% endblock %}

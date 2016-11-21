@@ -19,7 +19,7 @@
         <form  class="margin-top-30 sky-form boxed centered" method="post" action="{% url "account_confirm_email" key=confirmation.key %}">
         {% csrf_token %}
 
-        <header><i class="fa fa-user"> {% trans "Confirm Your Email" %}</i></header>
+        <header>{% trans "Confirm Your Email" %}</header>
 
             <div class="box-static box-transparent box-bordered padding-30">
                 <fieldset>
@@ -35,13 +35,6 @@
     </div>
 
 {% endblock %}
-</>
 
 {% block scripts %}
-    {{ block.super }}
-    <script type="text/javascript">
-        $(document).ready(function() {
-            $('#id_username').focus();
-        });
-    </script>
 {% endblock %}

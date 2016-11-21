@@ -7,10 +7,9 @@
 {% block title %}{% trans "My Account + Household" %}{% endblock %}
 {% block static %}
     <!-- PAGE LEVEL SCRIPTS -->
-	<link href="{% static "css/plugin-hover-buttons.css" %}" rel="stylesheet" type="text/css" />
     <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
-    <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+    <link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -84,11 +83,13 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <button type="submit" class="btn btn-hvr hvr-grow  pull-right"><i class="fa fa-check"></i>
+                            <button type="submit" class="btn btn-primary btn-bordered  pull-right"><i class="fa fa-check"></i>
                                 {% trans "Save" %}</button>
                         </div>
                     </div>
-
+                    {% if password_link == True %}
+                        <a href="{% url "account_password" %}">Change my password</a>
+                    {% endif %}
                 </fieldset>
 
             </div>

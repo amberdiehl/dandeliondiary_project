@@ -8,8 +8,6 @@
 {% block static %}
 
     <!-- PAGE LEVEL SCRIPTS -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-
     <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
     <link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
@@ -29,14 +27,7 @@
 
             <div class="box-static box-transparent box-bordered padding-30">
 
-            <!-- ALERT -->
-            {% if form.errors %}
-            <div class="alert alert-mini alert-danger margin-bottom-30">
-                {{ form.non_field_errors }}
-                {{ form.username.errors }}
-                {{ form.email.errors }}
-            </div><!-- /ALERT -->
-            {% endif %}
+                {% include "./inc_form_errors.html" %}
 
                 <fieldset>
                     <div class="row"> <!-- username -->
@@ -48,6 +39,7 @@
                                     {{ form.username }}
                                     <b class="tooltip tooltip-bottom-left">This is what you will use to log in with.</b>
                                 </label>
+                                {% include "./inc_username_errors.html" %}
                             </div>
                         </div>
                     </div>
@@ -60,6 +52,7 @@
                                     {{ form.email }}
                                     <b class="tooltip tooltip-bottom-left">Your favorite email address.</b>
                                 </label>
+                                {% include "./inc_email_errors.html" %}
                             </div>
                         </div>
                     </div>
@@ -73,6 +66,7 @@
                                     <b class="tooltip tooltip-bottom-left">Mininimum 8 charachters; include 1 upper
                                         case letter and one number.</b>
                                 </label>
+                                {% include "./inc_password_errors.html" %}
                             </div>
                             <div class="col-md-6 col-sm-6">
                                 <label for="register:pass2">{{ form.password_confirm.label }} *</label>
@@ -81,18 +75,10 @@
                                     {{ form.password_confirm }}
                                     <b class="tooltip tooltip-bottom-left">Retype password to validate.</b>
                                 </label>
+                                {% include "./inc_password_confirm_errors.html" %}
                             </div>
                         </div>
                     </div>
-
-                    <hr />
-
-                    <label class="switch switch-primary switch-round">
-	                    <input type="checkbox">
-	                    <span class="switch-label" data-on="Yes" data-off="No"></span>
-	                    <span> I agree to the
-                            <a href="#" data-toggle="modal" data-target="#termsModal">Terms of Service</a></span>
-                    </label>
 
                 </fieldset>
 
@@ -102,8 +88,10 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                        <button type="submit" class="btn btn-primary btn-bordered"><i class="fa fa-check"></i>
-                            {% trans "Create Account" %}</button>
+                        <button type="submit" class="btn btn-primary btn-bordered pull-right"><i class="fa fa-check"></i>
+                            {% trans "Create account" %}</button>
+                        <span><strong>Wait!</strong> By creating an account, you are stating you have read and agree to
+                            our <a href="#" data-toggle="modal" data-target="#termsModal">Terms of Service</a></span>
                     </div>
                 </div>
 
@@ -120,13 +108,7 @@
     </div>
 
 {% endblock %}
-</>
+
 
 {% block scripts %}
-    {{ block.super }}
-    <script type="text/javascript">
-        $(document).ready(function() {
-            $('#id_username').focus();
-        });
-    </script>
 {% endblock %}

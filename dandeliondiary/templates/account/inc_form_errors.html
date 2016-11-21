@@ -1,0 +1,8 @@
+                <!-- ALERT -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-mini alert-danger margin-bottom-15">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}

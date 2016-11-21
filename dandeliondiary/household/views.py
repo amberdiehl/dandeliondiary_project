@@ -187,6 +187,7 @@ def my_info(request):
         'url': 'household:my_info',
         'instructions': instructions,
         'layout': ['b', 'e', 'b', 'e', ],
+        'password_link': True,
     }
 
     return render(request, 'household/simple_form.html', context)
@@ -260,6 +261,7 @@ def household_profile(request):
         'url': 'household:maintain_household',
         'instructions': instructions,
         'layout': ['-', 'b', 'e', 'b', 'e', '-', 'b', 'e', '-', 'b', 'e', 'b', 'd', '-', ],
+        'password_link': False,
     }
 
     return render(request, 'household/simple_form.html', context)
