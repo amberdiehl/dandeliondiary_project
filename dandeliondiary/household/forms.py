@@ -235,8 +235,8 @@ class VehicleForm(forms.ModelForm):
 
     class Meta:
         model = Vehicle
-        fields = ['make', 'model_name', 'model_year', 'type', 'fuel', 'purchase_year', 'purchase_price',
-                  'purchase_type', 'finance', 'satisfaction', 'status', 'gone_year', ]
+        fields = ['type', 'make', 'model_name', 'model_year', 'fuel', 'purchase_year', 'purchase_price',
+                  'purchase_type', 'finance', 'satisfaction', 'status', 'gone_year']
         widgets = {
             'make': forms.Select(attrs={'onchange': 'FilterModels();'}),
             'model_year': forms.TextInput(attrs={'placeholder': datetime.datetime.now().year}),

@@ -76,10 +76,10 @@ class Payment(models.Model):
 # Vehicles
 class Vehicle(models.Model):
     household = models.ForeignKey(Household, blank=True, null=True)
+    type = models.ForeignKey('core.VehicleType', blank=True)  # Trailer, 5th Wheel, Tow vehicle, TOAD Motorhome
     make = models.ForeignKey('core.VehicleMake', blank=True)
     model_name = models.ForeignKey('core.VehicleModel', blank=True)
     model_year = models.IntegerField(blank=True)
-    type = models.ForeignKey('core.VehicleType', blank=True)  # Trailer, 5th Wheel, Tow vehicle, TOAD Motorhome
     fuel = models.IntegerField(blank=True, choices=FUEL_CHOICES)  # Diesel, Gas, Electric, Hybrid
     purchase_year = models.IntegerField(blank=True)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True)

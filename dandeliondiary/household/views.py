@@ -288,7 +288,7 @@ def household_vehicles(request):
         return redirect('household:household_dashboard')
 
     VehicleFormSet = modelformset_factory(Vehicle, form=VehicleForm,
-                                          fields=('make', 'model_name', 'model_year', 'type', 'fuel', 'purchase_year',
+                                          fields=('type', 'make', 'model_name', 'model_year', 'fuel', 'purchase_year',
                                                   'purchase_price', 'purchase_type', 'finance', 'satisfaction',
                                                   'status', 'gone_year', ),
                                           can_delete=True, extra=1,)
@@ -342,11 +342,13 @@ def household_vehicles(request):
         # Override Django to ensure new form appears to have no changes
         formset.forms[len(formset.forms)-1].changed_data=[]
 
+
+
     context = {
         'formset': formset,
         'url': 'household:maintain_vehicles',
         'instructions': instructions,
-        'layout': ['b', 'e', '-', 'b', 'e', 'b', 'e', 'b', 'e', '-', 'b', 'e', 'b', 'e', ],
+        'layout': ['-', 'b', 'e', 'b', 'e', 'b', 'e', 'b', 'e', '-', 'b', 'e', 'b', 'e', ],
     }
 
     return render(request, 'household/vehicles.html', context)

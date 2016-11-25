@@ -22,6 +22,7 @@ class UseType(models.Model):
 
 # Vehicle make
 class VehicleMake(models.Model):
+    filter = models.CharField(max_length=12, null=True, blank=True)
     make = models.CharField(max_length=50)
 
     def __str__(self):
@@ -39,6 +40,7 @@ class VehicleModel(models.Model):
 
 # Vehicle type
 class VehicleType(models.Model):
+    filter = models.CharField(max_length=12, null=True, blank=True)
     type = models.CharField(max_length=32)
     type_description = models.TextField(default="description")
 
