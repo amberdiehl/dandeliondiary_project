@@ -275,8 +275,8 @@ def household_vehicles(request):
     :param request:
     :return:
     """
-    instructions = 'Please specify vehicles associated with your household. This information helps Dande help you ' \
-                   'to keep your budget on track and is very important when using the Contribute tool.'
+    instructions = 'Please specify vehicles associated with your household. This information is used to refine ' \
+                   'expense Capture choices and to create "apples to apples" comparisons in the Contribute tool.'
 
     # get native Django authenticated user, and account
     user_pk = request.user.pk
@@ -335,19 +335,18 @@ def household_vehicles(request):
 
         formset = VehicleFormSet(queryset=Vehicle.objects.filter(household=membership.household_membership))
 
-        # For existing vehicles, limit make by type, and model by make.
         for ndx, form in enumerate(formset):
+            form.fields['type'].queryset = VehicleType.objects.all().order_by('type')
+            # For existing vehicles, limit selections; make by type, and model by make.
             if ndx < len(formset.forms)-1:
-                type = VehicleType.objects.get(pk=form.initial['type'])
-                form.fields['make'].queryset=VehicleMake.objects.filter(filter=type.filter)
+                vehicle_type = VehicleType.objects.get(pk=form.initial['type'])
+                form.fields['make'].queryset=VehicleMake.objects.filter(filter=vehicle_type.filter)
                 form.fields['model_name'].queryset=VehicleModel.objects.filter(make=form.initial['make'])
-
-        # Override Django to ensure new form appears to have no changes
-        formset.forms[len(formset.forms) - 1].fields['make'].queryset = VehicleMake.objects.filter(pk=0)
-        formset.forms[len(formset.forms) - 1].fields['model_name'].queryset = VehicleModel.objects.filter(pk=0)
-        formset.forms[len(formset.forms) - 1].changed_data=[]
-
-
+            else:
+                # Make dependent selections empty and override Django to ensure new form has no changes
+                form.fields['make'].queryset = VehicleMake.objects.filter(pk=0)
+                form.fields['model_name'].queryset = VehicleModel.objects.filter(pk=0)
+                form.changed_data=[]
 
     context = {
         'formset': formset,

@@ -31,7 +31,7 @@
                 {{ formset.management_form }}
 
                 {% if instructions %}
-                <div class="alert alert-theme-color"><!-- THEME COLOR --></span>
+                <div class="alert alert-theme-color">
                     <strong>{{ instructions }}</strong>
                 </div>
                 {% endif %}
@@ -193,7 +193,7 @@
                         $el.empty(); // remove old options
 
                         $el.append($("<option></option>").attr("value", '').text('---------'));
-                        
+
                         for (i = 0; i < newOptions.length; i++) {
                             var option = newOptions[i];
                             for (key in option) {
