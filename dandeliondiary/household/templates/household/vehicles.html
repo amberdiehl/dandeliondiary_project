@@ -132,6 +132,49 @@
     <!-- /PRELOADER -->
 
     <script>
+        function FilterMakes(sel_val) {
+            $(document).ready(function() {
+
+                var makeKey = 0;
+
+                // Using type field that signaled event, construct name to corresponding make field
+                var choice_type = event.target.id;
+                var choice_make = choice_type.substring(0, choice_type.lastIndexOf('-')+1)+'make';
+                var choice_model = choice_type.substring(0, choice_make.lastIndexOf('-')+1)+'model_name';
+
+                var type_id = $('#'+choice_type+'').val();
+
+                if (type_id > 0) {
+
+                    $.ajax({url: '/household/ajax/makes-by-type/' + type_id + '/', success: function(result){
+
+                        var newOptions = sortOptions(JSON.parse(result));
+
+                        var $el = $('#'+choice_make+'');
+                        $el.empty(); // remove old options
+
+                        $el.append($("<option></option>").attr("value", '').text('---------'));
+
+                        for (i = 0; i < newOptions.length; i++) {
+                            var option = newOptions[i];
+                            for (key in option) {
+                                $el.append($("<option></option>").attr("value", key).text(option[key]));
+                            }
+                        }
+
+                        $el.val('');
+
+                    }});
+
+                    var $el = $('#'+choice_model+'');
+                    $el.empty(); // remove old options
+                    $el.append($("<option></option>").attr("value", '').text('---------'));
+
+                }
+
+            })
+        }
+
         function FilterModels(sel_val) {
 
 	        $(document).ready(function() {
@@ -144,20 +187,48 @@
                 if (make_id > 0) {
                     $.ajax({url: '/household/ajax/models-by-make/' + make_id + '/', success: function(result){
 
-                        result = result.substring(0, result.lastIndexOf(',')) + ' }';
-                        var newOptions = JSON.parse(result);
+                        var newOptions = sortOptions(JSON.parse(result));
 
                         var $el = $('#'+choice_model+'');
                         $el.empty(); // remove old options
 
-                        $.each( newOptions, function(key,value) {
-                            $el.append($("<option></option>").attr("value", key).text(value));
-                        });
+                        $el.append($("<option></option>").attr("value", '').text('---------'));
+                        
+                        for (i = 0; i < newOptions.length; i++) {
+                            var option = newOptions[i];
+                            for (key in option) {
+                                $el.append($("<option></option>").attr("value", key).text(option[key]));
+                            }
+                        }
+
+                        $el.val('');
 
                     }});
     	        }
 
 	        });
+        }
+
+        function sortOptions(options){
+
+            var keys = [];
+            var datas = {};
+
+            $.each(options, function(key, value){
+                keys.push(value);
+                datas[value] = key;
+            });
+
+            var aa = keys.sort();
+            var sorted = [];
+
+            $.each(aa, function(index, value){
+                var item = {};
+                item[datas[value]] = value;
+                sorted.push(item);
+            });
+
+            return sorted;
         }
     </script>
 

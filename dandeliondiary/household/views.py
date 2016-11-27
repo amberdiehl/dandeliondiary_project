@@ -3,12 +3,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect
+from django.http import JsonResponse
+
 from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import *
 from .models import *
-from core.models import BudgetModel, VehicleMake, VehicleModel
-from account.models import Account
+from core.models import BudgetModel, VehicleType, VehicleMake, VehicleModel
 from helpers import *
 
 import datetime
@@ -334,13 +335,17 @@ def household_vehicles(request):
 
         formset = VehicleFormSet(queryset=Vehicle.objects.filter(household=membership.household_membership))
 
-        # For existing vehicles, limit model choices to associated make
+        # For existing vehicles, limit make by type, and model by make.
         for ndx, form in enumerate(formset):
             if ndx < len(formset.forms)-1:
+                type = VehicleType.objects.get(pk=form.initial['type'])
+                form.fields['make'].queryset=VehicleMake.objects.filter(filter=type.filter)
                 form.fields['model_name'].queryset=VehicleModel.objects.filter(make=form.initial['make'])
 
         # Override Django to ensure new form appears to have no changes
-        formset.forms[len(formset.forms)-1].changed_data=[]
+        formset.forms[len(formset.forms) - 1].fields['make'].queryset = VehicleMake.objects.filter(pk=0)
+        formset.forms[len(formset.forms) - 1].fields['model_name'].queryset = VehicleModel.objects.filter(pk=0)
+        formset.forms[len(formset.forms) - 1].changed_data=[]
 
 
 
@@ -357,4 +362,21 @@ def household_vehicles(request):
 def ajax_models_by_make(request, make_id):
     make = VehicleMake.objects.get(pk=make_id)
     models = VehicleModel.objects.filter(make=make)
-    return render_to_response('ajax_models.html', {'models':models}, content_type='text/html')
+    response_data = "{"
+    for ndx, model in enumerate(models):
+        if ndx > 0:
+            response_data += ','
+        response_data += '"{}": "{}"'.format(model.id, model.model_name)
+    response_data += "}"
+    return JsonResponse(response_data, safe=False)
+
+def ajax_makes_by_type(request, type_id):
+    type = VehicleType.objects.get(pk=type_id)
+    makes = VehicleMake.objects.filter(filter=type.filter)
+    response_data = "{"
+    for ndx, make in enumerate(makes):
+        if ndx > 0:
+            response_data += ','
+        response_data += '"{}": "{}"'.format(make.id, make.make)
+    response_data += "}"
+    return JsonResponse(response_data, safe=False)
