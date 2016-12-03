@@ -5,11 +5,18 @@
 {% load household_extras %}
 
 {% block title %}{% trans "Household Vehicles" %}{% endblock %}
+
 {% block static %}
     <!-- PAGE LEVEL SCRIPTS -->
+
     <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
     <link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
+
+    <script>
+
+    </script>
+
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -108,8 +115,8 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                        <button type="submit" class="btn btn-primary btn-bordered pull-right"><i class="fa fa-check"></i>
-                            {% trans "Save" %}</button>
+                        <button type="submit" class="btn btn-primary btn-bordered pull-right">
+                            <i class="fa fa-check"></i>{% trans "Save" %}</button>
                     </div>
                 </div>
 
@@ -124,15 +131,12 @@
 {% block scripts %}
 
     <!-- PRELOADER -->
-    <div id="preloader">
-        <div class="inner">
-            <span class="loader"></span>
-        </div>
-    </div>
     <!-- /PRELOADER -->
 
     <script>
-        function FilterMakes(sel_val) {
+
+        function FilterMakes(event) {
+
             $(document).ready(function() {
 
                 var makeKey = 0;
@@ -142,7 +146,7 @@
                 var choice_make = choice_type.substring(0, choice_type.lastIndexOf('-')+1)+'make';
                 var choice_model = choice_type.substring(0, choice_make.lastIndexOf('-')+1)+'model_name';
 
-                var type_id = $('#'+choice_type+'').val();
+                var type_id = $('#'+choice_type).val();
 
                 if (type_id > 0) {
 
@@ -150,7 +154,7 @@
 
                         var newOptions = sortOptions(JSON.parse(result));
 
-                        var $el = $('#'+choice_make+'');
+                        var $el = $('#'+choice_make);
                         $el.empty(); // remove old options
 
                         $el.append($("<option></option>").attr("value", '').text('---------'));
@@ -166,30 +170,29 @@
 
                     }});
 
-                    var $el = $('#'+choice_model+'');
+                    var $el = $('#'+choice_model);
                     $el.empty(); // remove old options
                     $el.append($("<option></option>").attr("value", '').text('---------'));
 
                 }
 
-            })
+            });
+
         }
 
-        function FilterModels(sel_val) {
-
-	        $(document).ready(function() {
+        function FilterModels(event) {
 
                 var choice_make = event.target.id;
                 var choice_model = choice_make.substring(0, choice_make.lastIndexOf('-')+1)+'model_name';
 
-                var make_id = $('#'+choice_make+'').val();
+                var make_id = $('#'+choice_make).val();
 
                 if (make_id > 0) {
                     $.ajax({url: '/household/ajax/models-by-make/' + make_id + '/', success: function(result){
 
                         var newOptions = sortOptions(JSON.parse(result));
 
-                        var $el = $('#'+choice_model+'');
+                        var $el = $('#'+choice_model);
                         $el.empty(); // remove old options
 
                         $el.append($("<option></option>").attr("value", '').text('---------'));
@@ -206,7 +209,6 @@
                     }});
     	        }
 
-	        });
         }
 
         function sortOptions(options){
@@ -230,13 +232,11 @@
 
             return sorted;
         }
+
     </script>
 
     <!-- JAVASCRIPT FILES -->
-    <script type="text/javascript">var plugin_path = "plugins/";</script>
-    <script type="text/javascript" src={% static "plugins/jquery/jquery-2.2.3.min.js" %}></script>
-    <script type="text/javascript" src={% static "plugins/bootstrap/js/bootstrap.min.js" %}></script>
-    <script type="text/javascript" src={% static "js/scripts.js" %}></script>
-
+    <script type="text/javascript">var plugin_path = "/static/plugins/";</script>
+    <script type="text/javascript" src="{% static "/js/scripts.js" %}"></script>
 
 {% endblock %}

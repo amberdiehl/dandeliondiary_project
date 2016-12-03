@@ -5,6 +5,7 @@
 {% load household_extras %}
 
 {% block title %}{% trans "My Account + Household" %}{% endblock %}
+
 {% block static %}
     <!-- PAGE LEVEL SCRIPTS -->
     <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
@@ -26,7 +27,7 @@
 
             <div class="box-static box-transparent box-bordered">
 
-                <h2><i class="fa fa-users">&nbsp;&nbsp;{% trans page_title %}</i></h2>
+                <h2>{% trans page_title %}</h2>
 
                 {% if instructions %}
                 <div class="alert alert-theme-color"><!-- THEME COLOR --></span>
