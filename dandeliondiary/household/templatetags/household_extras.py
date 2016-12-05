@@ -17,3 +17,8 @@ def get_widget_class(ob):
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
+
+
+@register.filter
+def get_heading(field):
+    return field.replace('_', ' ').title()

@@ -54,7 +54,7 @@ class Member(models.Model):
 
 # Household members
 class HouseholdMembers(models.Model):
-    member_account = models.ForeignKey('account.account')
+    member_account = models.ForeignKey('account.Account')
     household_membership = models.ForeignKey(Household)
 
     def __str__(self):

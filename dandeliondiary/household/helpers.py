@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from core.models import RigType, UseType, IncomeType, VehicleMake, VehicleModel, VehicleType, VehiclePurchaseType, \
     VehicleStatus, Satisfaction, BudgetGroup, BudgetCategory
-from household.models import Household, HouseholdMembers
+from household.models import Household, HouseholdMembers, Member
 from compare.models import MyBudgetGroup, MyBudgetCategory
 from account.models import Account
 
@@ -14,31 +14,38 @@ Helpers related to household views and constructs.
 These helpers may also be used across Compare, and Capture
 """
 
-# Determine if module can be used; i.e. household must be setup first.
+# Determine if module can be used; i.e. household must be setup first, subscription active.
 def helper_get_me(user_key):
     me = {}
     try:
         # Get account and household information first to throw error as soon as possible
         account = Account.objects.get(user_id=user_key)
-        member = HouseholdMembers.objects.get(member_account=account)
-        me['household_key'] = member.household_membership.pk
+        membership = HouseholdMembers.objects.get(member_account=account)
+        me['household_key'] = membership.household_membership.pk
         me['account_obj'] = account
 
         # Ensure account is paid for (active)
-        household = Household.objects.get(pk=member.household_membership.pk)
+        household = Household.objects.get(pk=membership.household_membership.pk)
         me['household_obj'] = household
         if datetime.date.today() > household.paid_through:
 
             me['redirect'] = True
+            me['error_message'] = 'Subscription expired.'
 
         else:
 
+            # User is/is not owner of household
+            member = Member.objects.get(account=account)
+            me['owner'] = member.owner
+
             person = User.objects.get(pk=user_key)
+            me['username'] = person.username
             me['first_name'] = person.first_name
             me['last_name'] = person.last_name
 
     except ObjectDoesNotExist:
         me['redirect'] = True
+        me['error_message'] = 'Household must be created first.'
 
     return me
 

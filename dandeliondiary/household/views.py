@@ -1,6 +1,7 @@
 from django.forms import formset_factory, modelformset_factory
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.utils.crypto import get_random_string
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect
 from django.http import JsonResponse
@@ -9,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import *
 from .models import *
+from django.contrib.auth.models import User
 from core.models import BudgetModel, VehicleType, VehicleMake, VehicleModel
 from helpers import *
 
@@ -266,6 +268,42 @@ def household_profile(request):
     }
 
     return render(request, 'household/simple_form.html', context)
+
+
+@login_required
+def household_members(request):
+    """
+    Show current household members and (future) enable them to be removed (disabled now?)
+    Show pending invitations to join the household and enable resend of invite
+    Invite new household members
+    :param request:
+    :return:
+    """
+    # get native Django authenticated user information, account and household info
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        return redirect('household:household_dashboard')
+
+    # get members of the household
+    current = User.objects.filter(account__householdmembers__household_membership=me.get('household_key'))\
+        .values('username', 'first_name', 'last_name', 'email', 'is_active', 'last_login')
+
+    # get pending invitations
+    pending = []
+
+    # enable invites
+    unique_id = get_random_string(length=32)
+
+    context = {
+        'current': current,
+        'pending': pending,
+        'is_owner': me['owner'],
+        'username': me['username'],
+        'page_title': 'Household Members',
+        'url': 'household:maintain_members',
+    }
+
+    return render(request, 'household/members.html', context)
 
 
 @login_required

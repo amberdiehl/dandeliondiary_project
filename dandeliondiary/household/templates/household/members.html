@@ -1,0 +1,98 @@
+{% extends "site_base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% load household_extras %}
+
+{% block title %}{% trans "Household Members" %}{% endblock %}
+
+{% block static %}
+    <!-- PAGE LEVEL SCRIPTS -->
+
+    <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+    <link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
+
+{% endblock %}
+
+{% block body_classes %} bg-grey {% endblock %}
+
+{% block body_container %}
+
+    {% include "menu.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+        <div class="margin-top-30 margin-bottom-30 box-static box-bordered box-white">
+
+            <h2>{% trans "Household Members" %}</h2>
+
+            <div class="row">
+
+            <!-- tabs -->
+            <div class="col-md-2 col-sm-2 nopadding">
+                <ul class="nav nav-tabs nav-stacked">
+                    <li class="active"><a href="#current_members" data-toggle="tab">Current Members</a></li>
+                    <li><a href="#pending_members" data-toggle="tab">Pending Invites</a></li>
+                    <li><a href="#invite_members" data-toggle="tab">Invite</a></li>
+                </ul>
+            </div>
+
+            <!-- tabs content -->
+            <div class="col-md-10 col-sm-10 nopadding"><div class="tab-content tab-stacked">
+                <div id="current_members" class="tab-pane active">
+                    <h3>Current Members</h3>
+                    <div class="table-responsive">
+                    <table class="table table-bordered">
+                    {% for member in current %}
+                        {% if forloop.counter == 1 %}
+                            <tr>
+                                {% for key, value in member.iteritems %}
+                                    {% if key != 'is_active' %}
+                                        <th>{{ key|get_heading }}</th>
+                                    {% endif %}
+                                {% endfor %}
+                                <th></th>
+                            </tr>
+                        {% endif %}
+                        <tr>
+                            {% for key, value in member.iteritems %}
+                                {% if key != 'is_active' %}
+                                    <td>{{ value }}</td>
+                                {% endif %}
+                            {% endfor %}
+                            <td>
+                                {% if member.username == username %}
+                                    Owner
+                                {% else %}
+                                    {% if member.is_active %}
+                                        <button name="change_status" type="button" class="btn btn-primary btn-xs">
+                                        Deactivate</button>
+                                    {% else %}
+                                        <button name="change_status" type="button" class="btn btn-primary btn-xs">
+                                        Activate</button>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </table>
+                    </div>
+                </div>
+
+                <div id="pending_members" class="tab-pane">
+                    <h3>Pending Invites</h3>
+                </div>
+
+                <div id="invite_members" class="tab-pane">
+                    <h3>Invite Member</h3>
+                </div>
+            </div></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}

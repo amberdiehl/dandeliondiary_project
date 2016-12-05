@@ -1,9 +1,10 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-import re
-import datetime
 from models import RVHousehold, Vehicle
 from helpers import *
+import re
+
+from account.models import EmailAddress
 
 
 re_validate_names = re.compile(r"^[A-Za-z\-]*$")
@@ -229,6 +230,25 @@ class HouseholdProfileForm(forms.ModelForm):
 
             if (self.cleaned_data['grandchildren'] == 0) and (int(self.cleaned_data['grandchildren_status']) > 0):
                 self.add_error('grandchildren', "Please specify how many grandchildren you have.")
+
+
+class InviteMemberForm(forms.Form):
+    email = forms.EmailField(
+        label=_("Email address:"),
+        max_length=80,
+        widget=forms.TextInput(attrs={'placeholder': 'Invite member email address'}),
+        required=True,
+        help_text=_("Send invitation for household member to this address.")
+    )
+
+    def clean_email(self):
+        data = self.cleaned_data['email']
+        qs = EmailAddress.objects.filter(email__iexact=data)
+        if len(qs) == 0:
+            pass
+        else:
+            raise forms.ValidationError("This email address is already in use by a member to a household.")
+        return data
 
 
 class VehicleForm(forms.ModelForm):
