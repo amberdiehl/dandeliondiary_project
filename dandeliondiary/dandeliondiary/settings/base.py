@@ -12,8 +12,8 @@ SECRET_KEY = 'secret_key'
 GOOGLE_API_KEY = 'api_key'
 
 ALLOWED_HOSTS = ['www.dandeliondiary.com',]
-#SESSION_COOKIE_SECURE = True
-#CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE=True
 
 # Default database definition

@@ -11,7 +11,6 @@
 
     <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
-    <link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
 
 {% endblock %}
 
@@ -29,70 +28,177 @@
 
             <div class="row">
 
-            <!-- tabs -->
-            <div class="col-md-2 col-sm-2 nopadding">
-                <ul class="nav nav-tabs nav-stacked">
-                    <li class="active"><a href="#current_members" data-toggle="tab">Current Members</a></li>
-                    <li><a href="#pending_members" data-toggle="tab">Pending Invites</a></li>
-                    <li><a href="#invite_members" data-toggle="tab">Invite</a></li>
-                </ul>
-            </div>
+                <!-- tabs -->
+                <div class="col-md-2 col-sm-2 nopadding">
+                    <ul class="nav nav-tabs nav-stacked">
+                        <li class="active"><a href="#invite_members" data-toggle="tab">Invite</a></li>
+                        <li><a href="#pending_members" data-toggle="tab">Pending Invites</a></li>
+                        <li><a href="#current_members" data-toggle="tab">Current Members</a></li>
+                    </ul>
+                </div>
 
-            <!-- tabs content -->
-            <div class="col-md-10 col-sm-10 nopadding"><div class="tab-content tab-stacked">
-                <div id="current_members" class="tab-pane active">
-                    <h3>Current Members</h3>
-                    <div class="table-responsive">
-                    <table class="table table-bordered">
-                    {% for member in current %}
-                        {% if forloop.counter == 1 %}
-                            <tr>
-                                {% for key, value in member.iteritems %}
-                                    {% if key != 'is_active' %}
-                                        <th>{{ key|get_heading }}</th>
-                                    {% endif %}
-                                {% endfor %}
-                                <th></th>
-                            </tr>
-                        {% endif %}
-                        <tr>
-                            {% for key, value in member.iteritems %}
-                                {% if key != 'is_active' %}
-                                    <td>{{ value }}</td>
+                <!-- tabs content -->
+                <div class="col-md-10 col-sm-10 nopadding"><div class="tab-content tab-stacked">
+
+                    <div id="invite_members" class="tab-pane active">
+                        <h3>Invite Member</h3>
+                        <form id="vehicle_form" class="margin-top-30 sky-form boxed centered" method="POST"
+                            action="{% url url %}" {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+                            {% csrf_token %}
+                            <div class="box-static box-transparent box-bordered">
+                                <!-- ALERTS -->
+                                {% if messages %}
+                                    {% for msg in messages %}
+                                        <div class="alert alert-{{msg.level_tag}} margin-bottom-30" role="alert">
+                                            {{msg.message}}
+                                        </div>
+                                    {% endfor %}
                                 {% endif %}
-                            {% endfor %}
-                            <td>
-                                {% if member.username == username %}
-                                    Owner
-                                {% else %}
-                                    {% if member.is_active %}
-                                        <button name="change_status" type="button" class="btn btn-primary btn-xs">
-                                        Deactivate</button>
-                                    {% else %}
-                                        <button name="change_status" type="button" class="btn btn-primary btn-xs">
-                                        Activate</button>
-                                    {% endif %}
+                                {% if invite_form.email.errors %}
+                                <div class="alert alert-mini alert-danger margin-bottom-15">
+                                    {% for error in invite_form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
                                 {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </table>
+                                <!-- /ALERTS -->
+                                <fieldset>
+                                    <div class="row"><div class="col-md-6 col-sm-6">
+                                        <label class="input margin-bottom-10">
+                                            {{ invite_form.email }}
+                                            <b class="tooltip tooltip-bottom-right">{{ invite_form.email.help_text }}</b>
+                                        </label>
+
+                                    </div></div>
+                                    <div class="row"><div class="col-md-12">
+                                        <button type="submit" class="btn btn-primary btn-bordered pull-right">
+                                            <i class="fa fa-check"></i>{% trans "Send invite" %}</button>
+                                    </div></div>
+                                </fieldset>
+                            </div>
+                        </form>
                     </div>
-                </div>
 
-                <div id="pending_members" class="tab-pane">
-                    <h3>Pending Invites</h3>
-                </div>
+                    <div id="pending_members" class="tab-pane">
+                        <h3>Pending Invites</h3>
+                        <div class="table-responsive">
+                        <table class="table table-hover">
+                            {% for invite in pending %}
+                                {% if forloop.counter == 1 %}
+                                    <thead class="bg-white">
+                                        <tr>
+                                            {% for key, value in invite.iteritems %}
+                                                {% if key != 'id' %}
+                                                    <th>{{ key|get_heading }}</th>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                {% endif %}
+                            <tbody class="bg-white">
+                                {% with count=forloop.counter %}
+                                <tr id="row-{{ count }}">
+                                    {% for key, value in invite.iteritems %}
+                                        {% if key != 'id' %}
+                                            <td id="{{ key }}-{{ count }}">{{ value }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <td>
+                                        <button name="delete-{{ count }}" type="button" class="btn btn-primary btn-xs"
+                                            onclick="deleteInvite({{ count }}, {{ invite.id }});">Delete</button>
+                                    </td>
+                                </tr>
+                                {% endwith %}
+                            </tbody>
+                            {% endfor %}
+                        </table>
+                        </div>
+                    </div>
 
-                <div id="invite_members" class="tab-pane">
-                    <h3>Invite Member</h3>
-                </div>
-            </div></div>
+                    <div id="current_members" class="tab-pane">
+                        <h3>Current Members</h3>
+                        <div class="table-responsive">
+                        <table class="table table-hover">
+                            {% for member in current %}
+                            {% if forloop.counter == 1 %}
+                                <thead class="bg-white">
+                                    <tr>
+                                        {% for key, value in member.iteritems %}
+                                            {% if key != 'is_active' %}
+                                                <th>{{ key|get_heading }}</th>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                            {% endif %}
+                            <tbody class="bg-white">
+                                <tr>
+                                    {% for key, value in member.iteritems %}
+                                        {% if key != 'is_active' %}
+                                            <td>{{ value }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <td>
+                                        {% if member.username == username %}
+                                            Owner
+                                        {% else %}
+                                            {% if member.is_active %}
+                                                <button name="change_status" type="button" class="btn btn-primary btn-xs">
+                                                Deactivate</button>
+                                            {% else %}
+                                                <button name="change_status" type="button" class="btn btn-primary btn-xs">
+                                                Activate</button>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                            {% endfor %}
+                        </table>
+                        </div>
+                    </div>
+
+                </div></div>
 
             </div>
 
         </div>
 
     </div>
+
+{% endblock %}
+{% block scripts %}
+
+    <script>
+
+        function deleteInvite(count,i) {
+
+            $(document).ready(function () {
+
+                $.ajax({url: '/household/ajax/delete-invite/' + i + '/',
+                    success: function(count) {
+                        inviteDeleted(count);
+                    },
+                    error: function() {
+                        deleteFailed();
+                    }
+                });
+
+            });
+
+        }
+
+        function inviteDeleted(row, textStatus, jqXHR){
+            $('#row-'+row).remove();
+        }
+
+        function deleteFailed(jqXHR,textStatus){
+            alert('Unable to delete requested invite. Please try again. If error persists, contact Support for ' +
+                'assistance.')
+        }
+
+    </script>
 
 {% endblock %}

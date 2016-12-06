@@ -1,20 +1,19 @@
-from django.forms import formset_factory, modelformset_factory
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
-from django.core.urlresolvers import reverse
-from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect
-from django.http import JsonResponse
-
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import redirect, render
+from django.http import JsonResponse
+from django.forms import modelformset_factory
 
 from .forms import *
 from .models import *
-from django.contrib.auth.models import User
 from core.models import BudgetModel, VehicleType, VehicleMake, VehicleModel
 from helpers import *
 
 import datetime
+
+INVITE_EXPIRATION = 24
 
 
 """
@@ -289,14 +288,39 @@ def household_members(request):
         .values('username', 'first_name', 'last_name', 'email', 'is_active', 'last_login')
 
     # get pending invitations
-    pending = []
+    pending = HouseholdInvite.objects.filter(invite_household=me.get('household_key'))\
+        .values('id', 'email', 'invite_date')
 
     # enable invites
-    unique_id = get_random_string(length=32)
+    if request.method == 'POST':
+
+        invite_form = InviteMemberForm(request.POST)
+
+        if invite_form.is_valid():
+
+            invite = HouseholdInvite()
+            invite.invite_household = me.get('household_obj')
+            invite.email = invite_form.cleaned_data.get('email')
+            invite.security_code = get_random_string(length=7)
+            invite.save()
+
+            (code, msg) = helper_send_invite(invite.email, me, INVITE_EXPIRATION)
+            if code == 'ERR':
+                messages.warning(request, msg)
+            else:
+                messages.success(request, msg)
+
+        else:
+            pass
+
+    else:
+        invite_form = InviteMemberForm()
+
 
     context = {
         'current': current,
         'pending': pending,
+        'invite_form': invite_form,
         'is_owner': me['owner'],
         'username': me['username'],
         'page_title': 'Household Members',

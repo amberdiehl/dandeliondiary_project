@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 from django.db import models
 from datetime import datetime
 
+from django.utils import timezone
+
 
 CHILDREN_STATUS_CHOICES = [(0, "No children"), (1, "Visit"), (2, "In household")]
 GRANDCHILDREN_STATUS_CHOICES = [(0, "No grandchildren"), (1, "Visit"), (2, "In household")]
@@ -59,6 +61,17 @@ class HouseholdMembers(models.Model):
 
     def __str__(self):
         return 'Member key: %s  Household key: %s' % (self.member_account, self.household_membership)
+
+
+# Household member pending invitations
+class HouseholdInvite(models.Model):
+    invite_household = models.ForeignKey(Household)
+    email = models.EmailField(max_length=254)
+    security_code = models.CharField(max_length=7, null=True, blank=True)
+    invite_date = models.DateTimeField(default=timezone.now, blank=True)
+
+    def __str__(self):
+        return "".format(self.email)
 
 
 # Household payments

@@ -1,13 +1,13 @@
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
 
 from django.contrib.auth.models import User
+from account.models import Account
 
-from core.models import RigType, UseType, IncomeType, VehicleMake, VehicleModel, VehicleType, VehiclePurchaseType, \
-    VehicleStatus, Satisfaction, BudgetGroup, BudgetCategory
+from core.models import BudgetGroup, BudgetCategory
 from household.models import Household, HouseholdMembers, Member
 from compare.models import MyBudgetGroup, MyBudgetCategory
-from account.models import Account
 
 """
 Helpers related to household views and constructs.
@@ -48,6 +48,24 @@ def helper_get_me(user_key):
         me['error_message'] = 'Household must be created first.'
 
     return me
+
+
+# Send household invitation email
+def helper_send_invite(email, me, expiration):
+
+    subject = '{} invites you to Dandelion Diary'.format(me.get('first_name').title())
+    body = "Hello! This is an invitation from {0} {1} to create an account with Dandelion Diary and join " \
+           "{0}'s household. This invitation will expire in {2} hours. To accept, please " \
+           "get started here: https://www.dandeliondiary.com/account/signup/." \
+        .format(me.get('first_name').title(), me.get('last_name').title(), expiration)
+
+    try:
+        send_mail(subject, body, 'noresponse@dandeliondiary.com', [email], fail_silently=False)
+
+    except:
+        return ('ERR', 'Invitation email failed to send; please contact Support for assistance.')
+
+    return('OK', 'An invitation has been sent and will expire in {} hours.'.format(expiration))
 
 
 # Setup budget template for new household

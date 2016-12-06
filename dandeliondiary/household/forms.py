@@ -6,6 +6,8 @@ import re
 
 from account.models import EmailAddress
 
+from .models import HouseholdInvite
+
 
 re_validate_names = re.compile(r"^[A-Za-z\-]*$")
 re_formatted_phone = re.compile(r"^\d\d\d-\d\d\d-\d\d\d\d$")
@@ -235,19 +237,24 @@ class HouseholdProfileForm(forms.ModelForm):
 class InviteMemberForm(forms.Form):
     email = forms.EmailField(
         label=_("Email address:"),
-        max_length=80,
-        widget=forms.TextInput(attrs={'placeholder': 'Invite member email address'}),
+        max_length=254,
+        widget=forms.TextInput(attrs={'placeholder': "Member's email address"}),
         required=True,
         help_text=_("Send invitation for household member to this address.")
     )
 
     def clean_email(self):
         data = self.cleaned_data['email']
-        qs = EmailAddress.objects.filter(email__iexact=data)
-        if len(qs) == 0:
-            pass
+        qs1 = EmailAddress.objects.filter(email__iexact=data).values()
+        if len(qs1) == 0:
+            # Note: email must be unique across ANY invite and household
+            qs2 = HouseholdInvite.objects.filter(email__iexact=data).values()
+            if len(qs2) == 0:
+                pass
+            else:
+                raise forms.ValidationError("An invite is pending to this email address.")
         else:
-            raise forms.ValidationError("This email address is already in use by a member to a household.")
+            raise forms.ValidationError("Cannot send an invite to this email address.")
         return data
 
 
