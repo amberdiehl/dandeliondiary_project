@@ -15,7 +15,8 @@ from helpers import *
 
 import datetime
 
-INVITE_EXPIRATION = 24
+INVITE_EXPIRATION = 24  # hours
+SUBSCRIPTION_LAPSE_WARNING = 45  # days
 
 
 """
@@ -32,7 +33,10 @@ INVITE_EXPIRATION = 24
 @login_required
 def household_dashboard(request):
     """Provide user with summary and status of account information. This is for ALL users associated with the
-    household. Only the household owner can make changes and invite/manage other associated with the household.
+    household. Only the household owner can invite/manage other associated with the household.
+
+    NOTE: This dashboard is NOT passive. New users are directed here first so that household and associated
+    member, membership, and budget records can be created.
     """
 
     # Dictionary that will contain all information for the template; no form
@@ -42,24 +46,39 @@ def household_dashboard(request):
     user = request.user
     account = Account.objects.get(user_id=request.user.pk)
 
-    # Show user information on file, or request entry
-    if not user.first_name:
+    # 1. If user is new member of household, automatically create associations for Member, HouseholdMember
+    #    This MUST be execute FIRST to ensure the rest of the dashboard/household setup functions correctly.
+    try:
+        invited_member = HouseholdInvite.objects.get(email=user.email)
+    except ObjectDoesNotExist:
+        pass
+    else:
+        helper_new_member(invited_member, account)
+
+    # 2. Show user information on file, or request entry
+    try:
+        household_member = Member.objects.get(account=account)
+    except ObjectDoesNotExist:
         summary['need_myinfo'] = "Please take a moment to provide your name and a phone number."
     else:
-        household_member = Member.objects.get(account=account)
         summary['first_name'] = user.first_name
         summary['last_name'] = user.last_name
         summary['phone_number'] = household_member.phone_number
-        isowner = 'No'
+        is_owner = 'No'
         if household_member.owner:
-            isowner = 'Yes'
-        summary['owner'] = isowner
+            is_owner = 'Yes'
+        summary['owner'] = is_owner
+        if not user.first_name or not user.last_name or not household_member.phone_number:
+            summary['myinfo'] = "Please take a moment to provide your name and a phone number."
 
-    # Show summary of select household information; if missing indicate it is necessary in order to use Dande
+    # 3. Show summary of select household information; if missing indicate it is necessary for use
     try:
         membership = HouseholdMembers.objects.get(member_account=account.pk)
         household = RVHousehold.objects.get(pk=membership.household_membership)
-
+    except ObjectDoesNotExist:
+        household = None
+        summary['need_household'] = "To activate your free trial, please setup your household information."
+    else:
         summary['start_year'] = household.start_year
         summary['members_in_household'] = household.members_in_household
         summary['rig_type'] = household.rig_type
@@ -67,33 +86,26 @@ def household_dashboard(request):
         summary['children'] = household.children
         summary['pets'] = household.pets_dog + household.pets_cat + household.pets_other
 
-    except ObjectDoesNotExist:
-        household = None
-        summary['need_household'] = "To activate your trial, please setup your household information."
-
-    # Show summary of vehicle information; if missing indicate it is desirable to provide
     if household:
-        try:
-            vehicles = Vehicle.objects.filter(household=membership.household_membership).exclude(gone_year__gt=0)
+        # 4. Show summary of vehicle information; if missing indicate it is desirable to provide
+        vehicles = Vehicle.objects.filter(household=membership.household_membership).exclude(gone_year__gt=0)
+        if len(vehicles) == 0:
+            summary['need_vehicles'] = "Please specify details regarding your rig to enable comparative data."
+        else:
             summary['total_vehicles'] = len(vehicles)
             summary_of_vehicles = []
             for vehicle in vehicles:
                 summary_of_vehicles.append('{} {} {}'.format(vehicle.model_year, vehicle.make, vehicle.model_name))
             summary['vehicles'] = summary_of_vehicles
-        except ObjectDoesNotExist:
-            summary['need_vehicles'] = "Please specify details regarding your rig. Although not required, it will " \
-                                       "greatly improve Dande's ablity to provide comparative data."
 
-    # Show subscription status
-    if household:
-
+        # 5. Show subscription status
         summary['paid_through'] = household.paid_through
 
         if datetime.date.today() > household.paid_through:
             summary['expired'] = "Your subscription has expired. Please renew today! Questions? " \
                                  "Call us at 415-413-4393."
         else:
-            future_date = datetime.date.today() + datetime.timedelta(days=45)
+            future_date = datetime.date.today() + datetime.timedelta(days=SUBSCRIPTION_LAPSE_WARNING)
             if future_date >= household.paid_through:
                 summary['need_payment'] = "Your subscription will expire soon! Please renew today!"
 
@@ -104,10 +116,9 @@ def household_dashboard(request):
         else:
             summary['free_trial'] = "Enjoy your free trial!"
 
-    # Provide a Dande greeting
-    if household and user.first_name:
-        join_date = household.created_date
-        summary['greeting'] = 'Hi {}! Thank you for being a Dande subscriber since {}.'\
+        # 6. Provide a greeting
+        if user.first_name:
+            summary['greeting'] = 'Hi {}! Thank you for being a subscriber since {}.'\
             .format(user.first_name, household.created_date.strftime('%B %Y'))
 
     context = {
@@ -447,6 +458,12 @@ def ajax_makes_by_type(request, type_id):
 
 
 def ajax_delete_invite(request):
+    """
+    Deletes a pending invite request at the request of the household owner. Rather than deleting directly if id
+    is valid, verifies household associated with id is also associated with username supplied.
+    :param request:
+    :return:
+    """
 
     result = {}
 

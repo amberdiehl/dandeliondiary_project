@@ -14,6 +14,7 @@ Helpers related to household views and constructs.
 These helpers may also be used across Compare, and Capture
 """
 
+
 # Determine if module can be used; i.e. household must be setup first, subscription active.
 def helper_get_me(user_key):
     me = {}
@@ -63,9 +64,9 @@ def helper_send_invite(email, me, expiration):
         send_mail(subject, body, 'noresponse@dandeliondiary.com', [email], fail_silently=False)
 
     except:
-        return ('ERR', 'Invitation email failed to send; please contact Support for assistance.')
+        return 'ERR', 'Invitation email failed to send; please contact Support for assistance.'
 
-    return('OK', 'An invitation has been sent and will expire in {} hours.'.format(expiration))
+    return 'OK', 'An invitation has been sent and will expire in {} hours.'.format(expiration)
 
 
 # Setup budget template for new household
@@ -106,3 +107,22 @@ def setup_budget_template(budget_template_id, household_id):
                 my_child_category.parent_category = my_category
                 my_child_category.category_perma_key = child.category_perma_key
                 my_child_category.save()
+
+
+# Create Member and HouseholdMembers records for new member of a household.
+def helper_new_member(invite, account):
+
+    # Create member record; note owner flag is set to false.
+    member = Member()
+    member.account = account
+    member.owner = False
+    member.save()
+
+    # Associate account with household from invitation
+    household_member = HouseholdMembers()
+    household_member.member_account = account
+    household_member.household_membership = invite.invite_household
+    household_member.save()
+
+    # Delete the used invitation
+    invite.delete()

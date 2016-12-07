@@ -37,6 +37,11 @@
                                     {{ summary.need_myinfo }}
                                 </div>
                             {% else %}
+                                {% if summary.myinfo %}
+                                    <div class="alert alert-info margin-bottom-30">
+                                        {{ summary.myinfo }}
+                                    </div>
+                                {% endif %}
                                 <table>
                                     <tr><td>Name: </td><td>{{ summary.first_name }} {{ summary.last_name }} </td></tr>
                                     <tr><td>Phone number:&nbsp;&nbsp;</td><td>{{ summary.phone_number }} </td></tr>
@@ -103,11 +108,6 @@
 		                <div class="box-icon box-icon-side box-icon-color box-icon-round">
 			                <i class="fa fa-credit-card"></i>
 			                <a class="box-icon-title" href="#"><h2>Subscription</h2></a>
-                            {% if summary.activate_trial %}
-                                <div class="alert alert-danger margin-bottom-30">
-                                    {{ summary.activate_trial }}
-                                </div>
-                            {% endif %}
                             {% if summary.free_trial and not summary.expired %}
                                 <div class="alert alert-success margin-bottom-30">
                                     {{ summary.free_trial }}
@@ -123,16 +123,13 @@
                                     {{ summary.expired }}
                                 </div>
                             {% endif %}
-                            {%  if not summary.activate_trial %}
                                 <p>Your subscription is paid through {{ summary.paid_through }}.</p>
 			                    <a class="box-icon-more font-lato weight-300" href="#">Make Payment</a>
-                            {% endif %}
 		                </div>
                     </div>
                 </div>
                 {% endif %}
             </div>
-
 
     </div>
 
