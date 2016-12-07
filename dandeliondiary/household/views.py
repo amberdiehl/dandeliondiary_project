@@ -6,6 +6,8 @@ from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.forms import modelformset_factory
 
+from django.contrib.auth.models import User
+
 from .forms import *
 from .models import *
 from core.models import BudgetModel, VehicleType, VehicleMake, VehicleModel
@@ -287,11 +289,11 @@ def household_members(request):
     current = User.objects.filter(account__householdmembers__household_membership=me.get('household_key'))\
         .values('username', 'first_name', 'last_name', 'email', 'is_active', 'last_login')
 
-    # get pending invitations
+    # get (and delete) pending invitations
     pending = HouseholdInvite.objects.filter(invite_household=me.get('household_key'))\
         .values('id', 'email', 'invite_date')
 
-    # enable invites
+    # invite new members
     if request.method == 'POST':
 
         invite_form = InviteMemberForm(request.POST)
@@ -431,6 +433,7 @@ def ajax_models_by_make(request, make_id):
     response_data += "}"
     return JsonResponse(response_data, safe=False)
 
+
 def ajax_makes_by_type(request, type_id):
     type = VehicleType.objects.get(pk=type_id)
     makes = VehicleMake.objects.filter(filter=type.filter)
@@ -441,3 +444,27 @@ def ajax_makes_by_type(request, type_id):
         response_data += '"{}": "{}"'.format(make.id, make.make)
     response_data += "}"
     return JsonResponse(response_data, safe=False)
+
+
+def ajax_delete_invite(request):
+
+    result = {}
+
+    id = request.POST['id']
+    username = request.POST['user']
+
+    try:
+        invite = HouseholdInvite.objects.get(pk=id)
+    except ObjectDoesNotExist:
+        result['status'] = 'ERROR'
+        return JsonResponse(result)
+
+    user = User.objects.filter(account__householdmembers__household_membership=invite.invite_household)\
+        .filter(username=username)
+    if len(user) != 1:
+        result['status'] = 'ERROR'
+        return JsonResponse(result)
+
+    invite.delete()
+    result['status'] = 'OK'
+    return JsonResponse(result)

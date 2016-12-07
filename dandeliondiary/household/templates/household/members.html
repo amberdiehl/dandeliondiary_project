@@ -81,6 +81,9 @@
 
                     <div id="pending_members" class="tab-pane">
                         <h3>Pending Invites</h3>
+                        <div id='divMessage' class="alert margin-bottom-30 hide" role="alert">
+                            <label id="lblMessage"></label>
+                        </div>
                         <div class="table-responsive">
                         <table class="table table-hover">
                             {% for invite in pending %}
@@ -106,7 +109,8 @@
                                     {% endfor %}
                                     <td>
                                         <button name="delete-{{ count }}" type="button" class="btn btn-primary btn-xs"
-                                            onclick="deleteInvite({{ count }}, {{ invite.id }});">Delete</button>
+                                            onclick="deleteInvite({{ count }}, {{ invite.id }}, '{{ username }}');">
+                                            Delete</button>
                                     </td>
                                 </tr>
                                 {% endwith %}
@@ -173,30 +177,59 @@
 
     <script>
 
-        function deleteInvite(count,i) {
+        function deleteInvite(row, id, user) {
 
             $(document).ready(function () {
 
-                $.ajax({url: '/household/ajax/delete-invite/' + i + '/',
-                    success: function(count) {
-                        inviteDeleted(count);
-                    },
-                    error: function() {
-                        deleteFailed();
+                $.ajaxSetup({beforeSend: function(xhr, settings){
+                    xhr.setRequestHeader('X-CSRFToken',
+                         '{{ csrf_token }}');
+                }});
+
+                var request = $.ajax({
+                    url: '/household/ajax/delete-invite/',
+                    method: "POST",
+                    data: { 'id' : id, 'user' : user  },
+                    dataType: "json"
+                });
+
+                request.done(function( result ) {
+                    showMessage(result.status);
+                    if (result.status == 'OK') {
+                        $('#row-' + row).remove();
                     }
+                });
+
+                request.fail(function( jqXHR, textStatus ) {
+                    showMessage('ERROR')
                 });
 
             });
 
         }
 
-        function inviteDeleted(row, textStatus, jqXHR){
-            $('#row-'+row).remove();
-        }
+        function showMessage(type) {
 
-        function deleteFailed(jqXHR,textStatus){
-            alert('Unable to delete requested invite. Please try again. If error persists, contact Support for ' +
-                'assistance.')
+            var message = '';
+            var classAdd = '';
+            var classRemove = '';
+
+            if (type == 'ERROR') {
+                message = 'Unable to process request. Please try again. If this error persists, contact Support for ' +
+                    'assistance.';
+                classAdd = 'alert-warning';
+                classRemove = 'alert-success';
+            } else {
+                message = 'Pending invite successfully removed.';
+                classAdd = 'alert-success';
+                classRemove = 'alert-warning';
+            }
+
+            $('#lblMessage').html(message);
+
+            $('#divMessage').removeClass(classRemove);
+            $('#divMessage').addClass(classAdd);
+            $('#divMessage').addClass('show');
         }
 
     </script>
