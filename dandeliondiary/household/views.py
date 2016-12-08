@@ -296,6 +296,9 @@ def household_members(request):
     if me.get('redirect'):
         return redirect('household:household_dashboard')
 
+    if not me['owner']:
+        return redirect('household:household_dashboard')
+
     # get members of the household
     current = User.objects.filter(account__householdmembers__household_membership=me.get('household_key'))\
         .values('username', 'first_name', 'last_name', 'email', 'is_active', 'last_login')
@@ -483,5 +486,41 @@ def ajax_delete_invite(request):
         return JsonResponse(result)
 
     invite.delete()
+    result['status'] = 'OK'
+    return JsonResponse(result)
+
+
+def ajax_change_member_status(request):
+
+    result = {}
+
+    username = request.POST['username']
+    owner_username = request.POST['user']
+    change_to_status = request.POST['status']
+
+    try:
+        member = User.objects.get(username=username)
+    except ObjectDoesNotExist:
+        result['status'] = 'ERROR'
+        return JsonResponse(result)
+
+    mbr_account = Account.objects.get(user_id=member)
+    mbr_household = HouseholdMembers.objects.get(member_account=mbr_account)
+
+    owner = User.objects.get(username=owner_username)
+    owner_account = Account.objects.get(user_id=owner)
+    owner_household = HouseholdMembers.objects.get(member_account=owner_account)
+
+    if mbr_household.household_membership != owner_household.household_membership:
+        result['status'] = 'ERROR'
+        return JsonResponse(result)
+
+    if change_to_status == 'Deactivate':
+        new_status = False
+    else:
+        new_status = True
+
+    member.is_active = new_status
+    member.save()
     result['status'] = 'OK'
     return JsonResponse(result)

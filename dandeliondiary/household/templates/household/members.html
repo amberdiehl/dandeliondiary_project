@@ -81,8 +81,8 @@
 
                     <div id="pending_members" class="tab-pane">
                         <h3>Pending Invites</h3>
-                        <div id='divMessage' class="alert margin-bottom-30 hide" role="alert">
-                            <label id="lblMessage"></label>
+                        <div id='divPendingMessage' class="alert margin-bottom-30 hide" role="alert">
+                            <label id="lblPendingMessage"></label>
                         </div>
                         <div class="table-responsive">
                         <table class="table table-hover">
@@ -122,10 +122,13 @@
 
                     <div id="current_members" class="tab-pane">
                         <h3>Current Members</h3>
+                        <div id='divCurrentMessage' class="alert margin-bottom-30 hide" role="alert">
+                            <label id="lblCurrentMessage"></label>
+                        </div>
                         <div class="table-responsive">
                         <table class="table table-hover">
                             {% for member in current %}
-                            {% if forloop.counter == 1 %}
+                                {% if forloop.counter == 1 %}
                                 <thead class="bg-white">
                                     <tr>
                                         {% for key, value in member.iteritems %}
@@ -136,8 +139,9 @@
                                         <th>Status</th>
                                     </tr>
                                 </thead>
-                            {% endif %}
-                            <tbody class="bg-white">
+                                {% endif %}
+                                <tbody class="bg-white">
+                                {% with count=forloop.counter %}
                                 <tr>
                                     {% for key, value in member.iteritems %}
                                         {% if key != 'is_active' %}
@@ -148,17 +152,18 @@
                                         {% if member.username == username %}
                                             Owner
                                         {% else %}
-                                            {% if member.is_active %}
-                                                <button name="change_status" type="button" class="btn btn-primary btn-xs">
-                                                Deactivate</button>
-                                            {% else %}
-                                                <button name="change_status" type="button" class="btn btn-primary btn-xs">
-                                                Activate</button>
-                                            {% endif %}
+                                            <button id="changeStatus-{{ count }}" type="button"
+                                                class="btn btn-primary btn-xs"
+                                                value="{% if member.is_active %}Deactivate{% else %}Activate{% endif %}"
+                                                onclick="changeMemberStatus({{ count }}, '{{ member.username }}',
+                                                        '{{ username }}');">
+                                                {% if member.is_active %}Deactivate{% else %}Activate{% endif %}
+                                            </button>
                                         {% endif %}
                                     </td>
                                 </tr>
-                            </tbody>
+                                {% endwith %}
+                                </tbody>
                             {% endfor %}
                         </table>
                         </div>
@@ -179,6 +184,11 @@
 
         function deleteInvite(row, id, user) {
 
+            var fn = 'Pending';
+            var successMessage = 'Pending invite successfully removed.';
+            var errorMessage = 'Unable to process request; please try again. If this error persists, contact Support ' +
+                'for assistance.';
+
             $(document).ready(function () {
 
                 $.ajaxSetup({beforeSend: function(xhr, settings){
@@ -194,42 +204,87 @@
                 });
 
                 request.done(function( result ) {
-                    showMessage(result.status);
                     if (result.status == 'OK') {
                         $('#row-' + row).remove();
+                        showMessage(result.status, successMessage, fn);
+                    } else {
+                        showMessage(result.status, errorMessage, fn);
                     }
                 });
 
                 request.fail(function( jqXHR, textStatus ) {
-                    showMessage('ERROR')
+                    showMessage(textStatus, errorMessage, fn);
                 });
 
             });
-
         }
 
-        function showMessage(type) {
+        function changeMemberStatus(row, username, user) {
 
-            var message = '';
-            var classAdd = '';
-            var classRemove = '';
+            var fn = 'Current';
+            var successMessage = 'Household member status successfully changed.';
+            var errorMessage = 'Unable to process request; please try again. If this error persists, contact Support ' +
+                'for assistance.';
+            var $button = $('#changeStatus-'+row);
+            var newStatus, newButtonValue;
 
-            if (type == 'ERROR') {
-                message = 'Unable to process request. Please try again. If this error persists, contact Support for ' +
-                    'assistance.';
-                classAdd = 'alert-warning';
-                classRemove = 'alert-success';
+            newStatus = $button.attr("value");
+            if (newStatus == 'Deactivate') {
+                newButtonValue = 'Activate';
             } else {
-                message = 'Pending invite successfully removed.';
-                classAdd = 'alert-success';
-                classRemove = 'alert-warning';
+                newButtonValue = 'Deactivate';
             }
 
-            $('#lblMessage').html(message);
+            $(document).ready(function () {
 
-            $('#divMessage').removeClass(classRemove);
-            $('#divMessage').addClass(classAdd);
-            $('#divMessage').addClass('show');
+                $.ajaxSetup({
+                    beforeSend: function (xhr, settings) {
+                        xhr.setRequestHeader('X-CSRFToken',
+                            '{{ csrf_token }}');
+                    }
+                });
+
+                var request = $.ajax({
+                    url: '/household/ajax/change-member-status/',
+                    method: "POST",
+                    data: { 'username' : username, 'user' : user, 'status' : newStatus },
+                    dataType: "json"
+                });
+
+                request.done(function( result ) {
+                    if (result.status == 'OK') {
+                        $button.attr("value", newButtonValue);
+                        $button.text(newButtonValue);
+                        showMessage(result.status, successMessage, fn);
+                    } else {
+                        showMessage(result.status, errorMessage, fn);
+                    }
+                });
+
+                request.fail(function( jqXHR, textStatus ) {
+                    showMessage(textStatus, errorMessage, fn);
+                });
+
+            });
+        }
+
+
+        function showMessage(type, msg, fn) {
+
+            var classAdd, classRemove;
+            var lbl = '#lbl'+fn+'Message';
+            var div = '#div'+fn+'Message';
+
+            if (type == 'OK') {
+                classAdd = 'alert-success';
+                classRemove = 'alert-warning';
+            } else {
+                classAdd = 'alert-warning';
+                classRemove = 'alert-success';
+            }
+
+            $(lbl).html(msg);
+            $(div).removeClass(classRemove).addClass(classAdd).addClass('show');
         }
 
     </script>
