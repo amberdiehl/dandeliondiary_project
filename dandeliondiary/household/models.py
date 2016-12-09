@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 from django.db import models
-from datetime import datetime
 
 from django.utils import timezone
 
@@ -37,7 +36,7 @@ class RVHousehold(Household):
     children_status = models.IntegerField(default=0, blank=True, choices=CHILDREN_STATUS_CHOICES)
     grandchildren = models.IntegerField(default=0, blank=True)  # No. of grandchildren + household status
     grandchildren_status = models.IntegerField(default=0, blank=True, choices=GRANDCHILDREN_STATUS_CHOICES)
-    created_date = models.DateTimeField(default=datetime.now, blank=True)
+    created_date = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
         return str(self.pk)
@@ -48,10 +47,10 @@ class Member(models.Model):
     account = models.OneToOneField('account.Account')
     phone_number = models.CharField(max_length=12)
     owner = models.BooleanField(default=False)
-    created_date = models.DateTimeField(default=datetime.now, blank=True)
+    created_date = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
-        return '%s' % (self.phone_number)
+        return '%s' % self.phone_number
 
 
 # Household members
@@ -77,7 +76,7 @@ class HouseholdInvite(models.Model):
 # Household payments
 class Payment(models.Model):
     household = models.ForeignKey(Household)
-    payment_date = models.DateTimeField(default=datetime.now, blank=True)
+    payment_date = models.DateTimeField(default=timezone.now, blank=True)
     payment_amount = models.DecimalField(max_digits=5, decimal_places=2)
     payment_reference = models.CharField(max_length=128)
     payment_last4_digits = models.CharField(max_length=4)

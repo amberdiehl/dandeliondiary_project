@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 import datetime
 from django.db import models
-
+from django.utils import timezone
 
 # Expense item
 class MyExpenseItem(models.Model):
@@ -11,8 +11,8 @@ class MyExpenseItem(models.Model):
     who = models.ForeignKey('account.Account')
     category = models.ForeignKey('compare.MyBudgetCategory')
     google_place = models.ForeignKey('core.GooglePlaceDetail', null=True, blank=True)
-    expense_date = models.DateField(default=datetime.datetime.now)
-    created_at = models.DateTimeField(auto_now_add=True)
+    expense_date = models.DateField(default=timezone.now, blank=True)
+    created_at = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
         return self.note
