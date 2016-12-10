@@ -8,15 +8,13 @@
 
 {% block static %}
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
           rel="stylesheet" type="text/css" />
 
-	<link href="{% static "css/plugin-hover-buttons.css" %}" rel="stylesheet" type="text/css" />
     <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
-    <link href="{% static "css/sky-forms.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
+    <link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
 
     <script>
         $(function() {
@@ -37,56 +35,106 @@
     <div class="col-md-8 col-md-offset-2">
 
         <form id="new_expense" class="margin-top-30 sky-form boxed centered" method="POST"
-              action="{% url url %}{% if geo %}{{ geo }}{% endif %}" {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+              action="{% url url %}{% if geo %}{{ geo }}{% endif %}" {% if form.is_multipart %}
+              enctype="multipart/form-data"{% endif %}>
             {% csrf_token %}
 
             <div class="box-static box-transparent box-bordered">
 
                 <h2>{% trans page_title %}</h2>
 
+
                 <!-- ALERTS -->
-                {% if not messages %}
-                <span class="alert alert-{{ location_message.0 }} margin-bottom-30">{{ location_message.1 }}</span>
-                </br></br>
-                {% endif %}
-                {% if messages %}
-                    {% for msg in messages %}
-                        <div class="alert alert-{{msg.level_tag}} margin-bottom-30" role="alert">
-                            {{msg.message}}
-                        </div>
-                    {% endfor %}
-                {% endif %}
+                <div class="row"><div class="col-md-6 col-sm-6">
+                    {% if not messages %}
+                    <div class="alert alert-{{ location_message.0 }} margin-bottom-15">{{ location_message.1 }}</div>
+                    {% endif %}
+                    {% if messages %}
+                        {% for msg in messages %}
+                            <div class="alert alert-{{msg.level_tag}} margin-bottom-15" role="alert">
+                                {{msg.message}}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div></div>
                 <!-- /ALERTS -->
 
                 <fieldset>
-                    {% for field in form.visible_fields %}
-                    <div class="row">
-                        <div class="form-group">
-                            <div class="col-md-6 col-sm-6">
-                                <label>{{ field.label }}</label>
-                                <label class="input margin-bottom-10">
-                                    {{ field }}
-                                    <b class="tooltip tooltip-right">{{ field.help_text }}</b>
-                                </label>
-                                {% if places and field.name == 'choose_category_place' %}
-                                <label style="font-size: 7pt;">Places found: {{ places }}</label>
-                                {% endif %}
-                                {% if field.errors %}
+                    <div class="row"><div class="form-group"> <!-- amount -->
+                        <div class="col-md-6 col-sm-6">
+                            <label>{{ form.amount.label }}</label>
+                            <label class="input margin-bottom-10">{{ form.amount }}
+                                <b class="tooltip tooltip-right">{{ form.amount.help_text }}</b>
+                            </label>
+                            {% if form.amount.errors %}
                                 <div class="alert alert-mini alert-danger margin-bottom-15">
-                                    {% for error in field.errors %}
-                                        {{ error }}
-                                    {% endfor %}
+                                    {{ form.amount.errors }}
                                 </div>
+                            {% endif %}
+                        </div>
+                    </div></div>
+                    <div class="{% if places > 1 %}show{% else %}hide{% endif %}">
+                        <div class="row"><div class="form-group"> <!-- choose category based on place -->
+                            <div class="col-md-6 col-sm-6">
+                                <label>{{ form.choose_category_place.label }}</label>
+                                <label class="input margin-bottom-10">{{ form.choose_place }}</label>
+                                <label class="input margin-bottom-10">{{ form.choose_category_place }}</label>
+                                {% if form.choose_category_place.errors %}
+                                    <div class="alert alert-mini alert-danger margin-bottom-15">
+                                        {{ form.choose_category_place.errors }}
+                                    </div>
+                                {% endif %}
+                                <a href="#allCategories" data-toggle="collapse" class="pull-right">
+                                    OR use non-place based categories</a>
+                            </div>
+                        </div></div>
+                    </div>
+                    <div id="allCategories" class="collapse {% if places <= 1 %}in{% endif %}">
+                        <div class="row"><div class="form-group"> <!-- choose category -->
+                            <div class="col-md-6 col-sm-6">
+                                <label>{{ form.choose_category.label }}</label>
+                                <label class="input margin-bottom-10">{{ form.choose_category }}
+                                    <b class="tooltip tooltip-right">{{ form.choose_category.help_text }}</b>
+                                </label>
+                                {% if form.choose_category.errors %}
+                                    <div class="alert alert-mini alert-danger margin-bottom-15">
+                                        {{ form.choose_category.errors }}
+                                    </div>
                                 {% endif %}
                             </div>
-                        </div>
+                        </div></div>
                     </div>
-                    {% endfor %}
+                    <div class="row"><div class="form-group"> <!-- note -->
+                        <div class="col-md-6 col-sm-6">
+                            <label>{{ form.note.label }}</label>
+                            <label class="input margin-bottom-10">{{ form.note }}
+                                <b class="tooltip tooltip-right">{{ form.note.help_text }}</b>
+                            </label>
+                            {% if form.note.errors %}
+                                <div class="alert alert-mini alert-danger margin-bottom-15">
+                                    {{ form.note.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div></div>
+                    <div class="row"><div class="form-group"> <!-- expense date -->
+                        <div class="col-md-6 col-sm-6">
+                            <label>{{ form.expense_date.label }}</label>
+                            <label class="input margin-bottom-10">{{ form.expense_date }}
+                                <b class="tooltip tooltip-right">{{ form.expense_date.help_text }}</b>
+                            </label>
+                            {% if form.expense_date.errors %}
+                                <div class="alert alert-mini alert-danger margin-bottom-15">
+                                    {{ form.expense_date.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div></div>
                 </fieldset>
 
                 <div class="row">
                         <div class="col-md-12">
-                            <button type="submit" class="btn btn-hvr hvr-bounce-to-right"><i class="fa fa-check"></i>
+                            <button type="submit" class="btn btn-primary btn-bordered pull-right"><i class="fa fa-check"></i>
                                 {% trans "Save" %}</button>
                         </div>
                     </div>

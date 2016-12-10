@@ -1,5 +1,4 @@
 from django import forms
-from django.core import validators
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -34,12 +33,16 @@ class NewExpenseForm(forms.Form):
         label=_("Budget place category:"),
         help_text=_("Apply this purchase to a budget category.")
     )
+    choose_place = CategoryCustomChoiceField(
+        label=_("Place"),
+        help_text=_("Purchase made at this location.")
+    )
     choose_category = CategoryCustomChoiceField(
         label=_("Budget category:"),
         help_text=_("Apply this purchase to a budget category.")
     )
     expense_date = forms.DateField(
-        label=("Date:"),
+        label=_("Date:"),
         widget=forms.DateInput,
         required=False,
         help_text=_("Defaults to today; otherwise, select date to apply to budget.")
@@ -50,3 +53,4 @@ class NewExpenseForm(forms.Form):
         value2 = int(self.cleaned_data['choose_category'])
         if value1 == 0 and value2 == 0:
             self.add_error('choose_category', "Select a budget category.")
+            self.add_error('choose_category_place', "Select a budget category.")

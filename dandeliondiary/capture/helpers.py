@@ -99,3 +99,7 @@ def get_remaining_budget(c_id, date):
     result = helper_get_category_budget_and_expenses(c_id, filter_date=date, fetch_expenses=True)
 
     return result['budget'] - result['expenses']
+
+
+def is_expense_place_type(a, b):
+  return not set(a).isdisjoint(b)

@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -8,9 +8,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from google import get_nearby_places, byteify
 
 from household.helpers import helper_get_me
-from .helpers import helper_budget_categories, get_remaining_budget
+from .helpers import helper_budget_categories, get_remaining_budget, is_expense_place_type
 
 from .forms import NewExpenseForm
+from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
 from .models import MyExpenseItem
 
@@ -19,6 +20,7 @@ from hashids import Hashids
 HASH_SALT = 'nowis Ag00d tiM3for tW0BR3wskies'
 HASH_MIN_LENGTH = 16
 
+GOOGLE_LOCATION_RADIUS = 35
 # from uscampgrounds.models import *
 # camps = Campground.objects.all().distance(origin).order_by('distance')
 
@@ -32,7 +34,6 @@ def new_expense(request):
         return redirect('household:household_dashboard')
     else:
 
-        location_message = None
         geo = None
 
         if request.method == 'POST':
@@ -78,33 +79,39 @@ def new_expense(request):
         if request.GET.get('lat') and request.GET.get('lon'):
             position = (request.GET.get('lat'),request.GET.get('lon'))
             geo = '?lat={}&lon={}'.format(request.GET.get('lat'),request.GET.get('lon'))
-            location_message = ('success','Geolocation information used for category selection assistance.')
+            location_message = ('success','Geolocation used for expense category assistance.')
         else:
-            location_message = ('warning', 'Geolocation failed; category selection assistance unavailable.')
+            location_message = ('warning', 'Geolocation failed; category assistance unavailable.')
 
-        places = ''  # if using for place choice, change to [] for array of tuples
-        place_types = []
+        places = [(0, '------'),]  # collect places to show for user selection
+        place_types = []  # collect place types to enable expense category chooser based on location
+        places_error = '' # show error in case cause is change in IP address
         if position:
             try:
-                nearby_json = byteify(get_nearby_places(position, 75))
+                nearby_json = byteify(get_nearby_places(position, GOOGLE_LOCATION_RADIUS))
                 if nearby_json['status'] == 'OK':
+                    types = GooglePlaceType.objects.all().values_list('type', flat=True)
                     for place in nearby_json['results']:
-                        # item = (place['place_id'], place['name']) <-- use for choice in the future
-                        places += place['name'] + ' '
-                        place_types.append(place['types'])  # this is an array of arrays
-                        # places.sort(key=lambda items: items[1])
+                        if is_expense_place_type(place['types'], types): # only show places where type is valid
+                            item = (place['place_id'], place['name'])
+                            places += item,
+                            place_types.append(place['types'])  # this is an array of arrays
+                    places.sort(key=lambda items: items[1])
                 else:
-                    places = 'status: {} error message: {}'.format(nearby_json['status'], nearby_json['error_message'])
+                    places_error = 'status: {} error message: {}'.format(nearby_json['status'],
+                                                                         nearby_json['error_message'])
             except Exception as err:
                 pass
 
         category_choices = helper_budget_categories(me.get('household_key'), place_types)
         form.fields['choose_category_place'].choices = category_choices[0]
         form.fields['choose_category'].choices = category_choices[1]
+        form.fields['choose_place'].choices = places
 
         context = {
             'form': form,
-            'places': places,
+            'places': len(places),
+            'places_error': places_error,
             'page_title': 'Capture New Expense',
             'url': 'capture:new_expense',
             'geo': geo,
