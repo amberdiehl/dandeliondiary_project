@@ -114,7 +114,7 @@ class GooglePlaceType(models.Model):
     created_at = models.DateTimeField(default=timezone.now, blank=True)
     type = models.CharField(max_length=50)
 
-    class meta:
+    class Meta:
         ordering = ['type']
 
     def __str__(self):
@@ -124,9 +124,12 @@ class GooglePlaceType(models.Model):
 # Google place detail
 class GooglePlaceDetail(models.Model):
     created_at = models.DateTimeField(default=timezone.now, blank=True)
-    place_id = models.CharField(max_length=256)
-    place_name = models.CharField(max_length=256)
-    place_types = models.CharField(max_length=1024)
+    place_id = models.CharField(max_length=256, default='', blank=True)
+    place_name = models.CharField(max_length=256, default='', blank=True)
+    place_lat = models.DecimalField(decimal_places=7, max_digits=10, verbose_name='Latitude', default=0, blank=True)
+    place_lng = models.DecimalField(decimal_places=7, max_digits=10, verbose_name='Longitude', default=0, blank=True)
+    place_count = models.IntegerField(verbose_name='Hit Count', default=0, blank=True)
+    place_last_count = models.DateField(verbose_name='Last Hit Date', default=timezone.now, blank=True)
 
     def __str__(self):
         return self.place_name

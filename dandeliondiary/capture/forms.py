@@ -51,6 +51,25 @@ class NewExpenseForm(forms.Form):
     def clean(self):
         value1 = int(self.cleaned_data['choose_category_place'])
         value2 = int(self.cleaned_data['choose_category'])
+
+        # A place based or non-place based expense category must be selected, but not both
         if value1 == 0 and value2 == 0:
             self.add_error('choose_category', "Select a budget category.")
             self.add_error('choose_category_place', "Select a budget category.")
+
+        if value1 and value2:
+            self.add_error('choose_category', "Make only one budget category selection.")
+            self.add_error('choose_category_place', "Make only one budget category selection.")
+
+        # If place based selection is made, place must also be selected
+        try:
+            value3 = int(self.cleaned_data['choose_place'])
+        except ValueError:
+            if value1 == 0:
+                self.add_error('choose_category_place', 'Select a place based expense category.')
+        else:
+            if value1 != 0:
+                self.add_error('choose_place', 'You selected an expense category based on place; '
+                                               'select place.')
+
+        return self.cleaned_data

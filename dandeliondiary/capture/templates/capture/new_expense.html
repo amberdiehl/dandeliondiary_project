@@ -68,7 +68,7 @@
                             </label>
                             {% if form.amount.errors %}
                                 <div class="alert alert-mini alert-danger margin-bottom-15">
-                                    {{ form.amount.errors }}
+                                    {% for error in form.amount.errors %}{{ error }}{% endfor %}
                                 </div>
                             {% endif %}
                         </div>
@@ -78,10 +78,15 @@
                             <div class="col-md-6 col-sm-6">
                                 <label>{{ form.choose_category_place.label }}</label>
                                 <label class="input margin-bottom-10">{{ form.choose_place }}</label>
+                                {% if form.choose_place.errors %}
+                                    <div class="alert alert-mini alert-danger margin-bottom-15">
+                                        {% for error in form.choose_place.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
                                 <label class="input margin-bottom-10">{{ form.choose_category_place }}</label>
                                 {% if form.choose_category_place.errors %}
                                     <div class="alert alert-mini alert-danger margin-bottom-15">
-                                        {{ form.choose_category_place.errors }}
+                                        {% for error in form.choose_category_place.errors %}{{ error }}{% endfor %}
                                     </div>
                                 {% endif %}
                                 <a href="#allCategories" data-toggle="collapse" class="pull-right">
@@ -98,7 +103,7 @@
                                 </label>
                                 {% if form.choose_category.errors %}
                                     <div class="alert alert-mini alert-danger margin-bottom-15">
-                                        {{ form.choose_category.errors }}
+                                        {% for error in form.choose_category.errors %}{{ error }}{% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
@@ -112,7 +117,7 @@
                             </label>
                             {% if form.note.errors %}
                                 <div class="alert alert-mini alert-danger margin-bottom-15">
-                                    {{ form.note.errors }}
+                                    {% for error in form.note.errors %}{{ error }}{% endfor %}
                                 </div>
                             {% endif %}
                         </div>
@@ -125,7 +130,7 @@
                             </label>
                             {% if form.expense_date.errors %}
                                 <div class="alert alert-mini alert-danger margin-bottom-15">
-                                    {{ form.expense_date.errors }}
+                                    {% for error in form.expense_date.errors %}{{ error }}{% endfor %}
                                 </div>
                             {% endif %}
                         </div>

@@ -1,13 +1,14 @@
+import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 
-
 from google import get_nearby_places, byteify
 
 from household.helpers import helper_get_me
+from core.helpers import helpers_add_google_place
 from .helpers import helper_budget_categories, get_remaining_budget, is_expense_place_type
 
 from .forms import NewExpenseForm
@@ -52,7 +53,11 @@ def new_expense(request):
                 if category == 0:
                     category = int(form.cleaned_data.get('choose_category'))
                 expense.category = MyBudgetCategory.objects.get(pk=category)
-                #expense.google_place = ''
+                place = form.cleaned_data.get('choose_place').replace('(','').replace(')','').replace("'",'').split(',')
+                if len(place) > 1:
+                    expense.google_place = helpers_add_google_place(place[0], place[1], place[2], place[3])
+                if not form.cleaned_data.get('expense_date'):
+                    form.cleaned_data['expense_date'] = datetime.datetime.today().date()
                 expense.expense_date = form.cleaned_data.get('expense_date')
                 expense.save()
                 messages.success(request, 'Your information has been saved.')
@@ -93,8 +98,9 @@ def new_expense(request):
                     types = GooglePlaceType.objects.all().values_list('type', flat=True)
                     for place in nearby_json['results']:
                         if is_expense_place_type(place['types'], types): # only show places where type is valid
-                            item = (place['place_id'], place['name'])
-                            places += item,
+                            item = (place['place_id'], place['name'], place['geometry']['location']['lat'],
+                                    place['geometry']['location']['lng'])
+                            places += (item, place['name']),
                             place_types.append(place['types'])  # this is an array of arrays
                     places.sort(key=lambda items: items[1])
                 else:
