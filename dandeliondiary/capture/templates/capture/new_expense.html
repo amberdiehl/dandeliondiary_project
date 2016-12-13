@@ -35,14 +35,12 @@
     <div class="col-md-8 col-md-offset-2">
 
         <form id="new_expense" class="margin-top-30 sky-form boxed centered" method="POST"
-              action="{% url url %}{% if geo %}{{ geo }}{% endif %}" {% if form.is_multipart %}
-              enctype="multipart/form-data"{% endif %}>
+              action="{% url url %}{% if geo %}{{ geo }}{% endif %}" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="box-static box-transparent box-bordered">
 
                 <h2>{% trans page_title %}</h2>
-
 
                 <!-- ALERTS -->
                 <div class="row"><div class="col-md-6 col-sm-6">
@@ -131,6 +129,19 @@
                             {% if form.expense_date.errors %}
                                 <div class="alert alert-mini alert-danger margin-bottom-15">
                                     {% for error in form.expense_date.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div></div>
+                    <div class="row"><div class="form-group"> <!-- receipt -->
+                        <div class="col-md-6 col-sm-6">
+                            <label>{{ form.receipt.label }}</label>
+                            <label class="input margin-bottom-10">{{ form.receipt }}
+                                <b class="tooltip tooltip-right">{{ form.receipt.help_text }}</b>
+                            </label>
+                            {% if form.receipt.errors %}
+                                <div class="alert alert-mini alert-danger margin-bottom-15">
+                                    {% for error in form.receipt.errors %}{{ error }}{% endfor %}
                                 </div>
                             {% endif %}
                         </div>

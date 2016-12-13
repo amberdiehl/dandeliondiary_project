@@ -1,7 +1,9 @@
 from __future__ import unicode_literals
-import datetime
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils import timezone
+
 
 # Expense item
 class MyExpenseItem(models.Model):
@@ -16,3 +18,22 @@ class MyExpenseItem(models.Model):
 
     def __str__(self):
         return self.note
+
+
+# Receipt
+class MyReceipt(models.Model):
+    expense_item = models.ForeignKey(MyExpenseItem)
+    receipt = models.ImageField(upload_to='receipts')
+    original_name = models.CharField(max_length=256)
+
+    def __str__(self):
+        return self.original_name
+
+
+# Handler to delete receipt image file when receipt object is deleted
+@receiver(post_delete, sender=MyReceipt)
+def receipt_post_delete_handler(sender, **kwargs):
+    receipt_obj = kwargs['instance']
+    storage, path = receipt_obj.receipt.storage, receipt_obj.receipt.path
+    if storage and path:
+        storage.delete(path)

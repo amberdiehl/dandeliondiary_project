@@ -5,16 +5,19 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 
+from PIL import Image
+
 from google import get_nearby_places, byteify
 
 from household.helpers import helper_get_me
 from core.helpers import helpers_add_google_place
 from .helpers import helper_budget_categories, get_remaining_budget, is_expense_place_type
 
-from .forms import NewExpenseForm
 from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
-from .models import MyExpenseItem
+from .models import MyExpenseItem, MyReceipt
+
+from .forms import NewExpenseForm
 
 from hashids import Hashids
 
@@ -39,7 +42,7 @@ def new_expense(request):
 
         if request.method == 'POST':
 
-            form = NewExpenseForm(request.POST)
+            form = NewExpenseForm(request.POST, request.FILES)
 
             if form.is_valid():
 
@@ -60,6 +63,17 @@ def new_expense(request):
                     form.cleaned_data['expense_date'] = datetime.datetime.today().date()
                 expense.expense_date = form.cleaned_data.get('expense_date')
                 expense.save()
+
+                receipt_file = form.cleaned_data.get('receipt')
+                if receipt_file:
+                    receipt = MyReceipt()
+                    receipt.expense_item = expense
+                    receipt.original_name = receipt_file.name
+                    receipt.receipt = receipt_file
+                    receipt.receipt.name = '{}-{}.{}'\
+                        .format(me.get('household_key'), expense.pk, receipt_file.content_type.split('/')[1])
+                    receipt.save()
+
                 messages.success(request, 'Your information has been saved.')
 
                 remaining_budget = get_remaining_budget(category, expense.expense_date)

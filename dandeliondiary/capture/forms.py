@@ -1,5 +1,7 @@
 from django import forms
+from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 
 class CategoryCustomChoiceField(forms.ChoiceField):
@@ -47,6 +49,25 @@ class NewExpenseForm(forms.Form):
         required=False,
         help_text=_("Defaults to today; otherwise, select date to apply to budget.")
     )
+    receipt = forms.ImageField(
+        label=_("Receipt (optional):"),
+        required=False,
+        help_text=_("Capture your receipt for your records.")
+    )
+
+    def clean_receipt(self):
+        receipt = self.cleaned_data['receipt']
+        if receipt:
+            content_type = receipt.content_type.split('/')[0]
+            if content_type in settings.CONTENT_TYPES:
+                if receipt.size > settings.MAX_UPLOAD_SIZE:
+                    error = 'Please keep file size under {}; current file size is {}.'\
+                        .format(filesizeformat(settings.MAX_UPLOAD_SIZE), filesizeformat(receipt.size))
+                    raise forms.ValidationError(_(error))
+            else:
+                raise forms.ValidationError(_('File type is not supported.'))
+
+        return receipt
 
     def clean(self):
         value1 = int(self.cleaned_data['choose_category_place'])
