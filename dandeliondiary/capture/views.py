@@ -1,11 +1,10 @@
-import datetime
+import datetime, random
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
-
-from PIL import Image
+from django.conf import settings
 
 from google import get_nearby_places, byteify
 
@@ -66,12 +65,17 @@ def new_expense(request):
 
                 receipt_file = form.cleaned_data.get('receipt')
                 if receipt_file:
+
+                    hashids = Hashids(salt=settings.MEDIA_HASH_SALT, min_length=settings.MEDIA_HASH_MIN_LENGTH)
+                    to_hash1 = hashids.encode(random.randint(1, 999999999999))
+                    to_hash2 = hashids.encode(expense.pk)
+                    file_name = '{}{}.{}'.format(to_hash1, to_hash2, receipt_file.content_type.split('/')[1])
+
                     receipt = MyReceipt()
                     receipt.expense_item = expense
                     receipt.original_name = receipt_file.name
                     receipt.receipt = receipt_file
-                    receipt.receipt.name = '{}-{}.{}'\
-                        .format(me.get('household_key'), expense.pk, receipt_file.content_type.split('/')[1])
+                    receipt.receipt.name = file_name
                     receipt.save()
 
                 messages.success(request, 'Your information has been saved.')
@@ -215,6 +219,7 @@ def ajax_list_expenses(request):
             expense_category = MyBudgetCategory.objects.get(pk=expense.category.pk)
             record['category'] = expense_category.my_category_name
             record['note'] = expense.note
+
             data.append(record)
 
         response_data['Result'] = 'OK'
