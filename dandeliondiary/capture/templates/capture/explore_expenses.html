@@ -16,10 +16,6 @@
     <link href="{% static "plugins/jtable/themes/metro/green/jtable.min.css" %}" rel="stylesheet" type="text/css" />
     <script src="{% static "plugins/jtable/jquery.jtable.min.js" %}" type="text/javascript"></script>
 
-	<link href="{% static "css/plugin-hover-buttons.css" %}" rel="stylesheet" type="text/css" />
-    <link href="{% static "css/header-1.css" %}" rel="stylesheet" type="text/css" />
-    <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
-
     <script>
     function showHide(){
         $("#selectFilters").toggle();
@@ -106,6 +102,34 @@
                         </div>
                     </div>
                 </form>
+
+                <!-- Display Receipt -->
+                <div id="receiptModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                     aria-hidden="true">
+	                <div class="modal-dialog">
+		                <div class="modal-content">
+
+			                <!-- Modal Header -->
+			                <div class="modal-header">
+				                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span></button>
+				                <h4 class="modal-title" id="myModalLabel">Expense Receipt</h4>
+			                </div>
+
+			                <!-- Modal Body -->
+			                <div class="modal-body">
+				                <p>Use the right-click menu to download a copy of your reciept image.</p>
+                                <img id="receiptImg" src="" width="540" alt="Receipt image" />
+			                </div>
+
+                			<!-- Modal Footer -->
+			                <div class="modal-footer">
+				                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			                </div>
+
+		                </div>
+	                </div>
+                </div>
                 <div id="Explore_Expenses_Container"></div>
             </div>
     </div>
@@ -156,6 +180,21 @@
                     title: 'Note',
                     type: 'textarea',
                     width: '50%'
+                },
+                receipt: {
+                    title: 'Receipt',
+                    display: function(data){
+                        var html = '';
+                        if (data.record.receipt != 'none') {
+                            html = "<button type='button' class='btn btn-primary btn-xs' data-toggle='modal' " +
+                                "data-target='#receiptModal' onclick=" +
+                                "\"$('#receiptImg').attr('src','{{ MEDIA_URL }}" + data.record.receipt + "');\" >";
+	                        html += "<i class='fa fa-file-picture-o'</i> View</button>";
+                            //html = '<a href="' + data.record.receipt + '" target="_blank">View</a>';
+                        }
+                        return html;
+                    },
+                    edit: false
                 }
             },
             //Validate form when it is being submitted

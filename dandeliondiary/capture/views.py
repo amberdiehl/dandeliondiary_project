@@ -220,6 +220,13 @@ def ajax_list_expenses(request):
             record['category'] = expense_category.my_category_name
             record['note'] = expense.note
 
+            try:
+                receipt = MyReceipt.objects.get(expense_item=expense)
+            except ObjectDoesNotExist:
+                record['receipt'] = 'none'
+            else:
+                record['receipt'] = receipt.receipt.name
+
             data.append(record)
 
         response_data['Result'] = 'OK'
