@@ -154,14 +154,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = (os.path.join(BASE_DIR, '..', "static"),)
-STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATICFILES_DIRS = (os.path.join(BASE_DIR, '..', "static"),)
+# STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(MAIN_DIR, 'media')
-MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(MAIN_DIR, 'media')
+# MEDIA_URL = '/media/'
 
-CONTENT_TYPES = ['image', 'video']
-MAX_UPLOAD_SIZE = "5242880"
+# CONTENT_TYPES = ['image', 'video']
+# MAX_UPLOAD_SIZE = "5242880"
