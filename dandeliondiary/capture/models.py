@@ -34,6 +34,6 @@ class MyReceipt(models.Model):
 @receiver(post_delete, sender=MyReceipt)
 def receipt_post_delete_handler(sender, **kwargs):
     receipt_obj = kwargs['instance']
-    storage, path = receipt_obj.receipt.storage, receipt_obj.receipt.path
+    storage, path = receipt_obj.receipt.storage, receipt_obj.receipt.name
     if storage and path:
         storage.delete(path)
