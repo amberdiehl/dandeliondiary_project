@@ -70,7 +70,7 @@ SITE_ID = 1
 # Used for package "Account"; this is deprecated in Django 1.10 and will need to change soon.
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
-#   'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -149,19 +149,3 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
-
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-# STATICFILES_DIRS = (os.path.join(BASE_DIR, '..', "static"),)
-# STATIC_URL = '/static/'
-
-# MEDIA_ROOT = os.path.join(MAIN_DIR, 'media')
-# MEDIA_URL = '/media/'
-
-# CONTENT_TYPES = ['image', 'video']
-# MAX_UPLOAD_SIZE = "5242880"
