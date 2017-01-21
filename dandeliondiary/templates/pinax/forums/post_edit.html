@@ -1,9 +1,7 @@
 {% extends "pinax/forums/base.html" %}
 
-{% load thumbnail %}
-{% load bootstrap %}
+{% block body_container %}
 
-{% block body %}
     {% include "pinax/forums/_thread_breadcrumbs.html" with thread=post.thread %}
 
     <div class="panel panel-default">
@@ -13,13 +11,13 @@
         <div class="panel-body">
             <div class="row">
                 <div class="col-md-2">
-                    <img src="{{ user.profile.avatar|thumbnail_url:'avatar-large' }}" />
+                    <img src="avatar.png" />
                 </div>
                 <div class="col-md-10">
                     <form method="POST" class="form" action="{% url "pinax_forums:post_edit" post.kind post.pk %}">
                         {% csrf_token %}
                         <fieldset>
-                            {{ form|bootstrap }}
+                            {{ form }}
                         </fieldset>
                         <div class="form-actions pull-right">
                             <a href="{% url "pinax_forums:thread" post.thread.pk %}" class="btn btn-default">Cancel</a>
