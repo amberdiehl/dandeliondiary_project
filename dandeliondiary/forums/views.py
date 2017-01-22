@@ -5,9 +5,12 @@ from django.shortcuts import get_object_or_404, render
 from django.contrib import messages
 
 from account.decorators import login_required
+from guardian.shortcuts import assign_perm
 
 from .forms import ThreadForm, ReplyForm
 from .hooks import hookset
+
+from django.contrib.auth.models import Group
 from .models import (
     Forum,
     ForumCategory,
@@ -25,6 +28,7 @@ def forums(request):
 
     most_active_forums = Forum.objects.order_by("-post_count")[:5]
     most_viewed_forums = Forum.objects.order_by("-view_count")[:5]
+    UserPostCount().calculate()
     most_active_members = UserPostCount.objects.order_by("-count")[:5]
 
     latest_posts = ForumReply.objects.order_by("-created")[:10]
@@ -157,6 +161,10 @@ def post_create(request, forum_id):
             thread.save()
 
             forum.new_post(thread)
+
+            # grant permission to all forum customers to reply to new thread post
+            group = Group.objects.get(name='forum_customers')
+            assign_perm('add_forumreply', group, thread)
 
             # subscribe the poster to the thread if requested (default value is True)
             if form.cleaned_data["subscribe"]:

@@ -372,18 +372,20 @@ class UserPostCount(models.Model):
     def calculate(cls):
         User = get_user_model()
         for user in User.objects.all():
-            thread_count = ForumThread.objects.filter(author=user).count()
-            reply_count = ForumReply.objects.filter(author=user).count()
-            count = thread_count + reply_count
-            upc, created = cls._default_manager.get_or_create(
-                user=user,
-                defaults=dict(
-                    count=count
-                )
-            )
-            if not created:
-                upc.count = count
-                upc.save()
+            if user.username not in ['Admin', 'AnonymousUser']:
+                thread_count = ForumThread.objects.filter(author=user).count()
+                reply_count = ForumReply.objects.filter(author=user).count()
+                count = thread_count + reply_count
+                if count > 0:
+                    upc, created = cls._default_manager.get_or_create(
+                        user=user,
+                        defaults=dict(
+                            count=count
+                        )
+                    )
+                    if not created:
+                        upc.count = count
+                        upc.save()
 
 
 class ThreadSubscription(models.Model):

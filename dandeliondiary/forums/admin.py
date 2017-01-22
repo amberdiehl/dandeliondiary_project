@@ -33,8 +33,10 @@ admin.site.register(
         "parent"
     ]
 )
-admin.site.register(
-    models.Forum,
+
+
+class ForumAdmin(GuardedModelAdmin):
+
     list_display=[
         "id",
         "title",
@@ -43,5 +45,8 @@ admin.site.register(
         "view_count",
         "post_count"
     ]
-)
+
+
+admin.site.register(models.Forum, ForumAdmin)
+
 admin.site.register(models.ForumThread, ForumThreadAdmin)
