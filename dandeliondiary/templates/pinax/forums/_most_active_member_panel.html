@@ -1,20 +1,18 @@
 <div class="panel panel-default">
     <div class="panel-heading">Most Active Members</div>
     {% if most_active_members %}
-        <ul class="list-group media-list">
+        <table class="table table-striped">
             {% for member_count in most_active_members %}
-                <li class="list-group-item media">
-                    <div class="media-body">
+                <tr>
+                    <td>
                         <h4 class="media-heading">
-                            <a href="">
-                                {{ member_count.user.username}}
-                            </a>
+                            <a href="">{{ member_count.user.username}}</a>
                         </h4>
-                        {{ member_count.count }} Post{{ member_count.count|pluralize }}
-                    </div>
-                </li>
+                    </td>
+                    <td class="text-right">{{ member_count.count }} Post{{ member_count.count|pluralize }}</td>
+                </tr>
             {% endfor %}
-        </ul>
+        </table>
     {% else %}
         <div class="panel-body">
             There are no active members.

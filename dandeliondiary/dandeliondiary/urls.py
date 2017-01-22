@@ -26,7 +26,7 @@ urlpatterns = [
     url(r'^capture/', include('capture.urls', namespace='capture')),
     url(r'^household/', include('household.urls', namespace='household')),
     url(r'^compare/', include('compare.urls', namespace='compare')),
-    url(r'^contribute/', include('pinax.forums.urls', namespace='pinax_forums')),
+    url(r'^contribute/', include('forums.urls', namespace='pinax_forums')),
     url(r'^admin/', admin.site.urls),
     url(r'^$', view=views.launch_homepage),
 ]

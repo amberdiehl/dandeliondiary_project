@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.humanize',
     'django.contrib.staticfiles',
+    'guardian',
     'storages',
     'django_q',
     'bootstrap3',
@@ -50,11 +51,12 @@ INSTALLED_APPS = [
     'capture',
     'compare',
     'contribute',
-    'pinax.forums',
+    'forums',
     'public',
 ]
 
 SITE_ID = 1
+WSGI_APPLICATION = 'dandeliondiary.wsgi.application'
 
 # This is the proper way to do this in Django 1.10 but am using MIDDLEWARE_CLASSES below until account package is fixed.
 #MIDDLEWARE = [
@@ -108,7 +110,13 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'dandeliondiary.wsgi.application'
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # this is default
+    'guardian.backends.ObjectPermissionBackend',
+)
+
+GUARDIAN_RENDER_403 = True
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators

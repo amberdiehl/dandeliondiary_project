@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.forms import modelformset_factory
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from .forms import *
 from .models import *
@@ -47,7 +47,7 @@ def household_dashboard(request):
     account = Account.objects.get(user_id=request.user.pk)
 
     # 1. If user is new member of household, automatically create associations for Member, HouseholdMember
-    #    This MUST be execute FIRST to ensure the rest of the dashboard/household setup functions correctly.
+    #    This MUST be executed FIRST to ensure the rest of the dashboard/household setup functions correctly.
     try:
         invited_member = HouseholdInvite.objects.get(email=user.email)
     except ObjectDoesNotExist:
@@ -177,7 +177,11 @@ def my_info(request):
             user.last_name = form.cleaned_data.get('last_name')
             user.save()
 
-            # Create household owner
+            # Place in 'forum_customers' for access to 'Contribute'
+            group = Group.objects.get(name='forum_customers')
+            group.user_set.add(user)
+
+            # Create/update household member record; when new household, this creates household owner
             household_member.account = account
             household_member.phone_number = form.cleaned_data.get('phone_number')
             household_member.owner = form.cleaned_data.get('owner')

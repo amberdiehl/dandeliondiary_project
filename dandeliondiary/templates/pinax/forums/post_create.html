@@ -1,9 +1,14 @@
 {% extends "pinax/forums/base.html" %}
 
-{% load bootstrap %}
+{% block body_classes %} bg-grey {% endblock %}
 
 {% block body_container %}
+
     {% include "pinax/forums/_forum_breadcrumb.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+        <div class="margin-top-20 margin-bottom-20">
 
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -21,7 +26,7 @@
                         <legend>Create Post</legend>
                         {% csrf_token %}
                         <fieldset>
-                            {{ form|bootstrap_horizontal:"col-md-3" }}
+                            {{ form }}
                         </fieldset>
                         <div class="form-actions pull-right">
                             <button class="btn btn-primary" type="submit">Post</button>
@@ -29,6 +34,8 @@
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
         </div>
     </div>
 {% endblock %}

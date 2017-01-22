@@ -1,6 +1,9 @@
 {% extends "pinax/forums/base.html" %}
 
 {% block body_container %}
+
+    {% include "pinax/forums/_forum_breadcrumb.html" %}
+
     <div class="row">
         <div class="col-md-3">
             {% if categories %}
