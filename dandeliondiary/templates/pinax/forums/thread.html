@@ -2,6 +2,7 @@
 
 {% load humanize %}
 {% load pinax_forums_tags %}
+{% load avatar_tags %}
 
 {% block body_container %}
     {% include "pinax/forums/_thread_breadcrumbs.html" with thread=thread %}
@@ -31,7 +32,7 @@
                     <div class="row">
                         <div class="col-md-2">
                             <a class="thumb media-object" href="{# url user_page post.author.pk #}">
-                                <img src="avatar.png" />
+                                {% avatar post.author.username 50 class="img-circle" %}
                             </a>
                             <a href="{# url user_page post.author.pk #}">{{ post.author.username }}</a><br />
                             {# @@@ points, stars, level #}
@@ -82,7 +83,7 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-2">
-                        <img src="avatar.png" />
+                        {% avatar user 50 class="img-circle" %}
                     </div>
                     <div class="col-md-10">
                         <form action="" method="POST" class="form">

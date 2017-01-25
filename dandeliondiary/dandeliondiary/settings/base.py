@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'contribute',
     'forums',
     'public',
+    'avatar',
 ]
 
 SITE_ID = 1
@@ -136,7 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Account package settings
+# Account application settings
 ACCOUNT_SIGNUP_REDIRECT_URL = "household:household_dashboard"
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "household:household_dashboard"
 ACCOUNT_LOGIN_REDIRECT_URL = "compare:compare_dashboard"
@@ -146,6 +147,11 @@ ACCOUNT_EMAIL_UNIQUE = True
 ACCOUNT_EMAIL_CONFIRMATION_REQUIRED = False
 ACCOUNT_EMAIL_CONFIRMATION_EMAIL = True
 ACCOUNT_USE_AUTH_AUTHENTICATE = False
+
+# Avatar application settings
+AVATAR_AUTO_GENERATE_SIZES = (80, 64, 50,)
+AVATAR_DEFAULT_SIZE = 64
+AVATAR_GRAVATAR_BACKUP = False
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

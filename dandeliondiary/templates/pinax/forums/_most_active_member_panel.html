@@ -1,3 +1,5 @@
+{% load avatar_tags %}
+
 <div class="panel panel-default">
     <div class="panel-heading">Most Active Members</div>
     {% if most_active_members %}
@@ -6,6 +8,7 @@
                 <tr>
                     <td>
                         <h4 class="media-heading">
+                            {% avatar member_count.user.username 50 class="img-circle" %}
                             <a href="">{{ member_count.user.username}}</a>
                         </h4>
                     </td>

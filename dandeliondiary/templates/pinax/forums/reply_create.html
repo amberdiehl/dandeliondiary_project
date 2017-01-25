@@ -1,5 +1,7 @@
 {% extends "pinax/forums/base.html" %}
 
+{% load avatar_tags %}
+
 {% block body_container %}
 
     {% include "pinax/forums/_thread_breadcrumbs.html" with thread=thread %}
@@ -11,7 +13,7 @@
         <div class="panel-body">
             <div class="row">
                 <div class="col-md-2">
-                    <img src="avatar.png" />
+                    {% avatar user 50 class="img-circle" %}
                 </div>
                 <div class="col-md-10">
                     <form method="POST" class="form" action="{% url "pinax_forums:reply_create" thread.pk %}">
