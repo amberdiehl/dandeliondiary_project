@@ -152,6 +152,7 @@ ACCOUNT_USE_AUTH_AUTHENTICATE = False
 AVATAR_AUTO_GENERATE_SIZES = (80, 64, 50,)
 AVATAR_DEFAULT_SIZE = 64
 AVATAR_GRAVATAR_BACKUP = False
+AVATAR_CHANGE_TEMPLATE = "avatar/avatar.html"
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

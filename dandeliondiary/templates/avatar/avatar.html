@@ -1,0 +1,75 @@
+{% load staticfiles %}
+{% load bootstrap3 %}
+{% load i18n avatar_tags %}
+
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+
+        <link href="{% static "/plugins/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css" />
+
+        <style>
+
+            ul {
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            li {
+                display: inline;
+                margin: 5px;
+            }
+
+        </style>
+
+    </head>
+
+    <body style="height: 100%;">
+
+    <div class="col-md-8 col-md-offset-2">
+
+        <div class="box-static box-transparent box-bordered box-white">
+
+            <!-- ALERTS -->
+            {% if messages %}
+                {% for msg in messages %}
+                    <div class="alert alert-{{msg.level_tag}} margin-bottom-30" role="alert">
+                        {{msg.message}}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <!-- /ALERTS -->
+
+            <table>
+                <tr>
+                    <td>{% trans "Your current " %}<br>{% trans "avatar:" %}</td><td>{% avatar user %}</td>
+                </tr>
+            </table>
+            <br>
+            {% if not avatars %}
+                <p>{% trans "You haven't uploaded an avatar yet. Please upload one now." %}</p>
+            {% else %}
+                <form method="POST" action="{% url 'avatar_change' %}">
+                {% csrf_token %}
+                    <ul>
+                        {{ primary_avatar_form.as_ul }}
+                    </ul>
+                    <p><input type="submit" value="{% trans "Choose new Default" %}"/></p>
+                </form>
+            {% endif %}
+            <br>
+            <form enctype="multipart/form-data" method="POST" action="{% url 'avatar_add' %}">
+                {{ upload_avatar_form.as_p }}
+                <p>{% csrf_token %}<input type="submit" value="{% trans "Upload New Image" %}"/></p>
+            </form>
+
+        </div>
+    </div>
+
+    </body>
+
+</html>

@@ -7,6 +7,26 @@
 {% block title %}{% trans "My Account + Household" %}{% endblock %}
 
 {% block static %}
+
+    <style>
+
+        .modal-dialog {
+            margin: 2.5vh auto;
+        }
+
+        .modal-content {
+            min-height: 70vh;
+            max-height: 90vh;
+            overflow: scroll;
+        }
+
+        /*Sets the maximum height of the modal body to 90% of the screen height*/
+        .modal-body {
+            min-height: 40vh;
+            max-height: 60vh;
+        }
+
+    </style>
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -85,8 +105,26 @@
                         </div>
                     </div>
                     {% if password_link == True %}
-                        <a href="{% url "account_password" %}">Change my password</a>
-                        <a href="{% url 'avatar_change' %}">Change your avatar</a>
+                        <a href="{% url "account_password" %}">Change my password</a><br>
+                        <a data-toggle="modal" href="#myModal">Change my avatar</a>
+                        <!-- Modal form for avatar(s) -->
+                        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">&times;</button>
+                                        <h4 class="modal-title" id="myModalLabel">My Avatar</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <iframe src="{% url 'avatar_change' %}" style="min-height: 100%; width: 100%;"></iframe>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     {% endif %}
                 </fieldset>
 
