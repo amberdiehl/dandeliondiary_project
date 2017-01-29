@@ -9,6 +9,8 @@ urlpatterns = [
     url(r'^vehicles$', views.household_vehicles, name='maintain_vehicles'),
     url(r'^ajax/models-by-make/(?P<make_id>\d+)/$', views.ajax_models_by_make),
     url(r'^ajax/makes-by-type/(?P<type_id>\d+)/$', views.ajax_makes_by_type),
+    url(r'^ajax/add-make/(?P<type_key>\d+)/(?P<make>[\w\ ]+)/$', views.ajax_add_make),
+    url(r'^ajax/add-model/(?P<make_key>\d+)/(?P<model>[\w\ ]+)/$', views.ajax_add_model),
     url(r'^ajax/delete-invite/$', views.ajax_delete_invite),
     url(r'^ajax/change-member-status/$', views.ajax_change_member_status),
 ]

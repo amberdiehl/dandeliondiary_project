@@ -7,6 +7,27 @@
 {% block title %}{% trans "Household Vehicles" %}{% endblock %}
 
 {% block static %}
+
+        <style>
+
+        .modal-dialog {
+            margin: 2.5vh auto;
+        }
+
+        .modal-content {
+            min-height: 70vh;
+            max-height: 90vh;
+            overflow: scroll;
+        }
+
+        /*Sets the maximum height of the modal body to 90% of the screen height*/
+        .modal-body {
+            min-height: 40vh;
+            max-height: 60vh;
+        }
+
+    </style>
+
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -49,7 +70,8 @@
 	                <div class="col-md-3 col-sm-3 nopadding">
 		                <ul class="nav nav-tabs nav-stacked">
                             {% for form in formset %}
-			                    <li {% if forloop.counter == 1 %}class="active"{% endif %}>
+			                    <li id="select_tab_{{ forloop.counter }}"
+                                    {% if forloop.counter == 1 %}class="active"{% endif %}>
                                     <a href="#tab_{{ forloop.counter }}" data-toggle="tab">
                                         Vehicle {{ forloop.counter }}</a></li>
                             {% endfor %}
@@ -78,6 +100,14 @@
                                                 <label class="input margin-bottom-10">
                                                     {{ field }}
                                                     <b class="tooltip tooltip-bottom-right">{{ field.help_text }}</b>
+                                                    {% if field.name == 'make' %}
+                                                        <a id="id_{{ form.prefix }}-anchorAddMake" data-toggle="modal"
+                                                           href="#makeModal">Add my make</a>
+                                                    {% endif %}
+                                                    {% if field.name == 'model_name' %}
+                                                        <a id="id_{{ form.prefix }}-anchorAddModel"data-toggle="modal"
+                                                           href="#modelModal">Add my model</a>
+                                                    {% endif %}
                                                 </label>
                                             {% endif %}
                                             {% if field.errors %}
@@ -107,6 +137,53 @@
                     <div class="col-md-12">
                         <button type="submit" class="btn btn-primary btn-bordered pull-right">
                             <i class="fa fa-check"></i>{% trans "Save" %}</button>
+                    </div>
+                </div>
+
+                <!-- Modal form for adding make -->
+                <div class="modal fade" id="makeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                     aria-hidden="true">
+                    <div id="test" class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="myModalLabel">Add Make</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div id='divAddMakeMessage' class="alert alert-warning margin-bottom-30 hide" role="alert">
+                                    <label id="lblAddMakeMessage"></label>
+                                </div>
+                                <span>Your make: <input id="inputAddMake" type="text"></span><br><br>
+                                <button type="button" class="btn btn-primary" onclick="AddMake();">Add</button>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal form for adding model -->
+                <div class="modal fade" id="modelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                     aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="myModalLabel">Add Model</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div id='divAddModelMessage' class="alert alert-warning margin-bottom-30 hide" role="alert">
+                                    <label id="lblAddModelMessage"></label>
+                                </div>
+                                <span>Your model: <input id="inputAddModel" type="text"></span><br><br>
+                                <button type="button" class="btn btn-primary" onclick="AddModel();">Add</button>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -147,7 +224,7 @@
                         var $el = $('#'+choice_make);
                         $el.empty(); // remove old options
 
-                        $el.append($("<option></option>").attr("value", '').text('---------'));
+                        $el.append($("<option></option>").attr("value", '0').text('---------'));
 
                         for (i = 0; i < newOptions.length; i++) {
                             var option = newOptions[i];
@@ -156,13 +233,13 @@
                             }
                         }
 
-                        $el.val('');
+                        $el.val('0');
 
                     }});
 
                     var $el = $('#'+choice_model);
                     $el.empty(); // remove old options
-                    $el.append($("<option></option>").attr("value", '').text('---------'));
+                    $el.append($("<option></option>").attr("value", '0').text('---------'));
 
                 }
 
@@ -185,7 +262,7 @@
                         var $el = $('#'+choice_model);
                         $el.empty(); // remove old options
 
-                        $el.append($("<option></option>").attr("value", '').text('---------'));
+                        $el.append($("<option></option>").attr("value", '0').text('---------'));
 
                         for (i = 0; i < newOptions.length; i++) {
                             var option = newOptions[i];
@@ -194,7 +271,7 @@
                             }
                         }
 
-                        $el.val('');
+                        $el.val('0');
 
                     }});
     	        }
@@ -223,10 +300,134 @@
             return sorted;
         }
 
+        function AddMake(event) {
+
+            var msgErr1 = 'Sorry, your request could not be completed. Please try again or contact Support.';
+            var msgErr2 = 'Make (manufacturer) name must be greater than 3 characters.';
+            var msgErr3 = 'Please close this window and select Vehicle Type first.';
+
+            // Determine active tab to get active form.
+            var activeTab = $( "li" ).filter( $( "[id^=select_tab_]" ) ).filter( ".active" );
+            var tabName = activeTab.attr("id");
+            var formIndex = parseInt(tabName.substring(tabName.lastIndexOf('_')+1, tabName.length))-1;
+
+            var choice_type = 'id_form-' + formIndex +'-type';
+            var type_value = $('#'+choice_type).val();
+            var make_value = $('#inputAddMake').val();
+
+            if (type_value > 0) {
+
+                if (make_value.length > 3) {
+
+                    var request = $.ajax({
+                        url: '/household/ajax/add-make/' + type_value + '/' + encodeURIComponent(make_value) + '/',
+                        dataType: "json"
+                    });
+
+                    request.done(function( result ) {
+                        if (result.status == 'OK') {
+
+                            var $el0 = $('#id_form-' + formIndex + '-make');
+                            if (result.new = true){
+                                $el0.append($("<option></option>").attr("value", result.key).text(result.make));
+                            }
+                            $el0.val(result.key);
+                            $el0.trigger('change');
+
+                            $('#makeModal').modal('hide');
+
+                        } else {
+                            showMessage(msgErr1, 'AddMake');
+                        }
+                    });
+
+                    request.fail(function( jqXHR, textStatus ) {
+                        showMessage(msgErr1, 'AddMake');
+                    });
+
+                } else {
+                    showMessage(msgErr2, 'AddMake');
+                }
+
+            } else {
+                showMessage(msgErr3, 'AddMake');
+            }
+
+        }
+
+        function AddModel(event) {
+
+            var fn = 'AddModel';
+            var msgErr1 = 'Sorry, your request could not be completed. Please try again or contact Support.';
+            var msgErr2 = 'Model name must be greater than 3 characters.';
+            var msgErr3 = 'Please close this window and select make first.';
+
+            // Determine active tab to get active form.
+            var activeTab = $( "li" ).filter( $( "[id^=select_tab_]" ) ).filter( ".active" );
+            var tabName = activeTab.attr("id");
+            var formIndex = parseInt(tabName.substring(tabName.lastIndexOf('_')+1, tabName.length))-1;
+
+            var choice_make = 'id_form-' + formIndex +'-make';
+            var make_value = $('#'+choice_make).val();
+            var model_value = $('#inputAddModel').val();
+
+            if (make_value > 0) {
+
+                if (model_value.length > 3) {
+
+                    var request = $.ajax({
+                        url: '/household/ajax/add-model/' + make_value + '/' + encodeURIComponent(model_value) + '/',
+                        dataType: "json"
+                    });
+
+                    request.done(function( result ) {
+                        if (result.status == 'OK') {
+
+                            var $el0 = $('#id_form-' + formIndex + '-model_name');
+                            if (result.new = true){
+                                $el0.append($("<option></option>").attr("value", result.key).text(result.model));
+                            }
+                            $el0.val(result.key);
+                            $el0.trigger('change');
+
+                            $('#modelModal').modal('hide');
+
+                        } else {
+                            showMessage(msgErr1, fn);
+                        }
+                    });
+
+                    request.fail(function( jqXHR, textStatus ) {
+                        showMessage(msgErr1, fn);
+                    });
+
+                } else {
+                    showMessage(msgErr2, fn);
+                }
+
+            } else {
+                showMessage(msgErr3, fn);
+            }
+
+        }
+
+        function showMessage(msg, fn) {
+            $('#lbl' + fn + 'Message').html(msg);
+            $('#div' + fn + 'Message').removeClass('hide').addClass('show')
+        }
+
+        $('#makeModal').on('hidden.bs.modal', function (e) {
+            $('#divAddMakeMessage').removeClass('show').addClass('hide');
+        });
+
+        $('#modelModal').on('hidden.bs.modal', function (e) {
+            $('#divAddModelMessage').removeClass('show').addClass('hide');
+        });
+
     </script>
 
     <!-- JAVASCRIPT FILES -->
     <script type="text/javascript">var plugin_path = "/static/plugins/";</script>
-    <script type="text/javascript" src="{% static "/js/scripts.js" %}"></script>
+    <!-- <script type="text/javascript" src="{% static "/js/scripts.js" %}"></script> -->
 
 {% endblock %}

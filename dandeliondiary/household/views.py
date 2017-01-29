@@ -11,6 +11,8 @@ from django.contrib.auth.models import User, Group
 from .forms import *
 from .models import *
 from core.models import BudgetModel, VehicleType, VehicleMake, VehicleModel
+
+from core.helpers import login_required_ajax
 from helpers import *
 
 import datetime
@@ -464,6 +466,81 @@ def ajax_makes_by_type(request, type_id):
     return JsonResponse(response_data, safe=False)
 
 
+@login_required_ajax
+def ajax_add_make(request, type_key, make):
+
+    result = {}
+
+    try:
+        type = VehicleType.objects.get(pk=type_key)
+    except ObjectDoesNotExist:
+        result['status'] = 'ERROR'
+        return JsonResponse(result)
+
+    # Force case for make for consistency
+    make = make.title()
+
+    try:
+        m = VehicleMake.objects.get(make=make)
+    except ObjectDoesNotExist:
+
+        new_make = VehicleMake()
+        new_make.filter = type.filter
+        new_make.make = make
+        new_make.save()
+
+        result['status'] = 'OK'
+        result['new'] = True
+        result['make'] = make
+        result['key'] = new_make.pk
+
+    else:
+
+        result['status'] = 'OK'
+        result['new'] = False
+        result['key'] = m.pk
+
+    return JsonResponse(result)
+
+
+@login_required_ajax
+def ajax_add_model(request, make_key, model):
+
+    result = {}
+
+    try:
+        make = VehicleMake.objects.get(pk=make_key)
+    except ObjectDoesNotExist:
+        result['status'] = 'ERROR'
+        return JsonResponse(result)
+
+    # Force case for model for consistency
+    model = model.title()
+
+    try:
+        m = VehicleModel.objects.get(model_name=model)
+    except ObjectDoesNotExist:
+
+        new_model = VehicleModel()
+        new_model.make = make
+        new_model.model_name = model
+        new_model.save()
+
+        result['status'] = 'OK'
+        result['new'] = True
+        result['model'] = model
+        result['key'] = new_model.pk
+
+    else:
+
+        result['status'] = 'OK'
+        result['new'] = False
+        result['key'] = m.pk
+
+    return JsonResponse(result)
+
+
+@login_required_ajax
 def ajax_delete_invite(request):
     """
     Deletes a pending invite request at the request of the household owner. Rather than deleting directly if id
@@ -494,6 +571,7 @@ def ajax_delete_invite(request):
     return JsonResponse(result)
 
 
+@login_required_ajax
 def ajax_change_member_status(request):
 
     result = {}
