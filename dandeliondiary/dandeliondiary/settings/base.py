@@ -12,10 +12,13 @@ MAIN_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 SECRET_KEY = 'secret_key'
 GOOGLE_API_KEY = 'api_key'
 
+# General security settings
 ALLOWED_HOSTS = ['www.dandeliondiary.com',]
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE=True
+SECURE_SSL_REDIRECT = True
 
 # Default database definition
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
