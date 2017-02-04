@@ -45,6 +45,52 @@
 	        FreshWidget.init("", {"queryString": "&widgetType=popup", "utf8": "✓", "widgetType": "popup", "buttonType": "text", "buttonText": "Support", "buttonColor": "white", "buttonBg": "#618125", "alignment": "2", "offset": "300px", "formHeight": "500px", "url": "https://dandeliondiary.freshdesk.com"} );
         </script>
 
+        <!-- Changelog -->
+        <script>
+            var HW_config = {
+                selector: ".changelog-wrap",
+                account: "xWeLaJ"
+            };
+        </script>
+        <script async src="//cdn.headwayapp.co/widget.js"></script>
+
+        <style>
+            .top-links .changelog-wrap {
+                position: absolute;
+                top: -20px;
+                left: 5px;
+            }
+            #HW_frame_cont {
+                pointer-events: none;
+                border-radius: 4px;
+                box-shadow: 0 0 1px rgba(99, 114, 130, 0.32), 0 8px 16px rgba(27, 39, 51, 0.08);
+                background: #fff;
+                border: none;
+                position: absolute !important;
+                left: 30px !important;
+                top: 120px !important;
+                z-index: 999;
+                width: 340px;
+                height: 300px;
+                opacity: 0;
+                will-change: height, margin-top, opacity;
+                margin-top: -10px;
+                transition: margin-top 0.15s ease-out, opacity 0.1s ease-out, height 0.3s ease-out;
+            }
+        </style>
+
+        <!-- iubenda cookie script -->
+        <script type="text/javascript">
+	        var _iub = _iub || [];
+	        _iub.csConfiguration = {
+	            cookiePolicyId: 8019428,
+		        siteId: 713550,
+		        lang: "en",
+		        priorConsent: false
+	        };
+        </script>
+        <script type="text/javascript" src="//cdn.iubenda.com/cookie_solution/safemode/iubenda_cs.js" charset="UTF-8" async></script>
+
         {% block static %}{% endblock %}
 
     </head>
@@ -84,6 +130,7 @@
 					<!-- left -->
 					<ul class="top-links list-inline">
 						<li class="hidden-xs"><a href="page-faq-1.html">FAQ</a></li>
+                        <li><span class="changelog-wrap"></span></li>
 					</ul>
 
 				</div>
@@ -128,7 +175,7 @@
 
 						<!-- Logo -->
 						<a class="logo pull-left" href="{% url "public:home" %}">
-							<img src="{% static "images/logo_light.png" %}" alt=""/>
+							<img src="{% static "images/logo-header.png" %}" alt="Dandelion Diary"/>
 						</a>
 
 						<div class="navbar-collapse pull-right nav-main-collapse collapse submenu-light">
@@ -199,13 +246,9 @@
 			    <div class="spaced col-md-4 col-sm-4">
 
 				    <!-- Footer Logo -->
-				    <img class="footer-logo" src="assets/images/logo-footer.png" alt="" />
+				    <img class="footer-logo" src="{% static "images/logo-footer.png" %}" alt="Dandelion Diary" />
 
-				    <p>
-					    Saving dreams.
-				    </p>
-
-				    <h2>(800) 123-4567</h2>
+				    <p>Saving dreams.</p>
 
 			    </div>
 			    <!-- /col #1 -->
@@ -219,11 +262,9 @@
 						    <h4 class="letter-spacing-1">EXPLORE</h4>
 						    <ul class="list-unstyled">
 							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Home</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Home Shop</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Home Portfolio</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Home Blog</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Home Magazine</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Home Parallax</a></li>
+							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Capture</a></li>
+							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Compare</a></li>
+							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Contribute</a></li>
 						    </ul>
 					    </div>
 
@@ -231,23 +272,21 @@
 						    <h4 class="letter-spacing-1">PAGES</h4>
 						    <ul class="list-unstyled">
 							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> About Us</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> About Me</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> About Our Team</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Services</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Careers</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Gallery</a></li>
+							    <li>
+                                <a href="//www.iubenda.com/privacy-policy/8019428" class="iubenda-nostyle no-brand iubenda-embed" title="Privacy and Cookie Policy"><i class="fa fa-angle-right"></i> Privacy and Cookie Policy</a><script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src = "//cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
+                                </li>
+							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Terms of Use</a></li>
 							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> FAQ</a></li>
+							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Contact Us</a></li>
 						    </ul>
 					    </div>
 
 					    <div class="col-md-4">
-						    <h4 class="letter-spacing-1">PORTFOLIO</h4>
+						    <h4 class="letter-spacing-1">BLOG & FORUMS</h4>
 						    <ul class="list-unstyled">
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Portfolio 2 Columns</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Portfolio 3 Columns</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Portfolio 4 Columns</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Single Basic</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Single Full Slider</a></li>
+							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Talewind</a></li>
+							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Open Forum 1</a></li>
+							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Open Forum 2</a></li>
 						    </ul>
 					    </div>
 				    </div>
