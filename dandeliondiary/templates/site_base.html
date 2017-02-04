@@ -79,18 +79,6 @@
             }
         </style>
 
-        <!-- iubenda cookie script -->
-        <script type="text/javascript">
-	        var _iub = _iub || [];
-	        _iub.csConfiguration = {
-	            cookiePolicyId: 8019428,
-		        siteId: 713550,
-		        lang: "en",
-		        priorConsent: false
-	        };
-        </script>
-        <script type="text/javascript" src="//cdn.iubenda.com/cookie_solution/safemode/iubenda_cs.js" charset="UTF-8" async></script>
-
         {% block static %}{% endblock %}
 
     </head>
@@ -119,9 +107,9 @@
 								<li class="divider"></li>
 								<li><a tabindex="-1" href="#"><i class="fa fa-bookmark"></i> Month at a Glance</a></li>
 								<li><a tabindex="-1" href="#"><i class="fa fa-edit"></i> My Comments</a></li>
-								<li><a tabindex="-1" href={% url "household:household_dashboard" %}><i class="fa fa-cog"></i> My Settings</a></li>
+								<li><a tabindex="-1" href="{% url "household:household_dashboard" %}"><i class="fa fa-cog"></i> My Settings</a></li>
 								<li class="divider"></li>
-								<li><a tabindex="-1" href={% url "account_logout" %}><i class="glyphicon glyphicon-off"></i> Logout</a></li>
+								<li><a tabindex="-1" href="{% url "account_logout" %}"><i class="glyphicon glyphicon-off"></i> Logout</a></li>
 							</ul>
 						</li>
                         {% endif %}
@@ -275,7 +263,7 @@
 							    <li>
                                 <a href="//www.iubenda.com/privacy-policy/8019428" class="iubenda-nostyle no-brand iubenda-embed" title="Privacy and Cookie Policy"><i class="fa fa-angle-right"></i> Privacy and Cookie Policy</a><script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src = "//cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
                                 </li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Terms of Use</a></li>
+							    <li><a class="block" href="{% url "public:terms" %}"><i class="fa fa-angle-right"></i> Terms of Service</a></li>
 							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> FAQ</a></li>
 							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Contact Us</a></li>
 						    </ul>

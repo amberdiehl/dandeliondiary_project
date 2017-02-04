@@ -1,10 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "site_base.html" %}
+{% load staticfiles %}
+{% load i18n %}
 
-</body>
-</html>
+{% block title %}{% trans "Terms of Use" %}{% endblock %}
+
+{% block static %}
+{% endblock %}
+
+{% block body_classes %} bg-grey {% endblock %}
+
+{% block body_container %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+            <div class="margin-top-30 margin-bottom-30 box-static box-transparent box-bordered box-white">
+
+                <h2>{% trans "Site Terms of Use" %}</h2>
+
+                {% include "./incl_terms-of-use.html" %}
+
+            </div>
+    </div>
+
+{% endblock %}

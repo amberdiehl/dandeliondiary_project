@@ -12,6 +12,27 @@
     <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
     <link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 
+    <style>
+
+        .modal-dialog {
+            margin: 2.5vh auto;
+        }
+
+        .modal-content {
+            min-height: 70vh;
+            max-height: 90vh;
+            overflow: scroll;
+        }
+
+        /*Sets the maximum height of the modal body to 90% of the screen height*/
+        .modal-body {
+            min-height: 40vh;
+            max-height: 60vh;
+            overflow: scroll;
+        }
+
+    </style>
+
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -91,7 +112,7 @@
                         <button type="submit" class="btn btn-primary btn-bordered pull-right"><i class="fa fa-check"></i>
                             {% trans "Create account" %}</button>
                         <span><strong>Wait!</strong> By creating an account, you are stating you have read and agree to
-                            our <a href="#" data-toggle="modal" data-target="#termsModal">Terms of Service</a></span>
+                            our <a href="#termsModal" data-toggle="modal" data-target="#termsModal">Terms of Service</a></span>
                     </div>
                 </div>
 
@@ -105,6 +126,26 @@
                 </small>
             </p>
 
+    </div>
+
+    <!-- Modal form for terms of use -->
+    <div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Site Terms and Conditions</h4>
+                </div>
+                <div class="modal-body">
+                    {% include "public/incl_terms-of-use.html" %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
 {% endblock %}
