@@ -252,6 +252,7 @@ def household_profile(request):
                 new_household = form.save(commit=False)
                 new_household.budget_model = BudgetModel.objects.get(pk=1)  # default to DandelionDiary starter model
                 new_household.paid_through = "2017-06-30"  # default to trial period
+                new_household.opt_in_contribute = True  # default opt-in to contribute
                 new_household.save()
 
                 # Associate new household with member account
@@ -274,14 +275,14 @@ def household_profile(request):
         if membership:
             form = HouseholdProfileForm(instance=household)
         else:
-            form = HouseholdProfileForm(initial={'opt_in_contribute': True})
+            form = HouseholdProfileForm()
 
     context = {
         'form': form,
         'page_title': 'Household Profile',
         'url': 'household:maintain_household',
         'instructions': instructions,
-        'layout': ['-', 'b', 'e', 'b', 'e', '-', 'b', 'e', '-', 'b', 'e', 'b', 'd', '-', ],
+        'layout': ['-', 'b', 'e', 'b', 'e', '-', 'b', 'e', '-', 'b', 'e', 'b', 'd', ],
         'password_link': False,
     }
 

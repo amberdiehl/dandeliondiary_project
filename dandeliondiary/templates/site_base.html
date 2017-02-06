@@ -103,10 +103,8 @@
 							<a class="dropdown-toggle no-text-underline" data-toggle="dropdown" href="#">
                                 <i class="fa fa-user hidden-xs"></i> My Account</a>
 							<ul class="dropdown-menu pull-right">
-								<li><a tabindex="-1" href="#"><i class="fa fa-history"></i> Recent Expenses</a></li>
-								<li class="divider"></li>
-								<li><a tabindex="-1" href="#"><i class="fa fa-bookmark"></i> Month at a Glance</a></li>
-								<li><a tabindex="-1" href="#"><i class="fa fa-edit"></i> My Comments</a></li>
+								<li><a tabindex="-1" href="{% url "capture:explore_expenses" %}"><i class="fa fa-shopping-bag"></i> Recent Expenses</a></li>
+								<li><a tabindex="-1" href="{% url "compare:budgets_expenses" %}"><i class="fa fa-calendar"></i> Month at a Glance</a></li>
 								<li><a tabindex="-1" href="{% url "household:household_dashboard" %}"><i class="fa fa-cog"></i> My Settings</a></li>
 								<li class="divider"></li>
 								<li><a tabindex="-1" href="{% url "account_logout" %}"><i class="glyphicon glyphicon-off"></i> Logout</a></li>
@@ -139,25 +137,6 @@
 
 						<!-- BUTTONS -->
 						<ul class="pull-right nav nav-pills nav-second-main">
-
-							<!-- SEARCH -->
-							<li class="search">
-								<a href="javascript:;">
-									<i class="fa fa-search"></i>
-								</a>
-								<div class="search-box">
-									<form action="page-search-result-1.html" method="get">
-										<div class="input-group">
-											<input type="text" name="src" placeholder="Search" class="form-control" />
-											<span class="input-group-btn">
-												<button class="btn btn-primary" type="submit">Search</button>
-											</span>
-										</div>
-									</form>
-								</div>
-							</li>
-							<!-- /SEARCH -->
-
 						</ul>
 						<!-- /BUTTONS -->
 

@@ -101,8 +101,7 @@ class HouseholdProfileForm(forms.ModelForm):
         model = RVHousehold
         fields = ['start_year', 'members_in_household', 'oldest_birthyear', 'rig_type', 'use_type', 'income_type',
                   'pets_dog', 'pets_cat', 'pets_other',
-                  'children', 'children_status', 'grandchildren' ,'grandchildren_status',
-                  'opt_in_contribute']
+                  'children', 'children_status', 'grandchildren' ,'grandchildren_status']
         exclude = ['paid_through', 'budget_model']
         labels = {
             'members_in_household': _('Adults in household'),
@@ -137,7 +136,6 @@ class HouseholdProfileForm(forms.ModelForm):
             'children_status': _('Status of your children in relation to your household.'),
             'grandchildren': _('Number of grandchldren you have.'),
             'grandchildren_status': _('Status of your grandchildren in relation to your household.'),
-            'opt_in_contribute': _('Opt into contribute! Here''s why!'),
         }
 
     def clean_start_year(self):
