@@ -79,6 +79,17 @@
             }
         </style>
 
+        <!-- Set active class for main and 2nd level menu items -->
+        <script>
+            $(document).ready(function(){
+                var pathnames = window.location.pathname.split('/');
+                $('#' + pathnames[1]).addClass('active');
+                if (pathnames[2].length > 0) {
+                    $('#' + pathnames[2]).addClass('active');
+                }
+            });
+        </script>
+
         {% block static %}{% endblock %}
 
     </head>
@@ -125,61 +136,53 @@
 
             <!-- used header-md shadow-after-3 but it block sub-menus from being selectable -->
             <div id="header" class="sticky clearfix header-md ">
+
                 <!-- TOP NAV -->
 				<header id="topNav">
 
 					<div class="container">
 
 						<!-- Mobile Menu Button -->
-						<button class="btn btn-mobile" data-toggle="collapse" data-target=".nav-main-collapse">
+						<button class="btn btn-mobile" data-toggle="collapse" data-target="nav-main-collapse">
 							<i class="fa fa-bars"></i>
 						</button>
-
-						<!-- BUTTONS -->
-						<ul class="pull-right nav nav-pills nav-second-main">
-						</ul>
-						<!-- /BUTTONS -->
 
 						<!-- Logo -->
 						<a class="logo pull-left" href="{% url "public:home" %}">
 							<img src="{% static "images/logo-header.png" %}" alt="Dandelion Diary"/>
 						</a>
 
-						<div class="navbar-collapse pull-right nav-main-collapse collapse submenu-light">
-							<nav class="nav-main">
+						<nav class="nav-main">
+                            <div class="collapse navbar-collapse nav-main-collapse submenu-light pull-right">
 
-								<ul id="topMain" class="nav nav-pills nav-main">
+								<ul id="topMain" class="nav navbar-nav nav-pills">
+
                                     {% if user.is_authenticated %}
-                                    <li>
-                                        <a href="{% url "capture:new_expense" %}">CAPTURE</a>
-                                    </li>
-                                    <li>
-                                        <a href="{% url "compare:compare_dashboard" %}">COMPARE</a>
-                                    </li>
-                                    <li>
-                                        <a href="{% url "pinax_forums:forums" %}">CONTRIBUTE</a>
-                                    </li>
+                                        <li>
+                                            <a id="capture" href="{% url "capture:new_expense" %}">CAPTURE</a>
+                                        </li>
+                                        <li>
+                                            <a id="compare" href="{% url "compare:compare_dashboard" %}">COMPARE</a>
+                                        </li>
+                                        <li>
+                                            <a id="contribute" href="{% url "pinax_forums:forums" %}">CONTRIBUTE</a>
+                                        </li>
                                     {% endif %}
-									<li class="dropdown"><!-- ABOUT -->
-										<a class="dropdown-toggle" href="#">
-											ABOUT
-										</a>
-									</li>
-									<li class="dropdown"><!-- BLOG -->
-										<a class="dropdown-toggle" href="#">
-											BLOG
-										</a>
-									</li>
                                     {% if user.is_authenticated %}
-                                        <li><a href="{% url "account_logout" %}">LOGOUT</a></li>
+                                        <li><a id="account" href="{% url "account_logout" %}">LOGOUT</a></li>
                                     {% else %}
+									    <li class="dropdown"><!-- ABOUT -->
+										    <a class="dropdown-toggle" href="#">ABOUT</a>
+									    </li>
+									    <li class="dropdown"><!-- BLOG -->
+										    <a class="dropdown-toggle" href="#">BLOG</a>
+									    </li>
                                         <li><a href="{% url "account_login" %}">LOGIN</a></li>
 						                <li><a href="{% url "account_signup" %}">CREATE ACCOUNT</a></li>
 								    {% endif %}
                                 </ul>
-
-							</nav>
-						</div>
+						    </div>
+                        </nav>
 
 					</div>
 

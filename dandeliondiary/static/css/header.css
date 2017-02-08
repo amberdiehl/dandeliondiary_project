@@ -12,8 +12,19 @@
 	color:#1F262D;
 	background-color:rgba(0,0,0,0.03);
 }
-#topMain.nav-pills>li.active>a {
-	color:#687482;
+#topMain.nav-pills>li:active>a {
+	color:#FF0000;
+	font-weight: 500;
+}
+
+#topMain.nav-pills>li>a.active {
+    color: #8EAF17;
+    font-weight: 400;
+    background-color: transparent;
+}
+
+#topMain.nav-pills>li.active {
+	background-color:#0b67cd;
 }
 
 #topMain.nav-pills>li>a.dropdown-toggle {

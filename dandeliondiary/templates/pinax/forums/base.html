@@ -1,6 +1,14 @@
 {% extends "site_base.html" %}
+{% load staticfiles %}
 
 {% block body_class %}forums{% endblock %}
 
 {% block subnav %}
+{% endblock %}
+
+{% block scripts %}
+
+    <script type="text/javascript">var plugin_path = "/static/plugins/";</script>
+    <script type="text/javascript" src={% static "js/scripts.js" %}></script>
+
 {% endblock %}
