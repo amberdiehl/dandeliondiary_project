@@ -102,7 +102,7 @@ class HouseholdProfileForm(forms.ModelForm):
         fields = ['start_year', 'members_in_household', 'oldest_birthyear', 'rig_type', 'use_type', 'income_type',
                   'pets_dog', 'pets_cat', 'pets_other',
                   'children', 'children_status', 'grandchildren' ,'grandchildren_status']
-        exclude = ['paid_through', 'budget_model']
+        exclude = ['paid_through', 'budget_model', 'subscription_status']
         labels = {
             'members_in_household': _('Adults in household'),
             'oldest_birthyear': _('Oldest birth year'),

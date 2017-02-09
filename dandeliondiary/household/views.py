@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect, render
@@ -19,6 +20,8 @@ import datetime
 
 INVITE_EXPIRATION = 24  # hours
 SUBSCRIPTION_LAPSE_WARNING = 45  # days
+SUBSCRIPTION_START_MODE = 'Beta'  # --> 'Trial'
+SUBSCRIPTION_START_MODE_DAYS = 1825  # --> 90
 
 
 """
@@ -101,11 +104,14 @@ def household_dashboard(request):
             summary['vehicles'] = summary_of_vehicles
 
         # 5. Show subscription status
-        summary['paid_through'] = household.paid_through
+        if household.subscription_status != 'Beta':
+            summary['paid_tense'] = 'is active through'
+            summary['paid_through'] = household.paid_through
 
         if datetime.date.today() > household.paid_through:
             summary['expired'] = "Your subscription has expired. Please renew today! Questions? " \
                                  "Call us at 415-413-4393."
+            summary['paid_tense'] = 'ended on'
         else:
             future_date = datetime.date.today() + datetime.timedelta(days=SUBSCRIPTION_LAPSE_WARNING)
             if future_date >= household.paid_through:
@@ -116,7 +122,10 @@ def household_dashboard(request):
             # provide last payment information
             pass
         else:
-            summary['free_trial'] = "Enjoy your free trial!"
+            # Switch to 'Enjoy your free trial!' when beta ends
+            if household.subscription_status == SUBSCRIPTION_START_MODE:
+                summary['free_trial'] = "Thanks for using Dandelion Diary in beta. Like something? Hate something?" \
+                                        " Let us know via Support or call us at 415-413-4393."
 
         # 6. Provide a greeting
         if user.first_name:
@@ -251,7 +260,10 @@ def household_profile(request):
 
                 new_household = form.save(commit=False)
                 new_household.budget_model = BudgetModel.objects.get(pk=1)  # default to DandelionDiary starter model
-                new_household.paid_through = "2017-06-30"  # default to trial period
+                new_household.subscription_status = SUBSCRIPTION_START_MODE
+                new_household.paid_through = \
+                    timezone.now() + datetime.timedelta(days=SUBSCRIPTION_START_MODE_DAYS)
+                    # datetime.date.today() + datetime.timedelta(days=SUBSCRIPTION_START_MODE_DAYS)
                 new_household.opt_in_contribute = True  # default opt-in to contribute
                 new_household.save()
 

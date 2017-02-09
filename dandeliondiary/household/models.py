@@ -18,6 +18,7 @@ class Household(models.Model):
     budget_model = models.ForeignKey('core.BudgetModel')  # RV budget model
     opt_in_contribute = models.BooleanField(default=False, blank=True)  # Opt-in to utilize social aspects
     paid_through = models.DateField()  # Paid through
+    subscription_status = models.CharField(max_length=7)  # 'Beta' 'Trial' 'Active' 'Expired'
 
     def __str__(self):
         return str(self.pk)

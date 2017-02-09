@@ -119,8 +119,10 @@
                                     {{ summary.expired }}
                                 </div>
                             {% endif %}
-                                <p>Your subscription is paid through {{ summary.paid_through }}.</p>
+                            {% if summary.paid_through %}
+                                <p>Your subscription {{ summary.paid_tense }} {{ summary.paid_through }}.</p>
 			                    <a class="box-icon-more font-lato weight-300" href="#">Make Payment</a>
+                            {% endif %}
 		                </div>
                     </div>
                 </div>
