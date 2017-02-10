@@ -7,3 +7,11 @@ def home(request):
 
 def terms(request):
     return render(request, 'public/terms-of-use.html')
+
+
+def privacy(request):
+    return render(request, 'public/privacy.html')
+
+
+def cookies(request):
+    return render(request, 'public/cookies.html')
