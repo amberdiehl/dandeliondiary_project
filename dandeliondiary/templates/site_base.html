@@ -257,9 +257,16 @@
 						    <ul class="list-unstyled">
 							    <li><a class="block" href="https://www.talewind.org" target="_blank">
                                     <i class="fa fa-angle-right"></i> Talewind</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Open Forum 1</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Open Forum 2</a></li>
+                                {% if user.is_authenticated %}
+							    <li><a class="block" href="{% url "pinax_forums:forum" 2 %}">
+                                    <i class="fa fa-angle-right"></i> RV Parks + Resorts, Campgrounds</a></li>
+							    <li><a class="block" href="{% url "pinax_forums:forum" 3 %}">
+                                    <i class="fa fa-angle-right"></i> Product + Service Reviews</a></li>
+                                {% endif %}
 						    </ul>
+                            {% if not user.is_authenticated %}
+                                <br><a href="{% url "account_login" %}">Log in</a> or <a href="{% url "account_signup" %}">join</a> to access forums.
+                            {% endif %}
 					    </div>
 				    </div>
 			    </div>

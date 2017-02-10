@@ -78,6 +78,9 @@ class Forum(models.Model):
     view_count = models.IntegerField(default=0, editable=False)
     post_count = models.IntegerField(default=0, editable=False)
 
+    class Meta:
+        ordering = ('title', )
+
     @property
     def thread_count(self):
         return self.threads.count()

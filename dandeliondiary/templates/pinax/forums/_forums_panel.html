@@ -1,0 +1,18 @@
+<div class="panel panel-default">
+    <div class="panel-heading">All Forums</div>
+    {% if forum_list %}
+        <ul class="list-group">
+            {% for forum in forum_list %}
+                <li class="list-group-item">
+                    <a href="{% url "pinax_forums:forum" forum.pk %}">
+                        {{ forum.title }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="panel-body">
+            There are currently no forums.
+        </div>
+    {% endif %}
+</div>

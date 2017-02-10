@@ -26,6 +26,7 @@ def forums(request):
     categories = ForumCategory.objects.filter(parent__isnull=True)
     categories = categories.order_by("title")
 
+    forum_list = Forum.objects.filter(parent__isnull=True)
     most_active_forums = Forum.objects.order_by("-post_count")[:5]
     most_viewed_forums = Forum.objects.order_by("-view_count")[:5]
     UserPostCount().calculate()
@@ -38,6 +39,7 @@ def forums(request):
 
     return render(request, "pinax/forums/forums.html", {
         "categories": categories,
+        "forum_list": forum_list,
         "most_active_forums": most_active_forums,
         "most_viewed_forums": most_viewed_forums,
         "most_active_members": most_active_members,
