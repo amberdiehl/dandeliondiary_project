@@ -6,10 +6,14 @@
 
 {% block title %}{% trans "Account Login" %}{% endblock %}
 {% block static %}
-		<!-- PAGE LEVEL SCRIPTS -->
-		<link href="{% static "css/header.css" %}" rel="stylesheet" type="text/css" />
-		<link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
-		<link href="{% static "css/essentials.css" %}" rel="stylesheet" type="text/css" />
+
+    <!-- OWASP 20170211: Turn off password autocomplete -->
+    <script>
+        $(document).ready(function(){
+            $('#id_password').attr('autocomplete', 'off');
+        });
+    </script>
+
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}

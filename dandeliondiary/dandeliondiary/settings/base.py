@@ -15,10 +15,13 @@ GOOGLE_API_KEY = 'api_key'
 # General security settings
 ALLOWED_HOSTS = ['www.dandeliondiary.com',]
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True  # prevent reading via javascript
 CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True  # prevent reading via javascript
 SESSION_EXPIRE_AT_BROWSER_CLOSE=True
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = True  # allow access via https only
+SECURE_CONTENT_TYPE_NOSNIFF = True  # force browser to always use the type provided in the Content-Type header
+SECURE_BROWSER_XSS_FILTER = True  # enable browsers to block content that appears to be an XSS attack
 
 # Default database definition
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
