@@ -54,7 +54,7 @@ def household_dashboard(request):
     # 1. If user is new member of household, automatically create associations for Member, HouseholdMember
     #    This MUST be executed FIRST to ensure the rest of the dashboard/household setup functions correctly.
     try:
-        invited_member = HouseholdInvite.objects.get(email=user.email)
+        invited_member = HouseholdInvite.objects.get(email=user.email.lower())
     except ObjectDoesNotExist:
         pass
     else:
@@ -335,7 +335,7 @@ def household_members(request):
 
             invite = HouseholdInvite()
             invite.invite_household = me.get('household_obj')
-            invite.email = invite_form.cleaned_data.get('email')
+            invite.email = invite_form.cleaned_data.get('email').lower()
             invite.security_code = get_random_string(length=7)
             invite.save()
 
