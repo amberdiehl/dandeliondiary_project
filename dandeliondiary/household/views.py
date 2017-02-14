@@ -564,6 +564,13 @@ def ajax_delete_invite(request):
 
     result = {}
 
+    # Check incoming ajax data to see if it looks legitimate
+    if legit_id(request.POST['id']) and legit_username(request.POST['user']):
+        pass
+    else:
+        result['status'] = 'ERROR'
+        return JsonResponse(result)
+
     id = request.POST['id']
     username = request.POST['user']
 
@@ -588,6 +595,14 @@ def ajax_delete_invite(request):
 def ajax_change_member_status(request):
 
     result = {}
+
+    # Check incoming ajax data to see if it looks legitimate
+    if legit_username(request.POST['username']) and legit_username(request.POST['user']) \
+            and (request.POST['status'] == 'Activate' or request.POST['status'] == 'Deactivate'):
+        pass
+    else:
+        result['status'] = 'ERROR'
+        return JsonResponse(result)
 
     username = request.POST['username']
     owner_username = request.POST['user']

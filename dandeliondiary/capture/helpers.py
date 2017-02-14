@@ -1,6 +1,14 @@
+import re
 from compare.models import MyBudgetGroup, MyBudgetCategory
 from core.helpers import helpers_get_current_location_categories
 from compare.helpers import helper_get_category_budget_and_expenses
+
+
+RE_VALID_EXPENSE_NOTE = re.compile(r'^[\w\d .,-=()/*\+]{0,512}$')
+RE_VALID_CATEGORY_NAME = re.compile(r'^[\w ]{1,50}$')
+RE_VALID_DATE = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
+RE_VALID_AMOUNT = re.compile(r'^[\d.]+$')
+RE_VALID_HASH_KEY = re.compile(r'^[\w\d]{16}$')
 
 
 def helper_budget_categories(household, place_types=None):
@@ -103,3 +111,64 @@ def get_remaining_budget(c_id, date):
 
 def is_expense_place_type(a, b):
   return not set(a).isdisjoint(b)
+
+
+def legit_expense(date, amount, note):
+    if re.match(RE_VALID_DATE, date) and re.match(RE_VALID_AMOUNT, amount) and re.match(RE_VALID_EXPENSE_NOTE, note):
+        return True
+    else:
+        return False
+
+
+def legit_expense_note(note):
+    if re.match(RE_VALID_EXPENSE_NOTE, note):
+        return True
+    else:
+        return False
+
+
+def legit_filter(filter_values):
+
+    error = False
+    message = 'This filter has errors:<ul>'
+
+    if filter_values['frDate'][0]:
+        if not re.match(RE_VALID_DATE, filter_values['frDate'][0]):
+            error = True
+            message += '<li>Invalid from date.</li>'
+
+    if filter_values['frDate'][0]:
+        if not re.match(RE_VALID_DATE, filter_values['toDate'][0]):
+            error = True
+            message += '<li>Invalid to date.</li>'
+
+    if filter_values['frAmount'][0]:
+        if not re.match(RE_VALID_AMOUNT, filter_values['frAmount'][0]):
+            error = True
+            message += '<li>Invalid to from amount.</li>'
+
+    if filter_values['toAmount'][0]:
+        if not re.match(RE_VALID_AMOUNT, filter_values['toAmount'][0]):
+            error = True
+            message += '<li>Invalid from amount.</li>'
+
+    if filter_values['inCategory'][0]:
+        if not re.match(RE_VALID_CATEGORY_NAME, filter_values['inCategory'][0]):
+            error = True
+            message += '<li>Invalid characters provided for searching on category.</li>'
+
+    if filter_values['inNote'][0]:
+        if not re.match(RE_VALID_EXPENSE_NOTE, filter_values['inNote'][0]):
+            error = True
+            message += '<li>Invalid characters provided for searching on note.</li>'
+
+    message += '</ul>'
+
+    return error, message
+
+
+def legit_id(hashed_id):
+    if re.match(RE_VALID_HASH_KEY, hashed_id):
+        return True
+    else:
+        return False

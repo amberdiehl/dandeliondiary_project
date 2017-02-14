@@ -13,7 +13,7 @@ from .helpers import *
 from .models import MyBudgetGroup, MyBudgetCategory, MyBudget
 
 HASH_SALT = 'nowis Ag00d tiM3for tW0BR3wskies'
-HASH_MIN_LENGTH = 16
+HASH_MIN_LENGTH = 16  # Note that this value is still hard-coded in URLs for validation
 
 
 @login_required
@@ -187,6 +187,7 @@ def ajax_be_groups(request, dt):
     Budgets + Expenses: Show current or past budget and expense information
 
     :param request:
+    :param dt:
     :return:
     """
     response_data = {}
@@ -244,7 +245,7 @@ def ajax_be_categories(request, pid, dt):
     else:
 
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        id=hashids.decode(pid)[0]
+        this = hashids.decode(pid)[0]
 
         filter_date = datetime.datetime.strptime(dt, '%Y-%m-%d').date()
 
@@ -253,7 +254,7 @@ def ajax_be_categories(request, pid, dt):
         budget_total = 0
         expense_total = 0
 
-        budget_categories = MyBudgetCategory.objects.filter(my_budget_group=id).filter(parent_category=None)\
+        budget_categories = MyBudgetCategory.objects.filter(my_budget_group=this).filter(parent_category=None)\
             .order_by('my_category_name')
         for category in budget_categories:
 
@@ -322,27 +323,36 @@ def ajax_create_group(request):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        gr_name = request.POST.get('my_group_name')
-        gr_description = request.POST.get('group_description')
-        gr_list_order = request.POST.get('group_list_order')
+        return JsonResponse(response_data)
 
-        new_group = MyBudgetGroup()
-        new_group.household = me.get('household_obj')
-        new_group.my_group_name = gr_name
-        new_group.group_description = gr_description
-        new_group.group_list_order = gr_list_order
-        new_group.save()
+    # Validate content type of data submitted before continuing
+    if not legit_group(request.POST.get('my_group_name'),
+                       request.POST.get('group_description'),
+                       request.POST.get('group_list_order')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid group name, description and/or order given.'
+        return JsonResponse(response_data)
 
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    gr_name = request.POST.get('my_group_name')
+    gr_description = request.POST.get('group_description')
+    gr_list_order = request.POST.get('group_list_order')
 
-        record = {}
-        record['id'] = hashids.encode(new_group.pk)
-        record['my_group_name'] = new_group.my_group_name
-        record['group_description'] = new_group.group_description
-        record['group_list_order'] = new_group.group_list_order
-        response_data['Result'] = 'OK'
-        response_data['Record'] = record
+    new_group = MyBudgetGroup()
+    new_group.household = me.get('household_obj')
+    new_group.my_group_name = gr_name
+    new_group.group_description = gr_description
+    new_group.group_list_order = gr_list_order
+    new_group.save()
+
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+
+    record = {}
+    record['id'] = hashids.encode(new_group.pk)
+    record['my_group_name'] = new_group.my_group_name
+    record['group_description'] = new_group.group_description
+    record['group_list_order'] = new_group.group_list_order
+    response_data['Result'] = 'OK'
+    response_data['Record'] = record
 
     return JsonResponse(response_data)
 
@@ -356,33 +366,49 @@ def ajax_update_group(request):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        id_hashed = request.POST.get('id')
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        this=hashids.decode(id_hashed)[0]
-        try:
-            budget_group = MyBudgetGroup.objects.get(pk=this)
-        except ObjectDoesNotExist:
-            response_data['Result'] = 'ERROR'
-            response_data['Message'] = 'Error getting budget group.'
-        else:
-            if not budget_group.household.pk == me.get('household_key'):
-                response_data['Result'] = 'ERROR'
-                response_data['Message'] = 'Invalid request for budget group.'
-            else:
-                record = {}
-                if not budget_group.my_group_name == request.POST.get('my_group_name'):
-                    budget_group.my_group_name=request.POST.get('my_group_name')
-                    record['my_group_name'] = request.POST.get('my_group_name')
-                if not budget_group.group_description == request.POST.get('group_description'):
-                    budget_group.group_description = request.POST.get('group_description')
-                    record['group_description'] = request.POST.get('group_description')
-                if not budget_group.group_list_order == request.POST.get('group_list_order'):
-                    budget_group.group_list_order = request.POST.get('group_list_order')
-                    record['group_list_order'] = request.POST.get('group_list_order')
-                budget_group.save()
-                response_data['Result'] = 'OK'
-                response_data['Record'] = record
+        return JsonResponse(response_data)
+
+    # Validate content type of data submitted before continuing
+    if not legit_id(request.POST.get('id')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
+    if not legit_group(request.POST.get('my_group_name'),
+                       request.POST.get('group_description'),
+                       request.POST.get('group_list_order')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid group name, description and/or order given.'
+        return JsonResponse(response_data)
+
+    # Get buget group for received ID and validate association with logged in user household
+    id_hashed = request.POST.get('id')
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    this = hashids.decode(id_hashed)[0]
+    try:
+        budget_group = MyBudgetGroup.objects.get(pk=this)
+    except ObjectDoesNotExist:
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Error getting budget group.'
+        return JsonResponse(response_data)
+
+    if not budget_group.household.pk == me.get('household_key'):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request for budget group.'
+        return JsonResponse(response_data)
+
+    record = {}
+    if not budget_group.my_group_name == request.POST.get('my_group_name'):
+        budget_group.my_group_name = request.POST.get('my_group_name')
+        record['my_group_name'] = request.POST.get('my_group_name')
+    if not budget_group.group_description == request.POST.get('group_description'):
+        budget_group.group_description = request.POST.get('group_description')
+        record['group_description'] = request.POST.get('group_description')
+    if not budget_group.group_list_order == request.POST.get('group_list_order'):
+        budget_group.group_list_order = request.POST.get('group_list_order')
+        record['group_list_order'] = request.POST.get('group_list_order')
+    budget_group.save()
+    response_data['Result'] = 'OK'
+    response_data['Record'] = record
 
     return JsonResponse(response_data)
 
@@ -396,27 +422,36 @@ def ajax_delete_group(request):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        id_hashed = request.POST.get('id')
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        this=hashids.decode(id_hashed)[0]
-        try:
-            budget_group = MyBudgetGroup.objects.get(pk=this)
-        except ObjectDoesNotExist:
-            response_data['Result'] = 'ERROR'
-            response_data['Message'] = 'Error getting budget group.'
-        else:
-            if not budget_group.household.pk == me.get('household_key'):
-                response_data['Result'] = 'ERROR'
-                response_data['Message'] = 'Invalid request for budget group.'
-            else:
-                if budget_group.group_perma_key:
-                    response_data['Result'] = 'ERROR'
-                    response_data['Message'] = 'Sorry, this is a core budget group used for comparisons and ' \
-                                               'cannot be deleted.'
-                else:
-                    budget_group.delete()
-                    response_data['Result'] = 'OK'
+        return JsonResponse(response_data)
+
+    # Validate content type of data submitted before continuing
+    if not legit_id(request.POST.get('id')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
+
+    id_hashed = request.POST.get('id')
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    this = hashids.decode(id_hashed)[0]
+    try:
+        budget_group = MyBudgetGroup.objects.get(pk=this)
+    except ObjectDoesNotExist:
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Error getting budget group.'
+        return JsonResponse(response_data)
+
+    if not budget_group.household.pk == me.get('household_key'):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request for budget group.'
+        return JsonResponse(response_data)
+
+    if budget_group.group_perma_key:
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Sorry, this is a core budget group used for comparisons and cannot be deleted.'
+        return JsonResponse(response_data)
+
+    budget_group.delete()
+    response_data['Result'] = 'OK'
 
     return JsonResponse(response_data)
 
@@ -433,15 +468,15 @@ def ajax_list_categories(request, s, pid):
     else:
         data = []
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        id=hashids.decode(pid)[0]
+        this = hashids.decode(pid)[0]
 
         # Get parent level categories for flags 'p'arent and 'h'ybrid
         if s == 'p' or s == 'h':
-            budget_categories = MyBudgetCategory.objects.filter(my_budget_group=id).filter(parent_category=None)\
+            budget_categories = MyBudgetCategory.objects.filter(my_budget_group=this).filter(parent_category=None)\
                 .order_by('my_category_name')
         else:
             # Fetch 'c'hildren categories
-            budget_categories = MyBudgetCategory.objects.filter(parent_category=id).order_by('my_category_name')
+            budget_categories = MyBudgetCategory.objects.filter(parent_category=this).order_by('my_category_name')
 
         for category in budget_categories:
 
@@ -484,27 +519,33 @@ def ajax_create_category(request, pid):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        id=hashids.decode(pid)[0]  # category's group pk
-        cat_name = request.POST.get('my_category_name')
+        return JsonResponse(response_data)
 
-        # to do: don't allow duplicate or similar categories; assuming looping in google places will help
+    # Validate content type of data submitted before continuing
+    if not legit_category_name(request.POST.get('my_category_name')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
 
-        group_obj = MyBudgetGroup.objects.get(pk=id)
-        # to do: validate group belongs to user
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    this = hashids.decode(pid)[0]  # category's group pk
+    cat_name = request.POST.get('my_category_name')
 
-        new_category = MyBudgetCategory()
-        new_category.my_budget_group = group_obj
-        new_category.my_category_name = cat_name
-        new_category.save()
+    # TODO: don't allow duplicate or similar categories
 
-        record = {}
-        record['id'] = hashids.encode(new_category.pk)
-        record['my_category_name'] = new_category.my_category_name
+    group_obj = MyBudgetGroup.objects.get(pk=this)
 
-        response_data['Result'] = 'OK'
-        response_data['Record'] = record
+    new_category = MyBudgetCategory()
+    new_category.my_budget_group = group_obj
+    new_category.my_category_name = cat_name
+    new_category.save()
+
+    record = {}
+    record['id'] = hashids.encode(new_category.pk)
+    record['my_category_name'] = new_category.my_category_name
+
+    response_data['Result'] = 'OK'
+    response_data['Record'] = record
 
     return JsonResponse(response_data)
 
@@ -518,24 +559,37 @@ def ajax_update_category(request):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        id_hashed = request.POST.get('id')  # category pk
-        this=hashids.decode(id_hashed)[0]
-        try:
-            budget_category = MyBudgetCategory.objects.get(pk=this)
-        except ObjectDoesNotExist:
-            response_data['Result'] = 'ERROR'
-            response_data['Message'] = 'Error getting budget category.'
-        else:
-            record = {}
-            budget_category.my_category_name = request.POST.get('my_category_name')
-            budget_category.save()
+        return JsonResponse(response_data)
 
-            record['my_category_name'] = request.POST.get('my_category_name')
+    # Validate content type of data submitted before continuing
+    if not legit_id(request.POST.get('id')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
+    if not legit_category_name(request.POST.get('my_category_name')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
 
-            response_data['Result'] = 'OK'
-            response_data['Record'] = record
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    id_hashed = request.POST.get('id')  # category pk
+    this = hashids.decode(id_hashed)[0]
+
+    try:
+        budget_category = MyBudgetCategory.objects.get(pk=this)
+    except ObjectDoesNotExist:
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Error getting budget category.'
+        return JsonResponse(response_data)
+
+    budget_category.my_category_name = request.POST.get('my_category_name')
+    budget_category.save()
+
+    record = {}
+    record['my_category_name'] = request.POST.get('my_category_name')
+
+    response_data['Result'] = 'OK'
+    response_data['Record'] = record
 
     return JsonResponse(response_data)
 
@@ -549,23 +603,32 @@ def ajax_delete_category(request):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        id_hashed = request.POST.get('id')  # category pk
-        this=hashids.decode(id_hashed)[0]
-        try:
-            budget_category = MyBudgetCategory.objects.get(pk=this)
-        except ObjectDoesNotExist:
-            response_data['Result'] = 'ERROR'
-            response_data['Message'] = 'Error getting budget category.'
-        else:
-            if budget_category.category_perma_key:
-                response_data['Result'] = 'ERROR'
-                response_data['Message'] = 'Sorry, this is a core budget category used for comparisons and ' \
-                                               'cannot be deleted.'
-            else:
-                budget_category.delete()
-                response_data['Result'] = 'OK'
+        return JsonResponse(response_data)
+
+    # Validate content type of data submitted before continuing
+    if not legit_id(request.POST.get('id')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
+
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    id_hashed = request.POST.get('id')  # category pk
+    this = hashids.decode(id_hashed)[0]
+
+    try:
+        budget_category = MyBudgetCategory.objects.get(pk=this)
+    except ObjectDoesNotExist:
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Error getting budget category.'
+        return JsonResponse(response_data)
+
+    if budget_category.category_perma_key:
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Sorry, this is a core budget category used for comparisons and cannot be deleted.'
+        return JsonResponse(response_data)
+
+    budget_category.delete()
+    response_data['Result'] = 'OK'
 
     return JsonResponse(response_data)
 
@@ -579,28 +642,35 @@ def ajax_create_child_category(request, pid):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        id=hashids.decode(pid)[0]  # category's parent pk
-        cat_name = request.POST.get('my_category_name')
+        return JsonResponse(response_data)
 
-        # to do: don't allow duplicate or similar categories; assuming looping in google places will help
+    # Validate content type of data submitted before continuing
+    if not legit_category_name(request.POST.get('my_category_name')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
 
-        parent = MyBudgetCategory.objects.get(pk=id)
-        # to do: is there further validation to be done for security purposes?
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    this = hashids.decode(pid)[0]  # category's parent pk
 
-        new_category = MyBudgetCategory()
-        new_category.my_budget_group = parent.my_budget_group
-        new_category.my_category_name = cat_name
-        new_category.parent_category = parent
-        new_category.save()
+    cat_name = request.POST.get('my_category_name')
 
-        record = {}
-        record['id'] = hashids.encode(new_category.pk)
-        record['my_category_name'] = new_category.my_category_name
+    # TODO: don't allow duplicate or similar categories; assuming use of google places will help
 
-        response_data['Result'] = 'OK'
-        response_data['Record'] = record
+    parent = MyBudgetCategory.objects.get(pk=this)
+
+    new_category = MyBudgetCategory()
+    new_category.my_budget_group = parent.my_budget_group
+    new_category.my_category_name = cat_name
+    new_category.parent_category = parent
+    new_category.save()
+
+    record = {}
+    record['id'] = hashids.encode(new_category.pk)
+    record['my_category_name'] = new_category.my_category_name
+
+    response_data['Result'] = 'OK'
+    response_data['Record'] = record
 
     return JsonResponse(response_data)
 
@@ -644,28 +714,37 @@ def ajax_create_budget(request, pid):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        category_obj = MyBudgetCategory.objects.get(pk=hashids.decode(pid)[0])
-        # to do: as security check, validate category belongs to user?
+        return JsonResponse(response_data)
 
-        new_budget = MyBudget()
-        new_budget.category = category_obj
-        new_budget.amount = request.POST.get('amount')
-        new_budget.annual_payment_month = request.POST.get('annual_payment_month')
-        new_budget.note = request.POST.get('note')
-        new_budget.effective_date = request.POST.get('effective_date')
-        new_budget.save()
+    # Validate content type of data submitted before continuing
+    if not legit_budget(request.POST.get('amount'),
+                        request.POST.get('annual_payment_month'),
+                        request.POST.get('note'),
+                        request.POST.get('effective_date')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid budget amount, annual month, note and/or effective date given.'
+        return JsonResponse(response_data)
 
-        record = {}
-        record['id'] = hashids.encode(new_budget.pk)
-        record['amount'] = new_budget.amount
-        record['annual_payment_month'] = new_budget.annual_payment_month
-        record['note'] = new_budget.note
-        record['effective_date'] = new_budget.effective_date
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    category_obj = MyBudgetCategory.objects.get(pk=hashids.decode(pid)[0])
 
-        response_data['Result'] = 'OK'
-        response_data['Record'] = record
+    new_budget = MyBudget()
+    new_budget.category = category_obj
+    new_budget.amount = request.POST.get('amount')
+    new_budget.annual_payment_month = request.POST.get('annual_payment_month')
+    new_budget.note = request.POST.get('note')
+    new_budget.effective_date = request.POST.get('effective_date')
+    new_budget.save()
+
+    record = {}
+    record['id'] = hashids.encode(new_budget.pk)
+    record['amount'] = new_budget.amount
+    record['annual_payment_month'] = new_budget.annual_payment_month
+    record['note'] = new_budget.note
+    record['effective_date'] = new_budget.effective_date
+
+    response_data['Result'] = 'OK'
+    response_data['Record'] = record
 
     return JsonResponse(response_data)
 
@@ -679,38 +758,54 @@ def ajax_change_budget(request, s):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
+        return JsonResponse(response_data)
 
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-
-        try:
-            budget = MyBudget.objects.get(pk=hashids.decode(request.POST.get('id'))[0])
-        except ObjectDoesNotExist:
+    # Validate content type of data submitted before continuing
+    if not legit_id(request.POST.get('id')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
+    if s == 'u':
+        if not legit_budget(request.POST.get('amount'),
+                            request.POST.get('annual_payment_month'),
+                            request.POST.get('note'),
+                            request.POST.get('effective_date')):
             response_data['Result'] = 'ERROR'
-            response_data['Message'] = 'Error getting budget.'
-        else:
-            if s == 'd':
-                pass
-            else:
-                # Return only changed values since jTable supports it
-                record = {}
-                if budget.amount != request.POST.get('amount'):
-                    record['amount'] = request.POST.get('amount')
-                if budget.annual_payment_month != request.POST.get('annual_payment_month'):
-                    record['annual_payment_month'] = request.POST.get('annual_payment_month')
-                if budget.note != request.POST.get('note'):
-                    record['note'] = request.POST.get('note')
-                if budget.effective_date != request.POST.get('effective_date'):
-                    record['effective_date'] = request.POST.get('effective_date')
+            response_data['Message'] = 'Invalid budget amount, annual month, note and/or effective date given.'
+            return JsonResponse(response_data)
 
-                budget.amount = request.POST.get('amount')
-                budget.annual_payment_month = request.POST.get('annual_payment_month')
-                budget.note = request.POST.get('note')
-                budget.effective_date = datetime.datetime.strptime(request.POST.get('effective_date'),'%Y-%m-%d')
-                budget.save()
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
 
-                response_data['Result'] = 'OK'
-                response_data['Record'] = record
+    try:
+        budget = MyBudget.objects.get(pk=hashids.decode(request.POST.get('id'))[0])
+    except ObjectDoesNotExist:
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Error getting budget.'
+        return JsonResponse(response_data)
+
+    if s == 'd':
+        budget.delete()
+        response_data['Result'] = 'OK'
+    else:
+        budget.amount = request.POST.get('amount')
+        budget.annual_payment_month = request.POST.get('annual_payment_month')
+        budget.note = request.POST.get('note')
+        budget.effective_date = datetime.datetime.strptime(request.POST.get('effective_date'), '%Y-%m-%d')
+        budget.save()
+
+        # Return only changed values since jTable supports it
+        record = {}
+        if budget.amount != request.POST.get('amount'):
+            record['amount'] = request.POST.get('amount')
+        if budget.annual_payment_month != request.POST.get('annual_payment_month'):
+            record['annual_payment_month'] = request.POST.get('annual_payment_month')
+        if budget.note != request.POST.get('note'):
+            record['note'] = request.POST.get('note')
+        if budget.effective_date != request.POST.get('effective_date'):
+            record['effective_date'] = request.POST.get('effective_date')
+
+        response_data['Result'] = 'OK'
+        response_data['Record'] = record
 
     return JsonResponse(response_data)
 
@@ -718,7 +813,7 @@ def ajax_change_budget(request, s):
 @login_required
 def ajax_budget_summary(request):
     """
-    Create summary budget structure with amounts for display to Dande subscriber.
+    Create summary budget structure with amounts for display to Dandelion Diary subscriber.
     This is currently ajax to enable dynamic updating of amounts.
 
     Structure is:

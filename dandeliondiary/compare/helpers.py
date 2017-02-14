@@ -1,7 +1,18 @@
 import datetime
+import re
 from django.db.models import F, Sum
 from capture.models import MyExpenseItem
 from .models import MyBudgetCategory, MyBudget
+
+RE_VALID_GROUP_NAME = re.compile(r'^[\w \+]{1,20}$')
+RE_VALID_GROUP_DESCRIPTION = re.compile(r'^[\w .,]{0,256}$')
+RE_VALID_GROUP_ORDER = re.compile(r'^\d*$')
+RE_VALID_CATEGORY_NAME = re.compile(r'^[\w ,()-\+.]{1,50}$')
+RE_VALID_BUDGET_AMOUNT = re.compile(r'^[\d.]+$')
+RE_VALID_BUDGET_ANNUAL_MONTH = re.compile(r'^\d{1,2}$')
+RE_VALID_BUDGET_NOTE = re.compile(r'^[\w\d .,-=()/*\+]{0,512}$')
+RE_VALID_BUDGET_EFFECTIVE_DATE = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
+RE_VALID_HASH_KEY = re.compile(r'^[\w\d]{16}$')
 
 """
 Includes MyExpenseItem helpers to prevent circular references which are not supported in this version of Python.
@@ -94,3 +105,35 @@ def get_month_options():
         dt_a = dt - datetime.timedelta(days=1)
         dt = dt_a.replace(day=1)
     return options
+
+
+def legit_group(name, description, order):
+    if re.match(RE_VALID_GROUP_NAME, name) and re.match(RE_VALID_GROUP_DESCRIPTION, description) and \
+            re.match(RE_VALID_GROUP_ORDER, order):
+        return True
+    else:
+        return False
+
+
+def legit_category_name(name):
+    if re.match(RE_VALID_CATEGORY_NAME, name):
+        return True
+    else:
+        return False
+
+
+def legit_budget(amount, month, note, date):
+    if re.match(RE_VALID_BUDGET_AMOUNT, amount) \
+            and re.match(RE_VALID_BUDGET_ANNUAL_MONTH, month) \
+            and re.match(RE_VALID_BUDGET_NOTE, note) \
+            and re.match(RE_VALID_BUDGET_EFFECTIVE_DATE, date):
+        return True
+    else:
+        return False
+
+
+def legit_id(hashed_id):
+    if re.match(RE_VALID_HASH_KEY, hashed_id):
+        return True
+    else:
+        return False

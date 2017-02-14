@@ -3,6 +3,8 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
+from helpers import legit_expense_note
+
 
 class CategoryCustomChoiceField(forms.ChoiceField):
     def validate(self, value):
@@ -68,6 +70,13 @@ class NewExpenseForm(forms.Form):
                 raise forms.ValidationError(_('File type is not supported.'))
 
         return receipt
+
+    def clean_note(self):
+        note = self.cleaned_data['note']
+        if not legit_expense_note(note):
+            error = 'Special characters in your note must be limited to: . , () + - / and =.'
+            raise forms.ValidationError(_(error))
+        return note
 
     def clean(self):
         value1 = int(self.cleaned_data['choose_category_place'])

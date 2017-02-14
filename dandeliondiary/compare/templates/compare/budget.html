@@ -170,7 +170,9 @@
                                     effective_date: {
                                         title: 'Effective Date',
                                         width: '15%',
-                                        type: 'date'
+                                        type: 'date',
+                                        displayFormat: 'yy-mm-dd',
+                                        sorting: true
                                     }
                                 },
                                 //Modify create and edit forms for required fields, instructions, defaults
@@ -186,7 +188,11 @@
                                             'annual amount divided by 12, and the month the item is paid.' +
                                             '</span>');
                                         var d = new Date();
-                                        var strDate = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+                                        var month = d.getMonth()+1;
+                                        if ((d.getMonth()+1) < 10){
+                                            month = '0' + (d.getMonth()+1);
+                                        }
+                                        var strDate = d.getFullYear() + "-" + month + "-" + d.getDate();
                                         $('input[name="effective_date"]').val(strDate);
                                     }
                                 },

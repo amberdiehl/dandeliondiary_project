@@ -1,4 +1,6 @@
 import datetime
+import re
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 
@@ -8,6 +10,10 @@ from account.models import Account
 from core.models import BudgetGroup, BudgetCategory
 from household.models import Household, HouseholdMembers, Member
 from compare.models import MyBudgetGroup, MyBudgetCategory
+
+RE_VALID_USERNAME = re.compile(r'^[\w\d_.-@\+]{1,150}$')
+RE_VALID_ID = re.compile(r'^[\d]+$')
+
 
 """
 Helpers related to household views and constructs.
@@ -57,7 +63,7 @@ def helper_send_invite(email, me, expiration):
     subject = '{} invites you to Dandelion Diary'.format(me.get('first_name').title())
     body = "Hello! This is an invitation from {0} {1} to create an account with Dandelion Diary and join " \
            "{0}'s household. This invitation will expire in {2} hours. To accept, please " \
-           "get started here: https://www.dandeliondiary.com/account/signup/." \
+           "be sure to use THIS email address when registering at: https://www.dandeliondiary.com/account/signup/." \
         .format(me.get('first_name').title(), me.get('last_name').title(), expiration)
 
     try:
@@ -126,3 +132,17 @@ def helper_new_member(invite, account):
 
     # Delete the used invitation
     invite.delete()
+
+
+def legit_id(pid):
+    if re.match(RE_VALID_ID, pid):
+        return True
+    else:
+        return False
+
+
+def legit_username(username):
+    if re.match(RE_VALID_USERNAME, username):
+        return True
+    else:
+        return False

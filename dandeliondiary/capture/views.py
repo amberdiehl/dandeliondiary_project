@@ -10,7 +10,11 @@ from google import get_nearby_places, byteify
 
 from household.helpers import helper_get_me
 from core.helpers import helpers_add_google_place
-from .helpers import helper_budget_categories, get_remaining_budget, is_expense_place_type
+from .helpers import \
+    helper_budget_categories, \
+    get_remaining_budget, \
+    is_expense_place_type, \
+    legit_filter, legit_expense, legit_id
 
 from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
@@ -102,20 +106,20 @@ def new_expense(request):
         if request.GET.get('lat') and request.GET.get('lon'):
             position = (request.GET.get('lat'),request.GET.get('lon'))
             geo = '?lat={}&lon={}'.format(request.GET.get('lat'),request.GET.get('lon'))
-            location_message = ('success','Geolocation used for expense category assistance.')
+            location_message = ('success', 'Geolocation used for expense category assistance.')
         else:
             location_message = ('warning', 'Geolocation failed; category assistance unavailable.')
 
-        places = [(0, '------'),]  # collect places to show for user selection
+        places = [(0, '------'), ]  # collect places to show for user selection
         place_types = []  # collect place types to enable expense category chooser based on location
-        places_error = '' # show error in case cause is change in IP address
+        places_error = ''  # show error in case cause is change in IP address
         if position:
             try:
                 nearby_json = byteify(get_nearby_places(position, GOOGLE_LOCATION_RADIUS))
                 if nearby_json['status'] == 'OK':
                     types = GooglePlaceType.objects.all().values_list('type', flat=True)
                     for place in nearby_json['results']:
-                        if is_expense_place_type(place['types'], types): # only show places where type is valid
+                        if is_expense_place_type(place['types'], types):  # only show places where type is valid
                             item = (place['place_id'], place['name'], place['geometry']['location']['lat'],
                                     place['geometry']['location']['lng'])
                             places += (item, place['name']),
@@ -170,68 +174,79 @@ def ajax_list_expenses(request):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        data = []
+        return JsonResponse(response_data)
 
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    data = []
 
-        start_index = int(request.GET['jtStartIndex'])
-        page_size = int(request.GET['jtPageSize'])
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
 
-        # Get all recorded expenses--this may need to be limited in the future to past three years, or in kind
-        expenses = MyExpenseItem.objects.filter(household=me.get('household_key')).order_by('-expense_date')
+    start_index = int(request.GET['jtStartIndex'])
+    page_size = int(request.GET['jtPageSize'])
 
-        # Filter, if specified by user; for now this acts as an 'AND'.
-        if request.POST:
-            filters = request.POST
-            if filters['frDate']:
-                if filters['toDate']:
-                    expenses = expenses.filter(expense_date__gte=filters['frDate']).filter(expense_date__lte=filters['toDate'])
-                else:
-                    expenses = expenses.filter(expense_date=filters['frDate'])
+    # Get all recorded expenses--this may need to be limited in the future to past three years, or in kind
+    expenses = MyExpenseItem.objects.filter(household=me.get('household_key')).order_by('-expense_date')
 
-            if filters['frAmount']:
-                from_amount = float(filters['frAmount'])
-                if filters['toAmount']:
-                    to_amount = float(filters['toAmount'])
-                    expenses = expenses.filter(amount__gte=from_amount).filter(amount__lte=to_amount)
-                else:
-                    expenses = expenses.filter(amount=from_amount)
+    # Filter, if specified by user; for now this acts as an 'AND'.
+    if request.POST:
 
-            if filters['inCategory']:
-                expenses = expenses.filter(category__my_category_name__icontains=filters['inCategory'])
+        error, message = legit_filter(dict(request.POST))
+        if error:
+            response_data['Result'] = 'ERROR'
+            response_data['Message'] = message
+            return JsonResponse(response_data)
 
-            if filters['inNote']:
-                expenses = expenses.filter(note__icontains=filters['inNote'])
+        filters = request.POST
 
-        record_count = len(expenses)
-
-        if (start_index + page_size) > record_count:
-            expenses = expenses[start_index:None]
-        else:
-            expenses = expenses[start_index:page_size]
-
-        for expense in expenses:
-            record = {}
-            record['id'] = hashids.encode(expense.pk)
-            record['expense_date'] = expense.expense_date
-            record['amount'] = expense.amount
-            expense_category = MyBudgetCategory.objects.get(pk=expense.category.pk)
-            record['category'] = expense_category.my_category_name
-            record['note'] = expense.note
-
-            try:
-                receipt = MyReceipt.objects.get(expense_item=expense)
-            except ObjectDoesNotExist:
-                record['receipt'] = 'none'
+        if filters['frDate']:
+            if filters['toDate']:
+                expenses = expenses.filter(expense_date__gte=filters['frDate'])\
+                    .filter(expense_date__lte=filters['toDate'])
             else:
-                record['receipt'] = receipt.receipt.name
+                expenses = expenses.filter(expense_date=filters['frDate'])
 
-            data.append(record)
+        if filters['frAmount']:
+            from_amount = float(filters['frAmount'])
+            if filters['toAmount']:
+                to_amount = float(filters['toAmount'])
+                expenses = expenses.filter(amount__gte=from_amount).filter(amount__lte=to_amount)
+            else:
+                expenses = expenses.filter(amount=from_amount)
 
-        response_data['Result'] = 'OK'
-        response_data['Records'] = data
-        response_data['TotalRecordCount'] = record_count
+        if filters['inCategory']:
+            expenses = expenses.filter(category__my_category_name__icontains=filters['inCategory'])
+
+        if filters['inNote']:
+            expenses = expenses.filter(note__icontains=filters['inNote'])
+
+    record_count = len(expenses)
+
+    # Handle pagination
+    if (start_index + page_size) > record_count:
+        expense_page = expenses[start_index:None]
+    else:
+        expense_page = expenses[start_index:start_index + page_size]
+
+    for expense in expense_page:
+        record = {}
+        record['id'] = hashids.encode(expense.pk)
+        record['expense_date'] = expense.expense_date
+        record['amount'] = expense.amount
+        expense_category = MyBudgetCategory.objects.get(pk=expense.category.pk)
+        record['category'] = expense_category.my_category_name
+        record['note'] = expense.note
+
+        try:
+            receipt = MyReceipt.objects.get(expense_item=expense)
+        except ObjectDoesNotExist:
+            record['receipt'] = 'none'
+        else:
+            record['receipt'] = receipt.receipt.name
+
+        data.append(record)
+
+    response_data['Result'] = 'OK'
+    response_data['Records'] = data
+    response_data['TotalRecordCount'] = record_count
 
     return JsonResponse(response_data)
 
@@ -245,37 +260,52 @@ def ajax_change_expense(request, s):
     if me.get('redirect'):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
-    else:
-        hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        id_hashed = request.POST.get('id')
-        this=hashids.decode(id_hashed)[0]
-        try:
-            expense = MyExpenseItem.objects.get(pk=this)
-        except ObjectDoesNotExist:
+        return JsonResponse(response_data)
+
+    # Validate content type of data submitted before continuing
+    if not legit_id(request.POST.get('id')):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
+    if not s == 'd':
+        if not legit_expense(request.POST.get('expense_date'), request.POST.get('amount'), request.POST.get('note')):
             response_data['Result'] = 'ERROR'
-            response_data['Message'] = 'Error getting expense.'
-        else:
-            if not expense.household.pk == me.get('household_key'):
-                response_data['Result'] = 'ERROR'
-                response_data['Message'] = 'Invalid request for expense.'
-            else:
-                if s == 'd':
-                    expense.delete()
-                    response_data['Result'] = 'OK'
-                    response_data['Record'] = ''
-                else:
-                    record = {}
-                    if not expense.expense_date == request.POST.get('expense_date'):
-                        expense.expense_date=request.POST.get('expense_date')
-                        record['expense_date'] = request.POST.get('expense_date')
-                    if not expense.amount == request.POST.get('amount'):
-                        expense.amount = request.POST.get('amount')
-                        record['amount'] = request.POST.get('amount')
-                    if not expense.note == request.POST.get('note'):
-                        expense.note = request.POST.get('note')
-                        record['note'] = request.POST.get('note')
-                    expense.save()
-                    response_data['Result'] = 'OK'
-                    response_data['Record'] = record
+            response_data['Message'] = 'Special characters in your note must be limited to: . , () + - / and =. ' \
+                                       'Amount may not contain the $ symbol.'
+            return JsonResponse(response_data)
+
+    hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+    id_hashed = request.POST.get('id')
+    this = hashids.decode(id_hashed)[0]
+
+    try:
+        expense = MyExpenseItem.objects.get(pk=this)
+    except ObjectDoesNotExist:
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Error getting expense.'
+        return JsonResponse(response_data)
+
+    if not expense.household.pk == me.get('household_key'):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request for expense.'
+        return JsonResponse(response_data)
+
+    if s == 'd':
+        expense.delete()
+        response_data['Result'] = 'OK'
+    else:
+        record = {}
+        if not expense.expense_date == request.POST.get('expense_date'):
+            expense.expense_date = request.POST.get('expense_date')
+            record['expense_date'] = request.POST.get('expense_date')
+        if not expense.amount == request.POST.get('amount'):
+            expense.amount = request.POST.get('amount')
+            record['amount'] = request.POST.get('amount')
+        if not expense.note == request.POST.get('note'):
+            expense.note = request.POST.get('note')
+            record['note'] = request.POST.get('note')
+        expense.save()
+        response_data['Result'] = 'OK'
+        response_data['Record'] = record
 
     return JsonResponse(response_data)
