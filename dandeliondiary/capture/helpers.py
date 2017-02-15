@@ -4,11 +4,12 @@ from core.helpers import helpers_get_current_location_categories
 from compare.helpers import helper_get_category_budget_and_expenses
 
 
-RE_VALID_EXPENSE_NOTE = re.compile(r'^[\w\d .,-=()/*\+]{0,512}$')
+RE_VALID_EXPENSE_NOTE = re.compile(r'^[\w\d ,.\-=()*\+]{0,512}$')
 RE_VALID_CATEGORY_NAME = re.compile(r'^[\w ]{1,50}$')
 RE_VALID_DATE = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 RE_VALID_AMOUNT = re.compile(r'^[\d.]+$')
 RE_VALID_HASH_KEY = re.compile(r'^[\w\d]{16}$')
+RE_VALID_PAGE_VALUE = re.compile(r'^[\d]+$')
 
 
 def helper_budget_categories(household, place_types=None):
@@ -113,21 +114,21 @@ def is_expense_place_type(a, b):
   return not set(a).isdisjoint(b)
 
 
-def legit_expense(date, amount, note):
+def validate_expense_inputs(date, amount, note):
     if re.match(RE_VALID_DATE, date) and re.match(RE_VALID_AMOUNT, amount) and re.match(RE_VALID_EXPENSE_NOTE, note):
         return True
     else:
         return False
 
 
-def legit_expense_note(note):
+def validate_expense_note_input(note):
     if re.match(RE_VALID_EXPENSE_NOTE, note):
         return True
     else:
         return False
 
 
-def legit_filter(filter_values):
+def validate_filter_inputs(filter_values):
 
     error = False
     message = 'This filter has errors:<ul>'
@@ -167,8 +168,15 @@ def legit_filter(filter_values):
     return error, message
 
 
-def legit_id(hashed_id):
+def validate_id_input(hashed_id):
     if re.match(RE_VALID_HASH_KEY, hashed_id):
+        return True
+    else:
+        return False
+
+
+def validate_paging_input(page):
+    if re.match(RE_VALID_PAGE_VALUE, page):
         return True
     else:
         return False

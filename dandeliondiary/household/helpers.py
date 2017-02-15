@@ -134,14 +134,14 @@ def helper_new_member(invite, account):
     invite.delete()
 
 
-def legit_id(pid):
+def validate_id_input(pid):
     if re.match(RE_VALID_ID, pid):
         return True
     else:
         return False
 
 
-def legit_username(username):
+def validate_username_input(username):
     if re.match(RE_VALID_USERNAME, username):
         return True
     else:

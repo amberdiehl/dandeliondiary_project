@@ -1,9 +1,19 @@
+import re
 from django import forms
 from django.template.defaultfilters import filesizeformat
+from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from helpers import legit_expense_note
+from helpers import validate_expense_note_input
+
+
+RE_VALID_CHOICE_VALUE = re.compile(r'^[\d]*$')
+
+
+def validate_option_value(value):
+    if not re.match(RE_VALID_CHOICE_VALUE, value):
+        raise ValidationError('Malformed option.')
 
 
 class CategoryCustomChoiceField(forms.ChoiceField):
@@ -34,14 +44,17 @@ class NewExpenseForm(forms.Form):
         help_text=_("Optional brief note to remember something about this purchase.")
     )
     choose_category_place = CategoryCustomChoiceField(
+        validators=[validate_option_value],
         label=_("Budget place category:"),
         help_text=_("Apply this purchase to a budget category.")
     )
     choose_place = CategoryCustomChoiceField(
+        validators=[validate_option_value],
         label=_("Place"),
         help_text=_("Purchase made at this location.")
     )
     choose_category = CategoryCustomChoiceField(
+        validators=[validate_option_value],
         label=_("Budget category:"),
         help_text=_("Apply this purchase to a budget category.")
     )
@@ -57,6 +70,14 @@ class NewExpenseForm(forms.Form):
         help_text=_("Capture your receipt for your records.")
     )
 
+    def clean_note(self):
+        note = self.cleaned_data['note']
+        if not validate_expense_note_input(note):
+            error = 'Special characters in your note must be limited to: . , () + - / and =.'
+            raise forms.ValidationError(_(error))
+        return note
+
+
     def clean_receipt(self):
         receipt = self.cleaned_data['receipt']
         if receipt:
@@ -70,13 +91,6 @@ class NewExpenseForm(forms.Form):
                 raise forms.ValidationError(_('File type is not supported.'))
 
         return receipt
-
-    def clean_note(self):
-        note = self.cleaned_data['note']
-        if not legit_expense_note(note):
-            error = 'Special characters in your note must be limited to: . , () + - / and =.'
-            raise forms.ValidationError(_(error))
-        return note
 
     def clean(self):
         value1 = int(self.cleaned_data['choose_category_place'])

@@ -14,7 +14,7 @@ from .helpers import \
     helper_budget_categories, \
     get_remaining_budget, \
     is_expense_place_type, \
-    legit_filter, legit_expense, legit_id
+    validate_filter_inputs, validate_expense_inputs, validate_id_input, validate_paging_input
 
 from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
@@ -176,6 +176,11 @@ def ajax_list_expenses(request):
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
 
+    if not validate_paging_input(request.GET['jtStartIndex']) or not validate_paging_input(request.GET['jtPageSize']):
+        response_data['Result'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
+
     data = []
 
     hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
@@ -189,7 +194,7 @@ def ajax_list_expenses(request):
     # Filter, if specified by user; for now this acts as an 'AND'.
     if request.POST:
 
-        error, message = legit_filter(dict(request.POST))
+        error, message = validate_filter_inputs(dict(request.POST))
         if error:
             response_data['Result'] = 'ERROR'
             response_data['Message'] = message
@@ -263,12 +268,12 @@ def ajax_change_expense(request, s):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_id(request.POST.get('id')):
+    if not validate_id_input(request.POST.get('id')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
     if not s == 'd':
-        if not legit_expense(request.POST.get('expense_date'), request.POST.get('amount'), request.POST.get('note')):
+        if not validate_expense_inputs(request.POST.get('expense_date'), request.POST.get('amount'), request.POST.get('note')):
             response_data['Result'] = 'ERROR'
             response_data['Message'] = 'Special characters in your note must be limited to: . , () + - / and =. ' \
                                        'Amount may not contain the $ symbol.'

@@ -326,9 +326,9 @@ def ajax_create_group(request):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_group(request.POST.get('my_group_name'),
-                       request.POST.get('group_description'),
-                       request.POST.get('group_list_order')):
+    if not validate_group_inputs(request.POST.get('my_group_name'),
+                                 request.POST.get('group_description'),
+                                 request.POST.get('group_list_order')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid group name, description and/or order given.'
         return JsonResponse(response_data)
@@ -369,13 +369,13 @@ def ajax_update_group(request):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_id(request.POST.get('id')):
+    if not validate_id_input(request.POST.get('id')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
-    if not legit_group(request.POST.get('my_group_name'),
-                       request.POST.get('group_description'),
-                       request.POST.get('group_list_order')):
+    if not validate_group_inputs(request.POST.get('my_group_name'),
+                                 request.POST.get('group_description'),
+                                 request.POST.get('group_list_order')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid group name, description and/or order given.'
         return JsonResponse(response_data)
@@ -425,7 +425,7 @@ def ajax_delete_group(request):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_id(request.POST.get('id')):
+    if not validate_id_input(request.POST.get('id')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
@@ -522,7 +522,7 @@ def ajax_create_category(request, pid):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_category_name(request.POST.get('my_category_name')):
+    if not validate_category_name_input(request.POST.get('my_category_name')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
@@ -562,11 +562,11 @@ def ajax_update_category(request):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_id(request.POST.get('id')):
+    if not validate_id_input(request.POST.get('id')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
-    if not legit_category_name(request.POST.get('my_category_name')):
+    if not validate_category_name_input(request.POST.get('my_category_name')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
@@ -606,7 +606,7 @@ def ajax_delete_category(request):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_id(request.POST.get('id')):
+    if not validate_id_input(request.POST.get('id')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
@@ -645,7 +645,7 @@ def ajax_create_child_category(request, pid):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_category_name(request.POST.get('my_category_name')):
+    if not validate_category_name_input(request.POST.get('my_category_name')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
@@ -717,10 +717,10 @@ def ajax_create_budget(request, pid):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_budget(request.POST.get('amount'),
-                        request.POST.get('annual_payment_month'),
-                        request.POST.get('note'),
-                        request.POST.get('effective_date')):
+    if not validate_budget_inputs(request.POST.get('amount'),
+                                  request.POST.get('annual_payment_month'),
+                                  request.POST.get('note'),
+                                  request.POST.get('effective_date')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid budget amount, annual month, note and/or effective date given.'
         return JsonResponse(response_data)
@@ -761,15 +761,15 @@ def ajax_change_budget(request, s):
         return JsonResponse(response_data)
 
     # Validate content type of data submitted before continuing
-    if not legit_id(request.POST.get('id')):
+    if not validate_id_input(request.POST.get('id')):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
         return JsonResponse(response_data)
     if s == 'u':
-        if not legit_budget(request.POST.get('amount'),
-                            request.POST.get('annual_payment_month'),
-                            request.POST.get('note'),
-                            request.POST.get('effective_date')):
+        if not validate_budget_inputs(request.POST.get('amount'),
+                                      request.POST.get('annual_payment_month'),
+                                      request.POST.get('note'),
+                                      request.POST.get('effective_date')):
             response_data['Result'] = 'ERROR'
             response_data['Message'] = 'Invalid budget amount, annual month, note and/or effective date given.'
             return JsonResponse(response_data)
