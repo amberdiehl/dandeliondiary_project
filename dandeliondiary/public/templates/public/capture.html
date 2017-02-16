@@ -1,10 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "site_base.html" %}
+{% load staticfiles %}
+{% load i18n %}
 
-</body>
-</html>
+{% block title %}{% trans "Learn About Capture" %}{% endblock %}
+
+{% block static %}
+{% endblock %}
+
+{% block body_classes %} bg-grey {% endblock %}
+
+{% block body_container %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+            <div class="margin-top-30 margin-bottom-30 box-static box-transparent box-bordered box-white">
+
+                <h2>{% trans "More About Capture" %}</h2>
+
+                <blockquote class="reverse">
+                    <p>Dandelion Diary takes the work out of expense management and budgeting, leaving you with more free
+                        time to do the things you enjoy.</p></blockquote>
+
+                <p>Blurb and pic?</p>
+
+                <p>Features include:</p>
+                <ul>
+                    <li>Recording expenses is fast and easy; Dandelion Diary automates specifying expense categories
+                        based on prior captures, and geo-location information.</li>
+                    <li>Invite every person (above the age of 13) in your household to track expenses--no extra costs.</li>
+                    <li>Digitally capture receipts--no more paper clutter or filing!</li>
+                    <li>Make free-form notations for easy expense searching and filtering.</li>
+                </ul>
+
+                <div class="callout alert alert-success margin-top-60 margin-bottom-60">
+
+	                <div class="row">
+
+		                <div class="col-md-8 col-sm-8"><!-- left text -->
+                            <p>Say goodbye to budgetary guess work and the need to save wadded up, hard to read
+                                receipts.</p>
+		                </div><!-- /left text -->
+		                <div class="col-md-4 col-sm-4 text-right"><!-- right btn -->
+			                <a href="{% url "account_signup" %}" rel="nofollow" target="_blank"
+                               class="btn btn-success btn-lg">START MY <strong>FREE</strong> TRIAL</a>
+		                </div><!-- /right btn -->
+
+	                </div>
+
+                </div>
+
+                <p>Learn more about <a href="{% url "public:compare" %}">Compare</a> or
+                    <a href="{% url "public:contribute" %}">Contribute</a>.</p>
+
+            </div>
+    </div>
+
+{% endblock %}

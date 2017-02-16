@@ -1,10 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "site_base.html" %}
+{% load staticfiles %}
+{% load i18n %}
 
-</body>
-</html>
+{% block title %}{% trans "Learn About Compare" %}{% endblock %}
+
+{% block static %}
+{% endblock %}
+
+{% block body_classes %} bg-grey {% endblock %}
+
+{% block body_container %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+            <div class="margin-top-30 margin-bottom-30 box-static box-transparent box-bordered box-white">
+
+                <h2>{% trans "More About Compare" %}</h2>
+                <blockquote class="reverse">
+                    <p>Why spend valuable time with spreadsheets and calculators when you can have an instant snapshot
+                        of your budget with the click of a mouse!</p></blockquote>
+
+                <p>Blurb and pic?</p>
+
+                <p>Features include:</p>
+                <ul>
+                    <li>Automated budget template--just sign up and go!</li>
+                    <li>Completely customizable to fit your spending patterns and needs.</li>
+                    <li>As circumstances change, add new budget information--provides accurate current and historical
+                        budget and exprense tracking.</li>
+                    <li>Visualize your budget and expenses, with snapshots, trends and patterns using easy to read
+                        graphs and charts.</li>
+                    <li>Obtain compelling insights into your spending patterns, recommendations.</li>
+                    <li>See how you stack up to your peers (users with like household characteristics) with
+                        comparative benchmarks.</li>
+                </ul>
+
+                <div class="callout alert alert-success margin-top-60 margin-bottom-60">
+
+	                <div class="row">
+
+		                <div class="col-md-8 col-sm-8"><!-- left text -->
+                            <p>Get your insights and compelling visuals into spending patterns,
+                                and how you stack up to your peers.</p>
+		                </div><!-- /left text -->
+		                <div class="col-md-4 col-sm-4 text-right"><!-- right btn -->
+			                <a href="{% url "account_signup" %}" rel="nofollow" target="_blank"
+                               class="btn btn-success btn-lg">START MY <strong>FREE</strong> TRIAL</a>
+		                </div><!-- /right btn -->
+
+	                </div>
+
+                </div>
+
+                <p>Learn more about <a href="{% url "public:capture" %}">Capture</a> or
+                    <a href="{% url "public:contribute" %}">Contribute</a>.</p>
+
+            </div>
+    </div>
+
+{% endblock %}

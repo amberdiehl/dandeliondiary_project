@@ -15,3 +15,15 @@ def privacy(request):
 
 def cookies(request):
     return render(request, 'public/cookies.html')
+
+
+def capture(request):
+    return render(request, 'public/capture.html')
+
+
+def compare(request):
+    return render(request, 'public/compare.html')
+
+
+def contribute(request):
+    return render(request, 'public/contribute.html')

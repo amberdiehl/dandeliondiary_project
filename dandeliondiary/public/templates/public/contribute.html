@@ -1,10 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "site_base.html" %}
+{% load staticfiles %}
+{% load i18n %}
 
-</body>
-</html>
+{% block title %}{% trans "Learn About Contribute" %}{% endblock %}
+
+{% block static %}
+{% endblock %}
+
+{% block body_classes %} bg-grey {% endblock %}
+
+{% block body_container %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+            <div class="margin-top-30 margin-bottom-30 box-static box-transparent box-bordered box-white">
+
+                <h2>{% trans "More About Contribute" %}</h2>
+                <blockquote class="reverse">
+                    <p>Share ratings and reviews, let others in on money saving secrets, find the best back roads and
+                        places to stay – teach, learn or just enjoy the conversation.</p></blockquote>
+
+                <p>Blurb and pic?</p>
+
+                <p>Features include:</p>
+                <ul>
+                    <li>Information on RV parks, campgrounds in a forum setting.</li>
+                    <li>Get and contribute to community know-how on a variety of RV specific topics.</li>
+                    <li>Contribute your tips, tricks and know-how that enables you to keep expenses low.</li>
+                    <li>Reduce your expenses by learning from others in the RV community.</li>
+                    <li>Enjoy an ad-free environment by RV'ers for RV'ers.</li>
+                </ul>
+
+                <div class="callout alert alert-success margin-top-60 margin-bottom-60">
+
+	                <div class="row">
+
+		                <div class="col-md-8 col-sm-8"><!-- left text -->
+                            <p>Become a member of the Dandelion Diary Community!</p>
+		                </div><!-- /left text -->
+		                <div class="col-md-4 col-sm-4 text-right"><!-- right btn -->
+			                <a href="{% url "account_signup" %}" rel="nofollow" target="_blank"
+                               class="btn btn-success btn-lg">START MY <strong>FREE</strong> TRIAL</a>
+		                </div><!-- /right btn -->
+
+	                </div>
+
+                </div>
+
+                <p>Learn more about <a href="{% url "public:capture" %}">Capture</a> or
+                    <a href="{% url "public:compare" %}">Compare</a>.</p>
+
+            </div>
+    </div>
+
+{% endblock %}

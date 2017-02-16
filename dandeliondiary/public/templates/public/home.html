@@ -111,18 +111,6 @@
                              data-transform_in="x:[-100%];opacity:0;s:2500"
                              data-transform_out="auto:auto;s:1000;e:Power2.easeInOut;"
                              data-start="500">
-                            Dandelion Diary
-                        </div>
-
-                        <div class="tp-caption block_black rs-parallaxlevel-0 "
-                             data-x="left" data-hoffset="75"
-                             data-y="top" data-voffset="150"
-                             data-width="275"
-                             data-whitespace="normal"
-                             data-transform_idle="o:1;"
-                             data-transform_in="x:[-100%];opacity:0;s:2500"
-                             data-transform_out="auto:auto;s:1000;e:Power2.easeInOut;"
-                             data-start="1500">
                             Real time expense tracking.
                         </div>
 
@@ -166,7 +154,7 @@
                             Realize dreams </br> Achieve goals
                         </div>
 
-                        <div class="tp-caption block_black rs-parallaxlevel-0 "
+                        <div class="tp-caption small_light_white rs-parallaxlevel-0 "
                              data-x="left" data-hoffset="810"
                              data-y="top" data-voffset="195"
                              data-width="275"
@@ -175,10 +163,10 @@
                              data-transform_in="x:[-100%];opacity:0;s:2500"
                              data-transform_out="auto:auto;s:1000;e:Power2.easeInOut;"
                              data-start="1500">
-                            Aspirations become reality.
+                            Make your aspirations become reality.
                         </div>
 
-                        <div class="tp-caption small_light_white rs-parallaxlevel-0 "
+                        <a href="{% url "account_signup" %}" target="_self" class="tp-caption small_light_white rs-parallaxlevel-0 "
                              data-x="left" data-hoffset="810"
                              data-y="top" data-voffset="350"
                              data-width="275"
@@ -188,7 +176,7 @@
                              data-transform_out="auto:auto;s:1000;e:Power2.easeInOut;"
                              data-start="1500">
                             Start My Free Trial.
-                        </div>
+                        </a>
                     </li>
 
                     <!-- SLIDE 3 -->
@@ -250,7 +238,7 @@
 			        <p style="font-weight: 400; font-size: 110%;"> Capture expenses when they happen with ease using Google Places and
                         Dandelion predictive analytics.
                         Go green with electronic receipts.</p>
-                    <a href="#" class="btn btn-primary btn-bordered size-20 width-150 center-block">
+                    <a href="{% url "public:capture" %}" class="btn btn-primary btn-bordered size-20 width-150 center-block">
                         <span>Learn More</span>
                     </a>
 		        </div>
@@ -266,7 +254,7 @@
 			        </a>
                     <p style="font-weight: 400; font-size: 110%;"> Graphs and charts help you instantly see how you're tracking to your current budget and enable you to
                         easily gain insight into changes over time.</p>
-                    <a href="#" class="btn btn-primary btn-bordered size-20 width-150 center-block">
+                    <a href="{% url "public:compare" %}" class="btn btn-primary btn-bordered size-20 width-150 center-block">
                         <span>Learn More</span>
                     </a>
 		        </div>
@@ -282,7 +270,7 @@
 			        </a>
 			        <p style="font-weight: 400; font-size: 110%;"> Join the Dandelion Community! Share your know-how, product and service ratings. Get the most
                         for your money and help others do the same!</p>
-                    <a href="#" class="btn btn-primary btn-bordered size-20 width-150 center-block">
+                    <a href="{% url "public:contribute" %}" class="btn btn-primary btn-bordered size-20 width-150 center-block">
                         <span>Learn More</span>
                     </a>
 		        </div>
