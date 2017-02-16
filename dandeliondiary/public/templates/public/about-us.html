@@ -1,10 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "site_base.html" %}
+{% load staticfiles %}
+{% load i18n %}
 
-</body>
-</html>
+{% block title %}{% trans "About Us" %}{% endblock %}
+
+{% block static %}
+{% endblock %}
+
+{% block body_classes %} bg-grey {% endblock %}
+
+{% block body_container %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+            <div class="margin-top-30 margin-bottom-30 box-static box-transparent box-bordered box-white">
+
+                <h2>{% trans "About Us" %}</h2>
+
+                <p>Hi, my name is Amber.</p>
+
+                <p>Dandelion Diary is the crazy brain child of me, a middle-aged RV'er, with contributing
+                inspiration and support coming from my wonderful husband, Scot, and beloved fur-child, Barney.</p>
+                <p>We are new to RV'ing--having started in May of 2015--but we are 'all in', having sold or donated almost
+                    everything we own to establish ourselves as full-time RV'ers. We love the friendliness of the RV
+                    community, the willing spirit to help, the different pace of life, and the ability to move about and
+                    experience all that North America has to offer. While much changed, we have kept our rather almost
+                    fanatical obsession with tracking expenses, trying to keep costs down and seeking out where to get
+                    the best deal or service, bit of know-how or, well, anything, associated with RV'ing.</p>
+                <p>We used to track our expenses using Microsoft Excel, saving receipts throughout the month and then
+                    I would sit down and enter them all at the end of the month. Since developing Dandelion
+                    Diary, I have stopped doing that, entering receipts as I make purchases and Scot
+                    does the same! It's fast, easy, and now I have visuals I didn't have before of how well we're doing.
+                    Actually, the cool thing is, we both have visuals now regarding how we doing for the month.</p>
+                <p>My hope is that others will use Dandelion Diary too and, between the magic that can be done with
+                    software (I have so many more features and ideas of things I want to do), and the magic of people
+                    helping other people through experience and expertise, we can create an amazing online community
+                    for RV'ers by RV'ers.</p>
+                <p>Yours truly,</p>
+                Amber, Scot, and Barney, too.
+            </div>
+    </div>
+
+{% endblock %}

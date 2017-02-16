@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render, render_to_response
+from django.shortcuts import render
 
 
 def home(request):
@@ -27,3 +27,15 @@ def compare(request):
 
 def contribute(request):
     return render(request, 'public/contribute.html')
+
+
+def about_us(request):
+    return render(request, 'public/about-us.html')
+
+
+def faq(request):
+    return render(request, 'public/frequently-asked-questions.html')
+
+
+def contact(request):
+    return render(request, 'public/contact.html')

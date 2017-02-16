@@ -38,11 +38,10 @@
         <link href="{% static "css/layout.css" %}" rel="stylesheet" type="text/css" />
         <link href="{% static "css/color_scheme/green.css" %}" rel="stylesheet" type="text/css" id="color_scheme" />
 
-
         <!-- Freshdesk support -->
-        <script type="text/javascript" src="https://assets.freshdesk.com/widget/freshwidget.js"></script>
+        <script type="text/javascript" src="https://s3.amazonaws.com/assets.freshdesk.com/widget/freshwidget.js"></script>
         <script type="text/javascript">
-	        FreshWidget.init("", {"queryString": "&widgetType=popup", "utf8": "✓", "widgetType": "popup", "buttonType": "text", "buttonText": "Support", "buttonColor": "white", "buttonBg": "#618125", "alignment": "2", "offset": "300px", "formHeight": "500px", "url": "https://dandeliondiary.freshdesk.com"} );
+	        FreshWidget.init("", {"queryString": "&widgetType=popup", "utf8": "✓", "widgetType": "popup", "buttonType": "text", "buttonText": "Support", "buttonColor": "white", "buttonBg": "#8eaf17", "alignment": "2", "offset": "280px", "formHeight": "500px", "url": "https://dandeliondiary.freshdesk.com"} );
         </script>
 
         <!-- Changelog -->
@@ -126,7 +125,7 @@
 
 					<!-- left -->
 					<ul class="top-links list-inline">
-						<li class="hidden-xs"><a href="page-faq-1.html">FAQ</a></li>
+						<li class="hidden-xs"><a href="{% url "public:faq" %}">FAQ</a></li>
                         <li><span class="changelog-wrap"></span></li>
 					</ul>
 
@@ -171,12 +170,7 @@
                                     {% if user.is_authenticated %}
                                         <li><a id="account" href="{% url "account_logout" %}">LOGOUT</a></li>
                                     {% else %}
-									    <li class="dropdown"><!-- ABOUT -->
-										    <a class="dropdown-toggle" href="#">ABOUT</a>
-									    </li>
-									    <li class="dropdown"><!-- BLOG -->
-										    <a class="dropdown-toggle" href="#">BLOG</a>
-									    </li>
+                                        <li><a href="{% url "public:home"%}#product">What is Dandelion Diary?</a></li>
                                         <li><a href="{% url "account_login" %}">LOGIN</a></li>
 						                <li><a href="{% url "account_signup" %}">CREATE ACCOUNT</a></li>
 								    {% endif %}
@@ -241,14 +235,14 @@
 					    <div class="col-md-4">
 						    <h4 class="letter-spacing-1">PAGES</h4>
 						    <ul class="list-unstyled">
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> About Us</a></li>
+							    <li><a class="block" href="{% url "public:about" %}"><i class="fa fa-angle-right"></i> About Us</a></li>
 							    <li><a class="block" href="{% url "public:terms" %}"><i class="fa fa-angle-right"></i> Terms of Service</a></li>
 							    <li><a class="block" href="{% url "public:privacy" %}"><i class="fa fa-angle-right">
                                     </i> Privacy</a></li>
                                 <li><a class="block" href="{% url "public:cookies" %}"><i class="fa fa-angle-right">
                                     </i> Cookie Policy</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> FAQ</a></li>
-							    <li><a class="block" href="#"><i class="fa fa-angle-right"></i> Contact Us</a></li>
+							    <li><a class="block" href="{% url "public:faq" %}"><i class="fa fa-angle-right"></i> FAQ</a></li>
+							    <li><a class="block" href="{% url "public:contact" %}"><i class="fa fa-angle-right"></i> Contact Us</a></li>
 						    </ul>
 					    </div>
 
