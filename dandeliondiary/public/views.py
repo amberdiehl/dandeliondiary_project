@@ -39,3 +39,7 @@ def faq(request):
 
 def contact(request):
     return render(request, 'public/contact.html')
+
+
+def code_of_conduct(request):
+    return render(request, 'public/community_code_of_conduct.html')

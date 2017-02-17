@@ -12,5 +12,6 @@ urlpatterns = [
     url(r'^terms$', views.terms, name='terms'),
     url(r'^privacy$', views.privacy, name='privacy'),
     url(r'^cookies$', views.cookies, name='cookies'),
+    url(r'^code-of-conduct$', views.code_of_conduct, name='conduct'),
     url(r'^', views.home, name='home'),
 ]

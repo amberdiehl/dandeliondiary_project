@@ -198,7 +198,9 @@
 
         </div>
 
-        {% block scripts %}{% endblock %}
+        {% block scripts %}
+
+        {% endblock %}
 
         <footer id="footer">
 
@@ -257,6 +259,8 @@
 							    <li><a class="block" href="{% url "pinax_forums:forum" 3 %}">
                                     <i class="fa fa-angle-right"></i> Product + Service Reviews</a></li>
                                 {% endif %}
+							    <li><a class="block" href="{% url "public:conduct" %}"><i class="fa fa-angle-right"></i>
+                                    Community Code of Conduct</a></li>
 						    </ul>
                             {% if not user.is_authenticated %}
                                 <br><a href="{% url "account_login" %}">Log in</a> or <a href="{% url "account_signup" %}">join</a> to access forums.

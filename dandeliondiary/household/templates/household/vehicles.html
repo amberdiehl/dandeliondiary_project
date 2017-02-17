@@ -8,7 +8,7 @@
 
 {% block static %}
 
-        <style>
+    <style>
 
         .modal-dialog {
             margin: 2.5vh auto;
@@ -196,9 +196,6 @@
 {% endblock %}
 
 {% block scripts %}
-
-    <!-- PRELOADER -->
-    <!-- /PRELOADER -->
 
     <script>
 
@@ -426,8 +423,7 @@
 
     </script>
 
-    <!-- JAVASCRIPT FILES -->
-    <script type="text/javascript">var plugin_path = "/static/plugins/";</script>
-    <!-- <script type="text/javascript" src="{% static "/js/scripts.js" %}"></script> -->
+    <!-- This page does not contain the js which enables the Dandelion Diary logo to remain present, while shrinking.
+    This is because when loaded, it interferes with the modal dialog boxes--they open and immediately close. -->
 
 {% endblock %}
