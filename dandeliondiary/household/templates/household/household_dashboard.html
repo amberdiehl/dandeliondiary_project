@@ -135,7 +135,7 @@
 
 {% block scripts %}
 
-    <script type="text/javascript">var plugin_path = "/static/plugins/";</script>
-    <script type="text/javascript" src={% static "js/scripts.js" %}></script>
+    <script type="text/javascript">var plugin_path = "{% static "plugins/" %}";</script>
+    <script type="text/javascript" src="{% static "js/scripts.js" %}"></script>
 
 {% endblock %}
