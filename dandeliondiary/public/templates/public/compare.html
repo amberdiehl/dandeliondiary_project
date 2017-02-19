@@ -17,31 +17,48 @@
 
                 <h2>{% trans "More About Compare" %}</h2>
                 <blockquote class="reverse">
-                    <p>Why spend valuable time with spreadsheets and calculators when you can have an instant snapshot
-                        of your budget with the click of a mouse!</p></blockquote>
+                    <p>Why waste valuable time with spreadsheets and calculators when you can have an instant snapshot
+                        of your budget and spending with the click of a mouse!</p></blockquote>
 
-                <p>Blurb and pic?</p>
+                <p>Graphs and charts help you instantly see how you're tracking to your current budget and enable you to
+                        easily gain insight into changes over time.</p>
+
+                <table>
+                    <tr>
+                        <td>
+                            <img class="center-block" src="{% static "images/screenshots/screenshot-compare-groups.png" %}"
+                                 height="300px" alt="Compare budget groups">
+                        </td>
+                        <td>
+                            <img class="center-block" src="{% static "images/screenshots/screenshot-compare-dashboard.png" %}"
+                                 height="300px" alt="Compare dashboard">
+                        </td>
+                    </tr>
+                </table>
 
                 <p>Features include:</p>
                 <ul>
-                    <li>Automated budget template--just sign up and go!</li>
+                    <li>Automated budget template&#8212;just sign up and go!</li>
                     <li>Completely customizable to fit your spending patterns and needs.</li>
-                    <li>As circumstances change, add new budget information--provides accurate current and historical
-                        budget and exprense tracking.</li>
-                    <li>Visualize your budget and expenses, with snapshots, trends and patterns using easy to read
+                    <li>Add, rather than change, budget information&#8212;ensures an accurate
+                        view of current versus historical data.</li>
+                    <li>Visualize your numbers with snapshots, trends, and patterns using easy to read
                         graphs and charts.</li>
-                    <li>Obtain compelling insights into your spending patterns, recommendations.</li>
-                    <li>See how you stack up to your peers (users with like household characteristics) with
+                    <li>Obtain compelling insights and recommendations from Dandelion Diary.</li>
+                    <li>See how you stack up to your peers (users with like household characteristics) through
                         comparative benchmarks.</li>
                 </ul>
+
+                <p>There's much more to come. Dandelion Diary is currently in <a href="{% url "public:faq"%}#beta">beta</a>.
+                    Sign up and receive our newsletter of upcoming features.</p>
 
                 <div class="callout alert alert-success margin-top-60 margin-bottom-60">
 
 	                <div class="row">
 
 		                <div class="col-md-8 col-sm-8"><!-- left text -->
-                            <p>Get your insights and compelling visuals into spending patterns,
-                                and how you stack up to your peers.</p>
+                            <p>Get insights and compelling visuals into spending patterns.
+                                See how you stack up to your peers.</p>
 		                </div><!-- /left text -->
 		                <div class="col-md-4 col-sm-4 text-right"><!-- right btn -->
 			                <a href="{% url "account_signup" %}" rel="nofollow" target="_blank"

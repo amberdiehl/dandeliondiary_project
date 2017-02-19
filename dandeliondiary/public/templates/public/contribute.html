@@ -18,9 +18,22 @@
                 <h2>{% trans "More About Contribute" %}</h2>
                 <blockquote class="reverse">
                     <p>Share ratings and reviews, let others in on money saving secrets, find the best back roads and
-                        places to stay – teach, learn or just enjoy the conversation.</p></blockquote>
+                        places to stay&#8212;teach, learn or just enjoy the conversation.</p></blockquote>
 
-                <p>Blurb and pic?</p>
+                <table>
+                    <tr>
+                        <td>
+                            <img class="center-block" src="{% static "images/screenshots/screenshot-contribute-view1.png" %}"
+                                 height="300px" alt="Contribute view 1">
+                        </td>
+                        <td>&nbsp;</td>
+                        <td>
+                            <img class="center-block" src="{% static "images/screenshots/screenshot-contribute-view2.png" %}"
+                                 height="300px" alt="Contribute view 2">
+                        </td>
+                    </tr>
+                </table>
+
 
                 <p>Features include:</p>
                 <ul>
@@ -46,6 +59,9 @@
 	                </div>
 
                 </div>
+
+                <p>There's much more to come. Dandelion Diary is currently in <a href="{% url "public:faq"%}#beta">beta</a>.
+                    Sign up and receive our newsletter of upcoming features.</p>
 
                 <p>Learn more about <a href="{% url "public:capture" %}">Capture</a> or
                     <a href="{% url "public:compare" %}">Compare</a>.</p>

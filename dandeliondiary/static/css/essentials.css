@@ -1450,7 +1450,7 @@ section.dark .border-bottom-3 {
 }
 
 .text-success {
-    color: #02B700 !important;
+    color: #8EAF17 !important;
 }
 
 .tex-white {
@@ -1631,7 +1631,7 @@ img.image-bw {
 
 .box-success {
     color: #fff;
-    background-color: #02B700 !important;
+    background-color: #8EAF17 !important;
 }
 
 .box-white {
@@ -2618,7 +2618,7 @@ blockquote {
 
 blockquote.reverse {
     border-left: 0;
-    border-right: 5px solid rgba(0, 0, 0, 0.1);
+    border-right: 5px solid rgba(250, 73, 15, 1.0);
     margin: 25px 0;
     padding: 0 25px 0 0;
     text-align: right;
@@ -17108,7 +17108,7 @@ button.toast-close-button {
 }
 
 .toast-success {
-    background-color: #51a351;
+    background-color: #8EAF17;
 }
 
 .toast-error {
@@ -22675,8 +22675,8 @@ section.dark select > optgroup {
 }
 
 .switch.switch-success > input:checked + .switch-label {
-    border-color: #4cae4c;
-    background: #4cae4c;
+    border-color: #8EAF17;
+    background: #8EAF17;
 }
 
 .switch.switch-danger > input:checked + .switch-label {
@@ -22784,7 +22784,7 @@ section.dark select > optgroup {
 }
 
 .fancy-file-upload.fancy-file-success > span.button {
-    background-color: #4cae4c;
+    background-color: #8EAF17;
 }
 
 .fancy-file-upload.fancy-file-danger > span.button {
@@ -23463,12 +23463,12 @@ section.dark .sliderv-wrapper {
 }
 
 .success-slider .ui-slider .ui-slider-handle {
-    border-color: #2ecc71;
+    border-color: #8EAF17;
 }
 
 .success-slider .ui-slider .ui-slider-handle:before,
 .success-slider .ui-slider .ui-slider-range {
-    background-color: #2ecc71;
+    background-color: #8EAF17;
 }
 
 .yellow-slider .ui-slider .ui-slider-handle {

@@ -172,7 +172,10 @@
                                     {% else %}
                                         <li><a href="{% url "public:home"%}#product">What is Dandelion Diary?</a></li>
                                         <li><a href="{% url "account_login" %}">LOGIN</a></li>
-						                <li><a href="{% url "account_signup" %}">CREATE ACCOUNT</a></li>
+						                <li><a href="{% url "account_signup" %}">
+                                            <span style="background-color: #FA490F;
+                                                padding: 6px 8px; border-radius: 3px; color: #FFF;">
+                                                <strong>SIGN UP NOW</strong></span></a></li>
 								    {% endif %}
                                 </ul>
 						    </div>

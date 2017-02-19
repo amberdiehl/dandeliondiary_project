@@ -28,49 +28,6 @@
 {% block body_classes %}{% endblock %}
 
     {% block slidetop %}
-		<div id="slidetop">
-
-			<div class="container">
-
-				<div class="row">
-
-					<div class="col-md-4">
-						<h6><i class="icon-heart"></i> Why Dandelion Diary?</h6>
-						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas metus nulla, commodo a
-                            sodales sed, dignissim pretium nunc. Nam et lacus neque. Ut enim massa, sodales tempor
-                            convallis et, iaculis ac massa. </p>
-					</div>
-
-					<div class="col-md-4">
-						<h6><i class="icon-attachment"></i> Recently Visited</h6>
-						<ul class="list-unstyled">
-							<li><a href="#"><i class="fa fa-angle-right"></i> Consectetur adipiscing elit amet</a></li>
-							<li><a href="#"><i class="fa fa-angle-right"></i> This is a very long text, very very very
-                                very very very very very very very very very </a></li>
-							<li><a href="#"><i class="fa fa-angle-right"></i> Lorem ipsum dolor sit amet</a></li>
-							<li><a href="#"><i class="fa fa-angle-right"></i> Dolor sit amet,consectetur adipiscing
-                                elit amet</a></li>
-							<li><a href="#"><i class="fa fa-angle-right"></i> Consectetur adipiscing elit amet,
-                                consectetur adipiscing elit</a></li>
-						</ul>
-					</div>
-
-					<div class="col-md-4">
-						<h6><i class="icon-envelope"></i> Contact Information</h6>
-						<ul class="list-unstyled">
-							<li><b>Address:</b> PO Box 21132 <br /> Greenbrae, CA 94904 USA</li>
-							<li><b>Phone:</b> 1-415-413-4393</li>
-							<li><b>Email:</b> <a href="mailto:support@yourname.com">support@yourname.com</a></li>
-						</ul>
-					</div>
-
-				</div>
-
-			</div>
-
-			<a class="slidetop-toggle" href="#"><!-- toggle button --></a>
-
-		</div>
     {% endblock %}
 
     {% block body_container %}
@@ -111,21 +68,20 @@
                              data-transform_in="x:[-100%];opacity:0;s:2500"
                              data-transform_out="auto:auto;s:1000;e:Power2.easeInOut;"
                              data-start="500">
-                            Real time expense tracking.
+                            You need real time expense tracking.
                         </div>
 
                         <div class="tp-caption small_light_white rs-parallaxlevel-0 "
                              data-x="left" data-hoffset="70"
-                             data-y="top" data-voffset=250"
+                             data-y="top" data-voffset=195"
                              data-width="275"
                              data-whitespace="normal"
                              data-transform_idle="o:1;"
                              data-transform_in="x:[105%];z:0;rX:45deg;rY:0deg;rZ:90deg;sX:1;sY:1;skX:0;skY:0;s:2000;e:Power4.easeInOut;"
                              data-transform_out="s:1000;e:Power2.easeInOut;s:1000;e:Power2.easeInOut;"
                              data-start="1500">
-                            Using Google Places and Dandelion<br />
-                            analytics, quickly and easily<br />
-                            capture your expenses as they happen.<br />
+                            You spend hard earned money every day.<br /><br />
+                            You need real time feedback on your spending goals.
                         </div>
                     </li>
 
@@ -151,7 +107,7 @@
                              data-transform_in="x:[-100%];opacity:0;s:2500"
                              data-transform_out="auto:auto;s:1000;e:Power2.easeInOut;"
                              data-start="500">
-                            Realize dreams </br> Achieve goals
+                            Realize dreams. <br> Achieve goals.
                         </div>
 
                         <div class="tp-caption small_light_white rs-parallaxlevel-0 "
@@ -163,20 +119,9 @@
                              data-transform_in="x:[-100%];opacity:0;s:2500"
                              data-transform_out="auto:auto;s:1000;e:Power2.easeInOut;"
                              data-start="1500">
-                            Make your aspirations become reality.
+                            We can help keep your spending focused.<br /><br />
+                            And your aspirations become reality.
                         </div>
-
-                        <a href="{% url "account_signup" %}" target="_self" class="tp-caption small_light_white rs-parallaxlevel-0 "
-                             data-x="left" data-hoffset="810"
-                             data-y="top" data-voffset="350"
-                             data-width="275"
-                             data-whitespace="normal"
-                             data-transform_idle="o:1;"
-                             data-transform_in="x:[-100%];opacity:0;s:2500"
-                             data-transform_out="auto:auto;s:1000;e:Power2.easeInOut;"
-                             data-start="1500">
-                            Start My Free Trial.
-                        </a>
                     </li>
 
                     <!-- SLIDE 3 -->
@@ -201,7 +146,7 @@
                              data-transform_in="x:[-100%];opacity:0;s:2500"
                              data-transform_out="auto:auto;s:1000;e:Power2.easeInOut;"
                              data-start="1500">
-                            Discover what you can do!
+                            Be part of a community!
                         </div>
 
                         <div class="tp-caption small_light_white rs-parallaxlevel-0 "
@@ -212,7 +157,7 @@
                              data-transform_idle="o:1;"
                              data-transform_in="y:bottom;s:2000;e:Power4.easeInOut;"
                              data-transform_out="s:1000;e:Power2.easeInOut;s:1000;e:Power2.easeInOut;"                            data-start="1500">
-                            Be part of a community sharing ideas, insights, so you can do what you love.
+                            Share ideas, get insights, find out how to save money so you can do what you love.
                         </div>
                     </li>
                 </ul>
@@ -233,13 +178,12 @@
 	        <div class="col-md-4">
 
     		    <div class="box-icon box-icon-center box-icon-transparent box-icon-large">
-	    		    <a class="box-icon-title" href="#">
+	    		    <a class="box-icon-title" href="{% url "public:capture" %}">
 		    		    <img src="{% static "images/home/wallet.png" %}" alt="" width="150" />
 			    	    <h1>Capture</h1>
 			        </a>
-			        <p style="font-weight: 400; font-size: 110%;"> Capture expenses when they happen with ease using Google Places and
-                        Dandelion predictive analytics.
-                        Go green with electronic receipts.</p>
+			        <p style="font-weight: 400; font-size: 110%;"> Don't wait for a bank or card statement to find out you are over
+                        budget&#8212;capture a purchase in a flash and know in an instant where you stand.</p>
                     <a href="{% url "public:capture" %}" class="btn btn-primary btn-bordered size-20 width-150 center-block">
                         <span>Learn More</span>
                     </a>
@@ -250,12 +194,13 @@
 	        <div class="col-md-4">
 
 		        <div class="box-icon box-icon-center box-icon-transparent box-icon-large">
-			        <a class="box-icon-title" href="#">
+			        <a class="box-icon-title" href="{% url "public:compare" %}">
                         <img src="{% static "images/home/piechart.png" %}" alt="" width="150" />
 				        <h1>Compare</h1>
 			        </a>
-                    <p style="font-weight: 400; font-size: 110%;"> Graphs and charts help you instantly see how you're tracking to your current budget and enable you to
-                        easily gain insight into changes over time.</p>
+                    <p style="font-weight: 400; font-size: 110%;"> Don't guess&#8212;know your personal purchasing performance. Get insights into
+                        your spending and how it compares to others; are you top dog?
+                    </p>
                     <a href="{% url "public:compare" %}" class="btn btn-primary btn-bordered size-20 width-150 center-block">
                         <span>Learn More</span>
                     </a>
@@ -266,7 +211,7 @@
 	        <div class="col-md-4">
 
 		        <div class="box-icon box-icon-center box-icon-transparent box-icon-large">
-			        <a class="box-icon-title" href="#">
+			        <a class="box-icon-title" href="{% url "public:contribute" %}">
                         <img src="{% static "images/home/community.png" %}" alt="" width="150" />
 				        <h1>Contribute</h1>
 			        </a>
