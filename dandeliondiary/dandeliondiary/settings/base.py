@@ -112,6 +112,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'account.context_processors.account',
+                'dandeliondiary.context_processors.google_analytics',
             ],
         },
     },
@@ -159,6 +160,10 @@ AVATAR_AUTO_GENERATE_SIZES = (80, 64, 50,)
 AVATAR_DEFAULT_SIZE = 64
 AVATAR_GRAVATAR_BACKUP = False
 AVATAR_CHANGE_TEMPLATE = "avatar/avatar.html"
+
+# Google analytics
+GOOGLE_ANALYTICS_PROPERTY_ID = 'UA-92296339-1'
+GOOGLE_ANALYTICS_DOMAIN = 'dandeliondiary.com'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

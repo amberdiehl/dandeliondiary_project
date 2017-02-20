@@ -78,6 +78,11 @@
             }
         </style>
 
+        <!-- Google analytics -->
+        {% if GOOGLE_ANALYTICS_PROPERTY_ID %}
+            {% include "google_analytics.html" %}
+        {% endif %}
+
         <!-- Set active class for main and 2nd level menu items -->
         <script>
             $(document).ready(function(){
