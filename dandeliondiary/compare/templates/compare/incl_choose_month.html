@@ -1,4 +1,4 @@
-                For Month: <select id="chooseMonth" name="chooseMonth" >
+                <span style="margin-left:1em;">For month:</span> <select id="{{ unique_id }}" name="{{ unique_id }}" >
                 {% for option in options %}
                     <option value="{{ option.0 }}">{{ option.1 }}</option>
                 {% endfor %}

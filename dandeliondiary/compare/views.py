@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render, render_to_response, HttpResponseR
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count, Sum
 
 from hashids import Hashids
 
@@ -30,10 +31,19 @@ def compare_dashboard(request):
         return redirect('household:household_dashboard')
     else:
 
+        # Send customized date range based on when subscriber started using Dandelion Diary
+        years = ()
+        expenses = MyExpenseItem.objects.filter(household=me.get('household_key')).order_by('expense_date')[0]
+        start_year = expenses.expense_date.year
+        current_year = datetime.datetime.now().year
+        for yr in range(start_year, current_year+1):
+            years += yr,
+
         context = {
             'page_title': 'Compare Dashboard',
             'url': 'compare:compare_dashboard',
             'options': get_month_options(),
+            'years': sorted(years, reverse=True),
         }
 
         return render(request, 'compare/compare_dashboard.html', context)
@@ -127,56 +137,190 @@ def groups_and_categories(request):
 
 
 @login_required
+def ajax_dashboard_snapshot(request, dt):
+
+    response_data = {}
+
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        response_data['status'] = 'ERROR'
+        return JsonResponse(response_data)
+
+    filter_date = datetime.datetime.strptime(dt, '%Y-%m-%d').date()
+
+    today = datetime.datetime.now().date()
+    if today.year == filter_date.year and today.month == filter_date.month:
+        days_remaining = filter_date.day - today.day
+    else:
+        days_remaining = 0
+
+    # setup columns for budget and expenses column chart
+    budget_expense_columnchart = {}
+    cols_budget_expense_columnchart = [
+        {'id': 'groups', 'label': 'Groups', 'type': 'string'},
+        {'id': 'budget', 'label': 'Budget', 'type': 'number'},
+        {'id': 'expenses', 'label': 'Expenses', 'type': 'number'}
+    ]
+    rows_budget_expense_columnchart = []
+
+    total_budget = 0
+    total_expenses = 0
+
+    budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
+
+    for group in budget_groups:
+
+        amounts = helper_get_group_budget_and_expenses(group, filter_date=filter_date, fetch_expenses=True)
+
+        total_budget += amounts['group_budget']
+        total_expenses += amounts['group_expenses']
+
+        row_budget_expense_columnchart = {'c': [{'v': group.my_group_name},
+                                                {'v': int(amounts['group_budget'])},
+                                                {'v': int(amounts['group_expenses'])}]}
+        rows_budget_expense_columnchart.append(row_budget_expense_columnchart)
+
+    budget_expense_columnchart['cols'] = cols_budget_expense_columnchart
+    budget_expense_columnchart['rows'] = rows_budget_expense_columnchart
+
+    response_data['status'] = 'OK'
+    response_data['totalBudget'] = total_budget
+    response_data['totalExpenses'] = total_expenses
+    response_data['netRemaining'] = total_budget - total_expenses
+    response_data['daysRemaining'] = days_remaining
+    response_data['budgetExpenseColumnchart'] = budget_expense_columnchart
+
+    return JsonResponse(response_data)
+
+
+@login_required
+def ajax_dashboard_month_series(request, from_date, to_date):
+    """
+    Gets the net difference of budget and expenses for a given series of months. Note that although dates require
+    "day" being 01, the entire month of expenses are retrieved.
+
+    :param request:
+    :param from_date: Must use format 2016-01-01 where day is always set to 01
+    :param to_date: Must use format 2016-12-01 where day is always set to 01
+    :return:
+    """
+
+    response_data = {}
+
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        return JsonResponse(response_data)
+
+    f_dt = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
+    t_dt = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
+    today = datetime.datetime.now().date()
+
+    # setup for column chart
+    column_chart = {}
+    cols = [
+        {'id': 'month', 'label': 'Month', 'type': 'string'},
+        {'id': 'amount', 'label': 'Net Amount', 'type': 'number'},
+        {'type': 'string', 'role': 'style'}
+    ]
+    rows = []
+
+    this_date = f_dt
+
+    while this_date <= t_dt:
+
+        track_categories = []
+        month_net = 0
+        month_abbr = this_date.strftime('%b')
+
+        if this_date <= today:
+
+            # Select effective budget based on last day of month (period) being processed, not first day
+            future_date = this_date + datetime.timedelta(days=32)
+            full_month = future_date.replace(day=1) - datetime.timedelta(days=1)
+
+            budgets = MyBudget.objects.filter(category__my_budget_group__household=me.get('household_key')) \
+                .filter(effective_date__lte=full_month) \
+                .values('category', 'amount') \
+                .order_by('-effective_date')
+
+            for budget in budgets:
+                if budget['category'] in track_categories:
+                    pass  # skip older budget record(s)
+                else:
+                    month_net += budget['amount']
+                    track_categories.append(budget['category'])
+
+            expenses = MyExpenseItem.objects.filter(household=me.get('household_key')) \
+                .filter(expense_date__year=this_date.year, expense_date__month=this_date.month) \
+                .aggregate(Sum('amount'))
+            if expenses.get('amount__sum') is None:
+                pass
+            else:
+                month_net -= expenses.get('amount__sum')
+
+        if month_net < 0:
+            color = '#FA490F'
+        else:
+            color = '#8EAF17'
+
+        row = {'c': [{'v': month_abbr},
+                     {'v': int(month_net)},
+                     {'v': color}
+                     ]}
+
+        rows.append(row)
+
+        this_date += datetime.timedelta(days=32)
+        this_date = this_date.replace(day=1)
+
+    column_chart['cols'] = cols
+    column_chart['rows'] = rows
+
+    response_data['monthSeries'] = column_chart
+
+    return JsonResponse(response_data)
+
+
+@login_required
 def ajax_dashboard_budget(request, dt):
 
     response_data = {}
 
     me = helper_get_me(request.user.pk)
     if me.get('redirect'):
-        pass
-    else:
+        response_data['status'] = 'ERROR'
+        return JsonResponse(response_data)
 
-        filter_date = datetime.datetime.strptime(dt, '%Y-%m-%d').date()
+    filter_date = datetime.datetime.strptime(dt, '%Y-%m-%d').date()
 
-        # setup columns for budget pie chart, initialize row variable
-        budget_piechart = {}
-        cols_budget_piechart = [
-            {'id': 'groups', 'label': 'Groups', 'type': 'string'},
-            {'id': 'amount', 'label': 'Amount', 'type': 'number'}
-        ]
-        rows_budget_piechart = []
+    # setup columns for budget pie chart
+    budget_piechart = {}
+    cols_budget_piechart = [
+        {'id': 'groups', 'label': 'Groups', 'type': 'string'},
+        {'id': 'amount', 'label': 'Amount', 'type': 'number'}
+    ]
+    rows_budget_piechart = []
 
-        # setup columns for budget and expenses column chart, initialize row variable
-        budget_expense_columnchart = {}
-        cols_budget_expense_columnchart = [
-            {'id': 'groups', 'label': 'Groups', 'type': 'string'},
-            {'id': 'budget', 'label': 'Budget', 'type': 'number'},
-            {'id': 'expenses', 'label': 'Expenses', 'type': 'number'}
-        ]
-        rows_budget_expense_columnchart = []
+    total_budget = 0
 
-        # fetch the data for charts
-        budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
-        for group in budget_groups:
-            amounts = helper_get_group_budget_and_expenses(group, filter_date=filter_date, fetch_expenses=True)
+    budget_groups = MyBudgetGroup.objects.filter(household=me.get('household_key')).order_by('group_list_order')
 
-            row_budget_piechart = {'c': [{'v': group.my_group_name},
-                                         {'v': int(amounts['group_budget'])}]}
-            rows_budget_piechart.append(row_budget_piechart)
+    for group in budget_groups:
 
-            row_budget_expense_columnchart = {'c': [{'v': group.my_group_name},
-                                                    {'v': int(amounts['group_budget'])},
-                                                    {'v': int(amounts['group_expenses'])}]}
-            rows_budget_expense_columnchart.append(row_budget_expense_columnchart)
+        amounts = helper_get_group_budget_and_expenses(group, filter_date=filter_date, fetch_expenses=False)
 
-        budget_piechart['cols'] = cols_budget_piechart
-        budget_piechart['rows'] = rows_budget_piechart
+        total_budget += amounts['group_budget']
 
-        budget_expense_columnchart['cols'] = cols_budget_expense_columnchart
-        budget_expense_columnchart['rows'] = rows_budget_expense_columnchart
+        row_budget_piechart = {'c': [{'v': group.my_group_name},
+                                     {'v': int(amounts['group_budget'])}]}
+        rows_budget_piechart.append(row_budget_piechart)
 
-        response_data['budgetPiechart'] = budget_piechart
-        response_data['budgetExpenseColumnchart'] = budget_expense_columnchart
+    budget_piechart['cols'] = cols_budget_piechart
+    budget_piechart['rows'] = rows_budget_piechart
+
+    response_data['status'] = 'OK'
+    response_data['totalBudget'] = total_budget
+    response_data['budgetPiechart'] = budget_piechart
 
     return JsonResponse(response_data)
 

@@ -20,6 +20,15 @@ Includes MyExpenseItem helpers to prevent circular references which are not supp
 
 
 def helper_get_category_budget_and_expenses(category, filter_date=None, fetch_expenses=False):
+    """
+    Reminder that filter_date is used to get budget record effective for period (month) user selected and should be
+    setup as last day of the month.
+
+    :param category:
+    :param filter_date:
+    :param fetch_expenses:
+    :return:
+    """
 
     budget_amount = 0
     expense_total = 0
@@ -31,8 +40,10 @@ def helper_get_category_budget_and_expenses(category, filter_date=None, fetch_ex
     if children:
 
         for child in children:
-            child_budgets = MyBudget.objects.filter(category=child)\
-                .filter(effective_date__year__lte=filter_date.year, effective_date__month__lte=filter_date.month)\
+            # child_budgets = MyBudget.objects.filter(category=child)\
+            #    .filter(effective_date__year__lte=filter_date.year, effective_date__month__lte=filter_date.month)\
+            #    .order_by('-effective_date')
+            child_budgets = MyBudget.objects.filter(category=child).filter(effective_date__lte=filter_date)\
                 .order_by('-effective_date')
             if child_budgets:
                 budget_amount += child_budgets[0].amount
@@ -42,8 +53,10 @@ def helper_get_category_budget_and_expenses(category, filter_date=None, fetch_ex
 
     else:
 
-        category_budgets = MyBudget.objects.filter(category=category) \
-            .filter(effective_date__year__lte=filter_date.year, effective_date__month__lte=filter_date.month) \
+        # category_budgets = MyBudget.objects.filter(category=category) \
+        #    .filter(effective_date__year__lte=filter_date.year, effective_date__month__lte=filter_date.month) \
+        #    .order_by('-effective_date')
+        category_budgets = MyBudget.objects.filter(category=category).filter(effective_date__lte=filter_date) \
             .order_by('-effective_date')
         if category_budgets:
             budget_amount = category_budgets[0].amount
@@ -58,6 +71,8 @@ def helper_get_group_budget_and_expenses(group, filter_date=None, fetch_expenses
     """
     Get and return budget for a group.
     :param group:
+    :param filter_date:
+    :param fetch_expenses:
     :return:
     """
 
@@ -95,15 +110,26 @@ def get_expenses_for_period(category, from_date=None, to_date=None):
 
 
 def get_month_options():
+    """
+    Options list returns last day of every month. This is so that any effective date for a given budget for a given
+    month is included for the whole month. Since month's are not split it's not possible to accurately report expenses
+    for a given month falling before or after a date in the middle of the month. Also, it is assumed users will create
+    new budgets to be effective at the beginning of a month; e.g. 5/1/2017.
+    :return:
+    """
     options = []
-    dt = datetime.date.today().replace(day=1)
+
+    # Seed date to be the last day of this month.
+    this_month = datetime.date.today().replace(day=1)
+    future_date = this_month + datetime.timedelta(days=32)
+    dt = future_date.replace(day=1) - datetime.timedelta(days=1)
+
     while True:
-        option = ('{}-{}-{}'.format(dt.year, dt.month, dt.day), dt.strftime("%B"))
+        option = (dt.strftime('%Y-%m-%d'), dt.strftime("%B"))
         options.append(option)
         if len(options) == 12:
             break
-        dt_a = dt - datetime.timedelta(days=1)
-        dt = dt_a.replace(day=1)
+        dt = dt.replace(day=1) - datetime.timedelta(days=1)
     return options
 
 

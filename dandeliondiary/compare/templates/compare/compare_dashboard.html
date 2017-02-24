@@ -5,46 +5,148 @@
 {% block title %}{% trans "Compare - Dashboard" %}{% endblock %}
 {% block static %}
     <!-- PAGE LEVEL SCRIPTS -->
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
+    <style>
+        th, td { padding: 5px; }
+    </style>
+
+{% endblock %}
+
+{% block body_classes %} bg-grey {% endblock %}
+
+{% block body_container %}
+
+    {% include "./menu.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+        <div class="margin-top-30 margin-bottom-30 box-static box-transparent box-bordered box-white">
+
+            <h2>{% trans page_title %}</h2>
+
+            <div class="row">
+
+                <!-- tabs -->
+                <ul class="nav nav-tabs nav-clean">
+                    <li class="active"><a href="#Monthly_Snapshot" data-toggle="tab" onclick="drawMonthlySnapshot();">
+                        Monthly Snapshot</a></li>
+                    <li><a href="#Year_View" data-toggle="tab" onclick="drawYearView();">Year View</a></li>
+                    <li><a href="#Budget_View" data-toggle="tab" onclick="drawBudgetView();">Budget View</a></li>
+                </ul>
+
+                <!-- tabs content -->
+                <div class="tab-content">
+
+                    <div id="Monthly_Snapshot" class="tab-pane fade in active">
+                        {% with unique_id='chooseMonth0' %}
+                            {% include "incl_choose_month.html" %}
+                        {% endwith %}
+                        <script>
+                            document.getElementById("chooseMonth0").onchange = function () {
+                                drawMonthlySnapshot();
+                            };
+                        </script>
+                        <div class="col-md-12" id="chart_current_expenses"></div>
+                        <div style="margin-left:4em;">
+                            <table>
+                                <tr><td>Total budget:</td><td id="snapshotBudget"></td></tr>
+                                <tr><td>Total expenses:</td><td id="snapshotExpenses"></td></tr>
+                                <tr><td>Net remaining:</td><td id="snapshotNetRemaining"></td></tr>
+                                <tr><td id="snapshotDaysRemainingLabel"></td><td id="snapshotDaysRemaining"></td></tr>
+                            </table>
+                        </div>
+
+                    </div>
+
+                    <div id="Year_View" class="tab-pane fade">
+                        <span style="margin-left:1em;">For year:</span> <select id="chooseYear" >
+                            {% for yr in years %}
+                                <option value="{{ yr }}">{{ yr }}</option>
+                            {% endfor %}
+                        </select>
+                        <script>
+                            document.getElementById("chooseYear").onchange = function () {
+                                drawYearView();
+                            };
+                        </script>
+                        <div class="col-md-12" id="chart_year_view"></div>
+                    </div>
+
+                    <div id="Budget_View" class="tab-pane fade">
+
+                        {% with unique_id='chooseMonth1' %}
+                            {% include "incl_choose_month.html" %}
+                        {% endwith %}
+                        <script>
+                            document.getElementById("chooseMonth1").onchange = function () {
+                                drawBudgetView();
+                            };
+                        </script>
+                        <div class="col-md-12" id="chart_budget"></div>
+                        <div id="budgetViewTotalBudget" style="margin-left:1em;"></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+
     <script type="text/javascript">
+
+    $(window).ready(function() {
+
         // Load the Visualization API and the corechart package.
-        google.charts.load('current', {'packages':['corechart']});
+        google.charts.load('current', {'packages': ['corechart']});
 
         // Set callbacks to run when the Google Visualization API is loaded.
-        google.charts.setOnLoadCallback(drawBudgetCharts);
+        google.charts.setOnLoadCallback(drawMonthlySnapshot);
 
-        // Callback creates and populates a data table, instantiates the charts, passes in the data and draws.
-        function drawBudgetCharts() {
+    });
 
-            var date = document.getElementById('chooseMonth').value;
+        function drawMonthlySnapshot() {
+
+            var date = document.getElementById('chooseMonth0').value;
 
             var jsonData = $.ajax({
-                url: "/compare/ajax/dashboard_budget/" + date + '/',
+                url: "/compare/ajax/dashboard_snapshot/" + date + '/',
                 dataType: "json",
                 async: false
             }).responseText;
             var data = JSON.parse(jsonData);
 
-            // Draw budget pie chart
-            var data1 = new google.visualization.DataTable(data.budgetPiechart);
-            var options1 = {
-                title:'Current Budget Allocation',
-                is3D: true,
-                width:500,
-                height:300};
-            var chart1 = new google.visualization.PieChart(document.getElementById('chart_budget'));
-            chart1.draw(data1, options1);
+            $('#snapshotBudget').html('$' + data.totalBudget);
+            $('#snapshotExpenses').html(' $' + data.totalExpenses);
+            $('#snapshotNetRemaining').html(' $' + data.netRemaining);
+            if (data.netRemaining < 0) {
+                $('#snapshotNetRemaining').attr('style', 'color:red;')
+            } else {
+                $('#snapshotNetRemaining').attr('style', 'color:black;')
+            }
+            if (data.daysRemaining > 0) {
+                $('#snapshotDaysRemainingLabel').html('Days remaining:');
+                $('#snapshotDaysRemaining').html(data.daysRemaining);
+            } else {
+                $('#snapshotDaysRemainingLabel').html('');
+                $('#snapshotDaysRemaining').html('');
+            }
 
-            // Draw budget and expense column chart
+            // Draw monthly snapshot column chart
             var data2 = new google.visualization.DataTable(data.budgetExpenseColumnchart);
             var options2 = {
-                title:'Expenses to Budget',
-                width:750,
-                height:400,
-                animation:{
+                title: 'Expenses to Budget',
+                legend: {position: 'top', alignment: 'start'},
+                width: 775,
+                height: 450,
+                animation: {
                     startup: true,
                     duration: 1000,
                     easing: 'out',
@@ -57,37 +159,66 @@
 
         }
 
+        function drawYearView() {
+
+            var year = document.getElementById('chooseYear').value;
+
+            var from_date = year + '-01-01';
+            var to_date = year + '-12-01';
+
+            var jsonData = $.ajax({
+                url: "/compare/ajax/dashboard_month_series/" + from_date + '/' + to_date + '/',
+                dataType: "json",
+                async: false
+            }).responseText;
+            var data = JSON.parse(jsonData);
+
+            // Draw year view column chart
+            var data2 = new google.visualization.DataTable(data.monthSeries);
+            var options2 = {
+                title: 'Budget to Expense Net Result',
+                width: 775,
+                legend: 'none',
+                animation: {
+                    startup: true,
+                    duration: 1000,
+                    easing: 'out',
+                },
+                hAxis: {title: 'Month'},
+                vAxis: {title: 'Dollars'}
+            };
+            var chart2 = new google.visualization.ColumnChart(document.getElementById('chart_year_view'));
+            chart2.draw(data2, options2);
+
+        }
+
+        function drawBudgetView() {
+
+            var date = document.getElementById('chooseMonth1').value;
+
+            var jsonData = $.ajax({
+                url: "/compare/ajax/dashboard_budget/" + date + '/',
+                dataType: "json",
+                async: false
+            }).responseText;
+            var data = JSON.parse(jsonData);
+
+            $('#budgetViewTotalBudget').html('Total budget: $' + data.totalBudget);
+
+            // Draw budget pie chart
+            var data1 = new google.visualization.DataTable(data.budgetPiechart);
+            var options1 = {
+                title: 'Budget Allocation',
+                is3D: true,
+                width: 500,
+                height: 300
+            };
+            var chart1 = new google.visualization.PieChart(document.getElementById('chart_budget'));
+            chart1.draw(data1, options1);
+
+        }
+
     </script>
-
-{% endblock %}
-
-{% block body_classes %} bg-grey {% endblock %}
-
-{% block body_container %}
-
-    {% include "./menu.html" %}
-
-    <div class="col-md-8 col-md-offset-2">
-
-            <div class="margin-top-30 margin-bottom-30 box-static box-transparent box-bordered box-white">
-
-                <h2>{% trans page_title %}</h2>
-                {% include "./incl_choose_month.html" %}
-                <script>
-                    document.getElementById("chooseMonth").onchange = function () {
-                        drawBudgetCharts();
-                    };
-                </script>
-                <div id="chart_current_expenses"></div>
-                <div id="chart_budget"></div>
-
-            </div>
-
-    </div>
-
-{% endblock %}
-
-{% block scripts %}
 
     <script type="text/javascript">var plugin_path = "{% static "plugins/" %}";</script>
     <script type="text/javascript" src="{% static "js/scripts.js" %}"></script>

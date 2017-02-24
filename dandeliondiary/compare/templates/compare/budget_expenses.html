@@ -33,7 +33,9 @@
 
             <div class="row">
 
-                {% include "./incl_choose_month.html" %}
+                {% with unique_id='chooseMonth' %}
+                    {% include "./incl_choose_month.html" %}
+                {% endwith %}
 
                 <!-- tabs -->
                 <div class="col-md-3 col-sm-3 nopadding">
