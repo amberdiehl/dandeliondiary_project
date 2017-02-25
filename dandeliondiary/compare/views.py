@@ -33,8 +33,13 @@ def compare_dashboard(request):
 
         # Send customized date range based on when subscriber started using Dandelion Diary
         years = ()
-        expenses = MyExpenseItem.objects.filter(household=me.get('household_key')).order_by('expense_date')[0]
-        start_year = expenses.expense_date.year
+        try:
+            expenses = MyExpenseItem.objects.filter(household=me.get('household_key')).order_by('expense_date')[0]
+        except IndexError:
+            start_year = datetime.datetime.now().year
+        else:
+            start_year = expenses.expense_date.year
+
         current_year = datetime.datetime.now().year
         for yr in range(start_year, current_year+1):
             years += yr,
