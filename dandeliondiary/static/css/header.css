@@ -5,7 +5,7 @@
 #topMain.nav-pills>li>a {
 	color:#1F262D;
 	font-weight:400;
-	background-color:transparent;
+	background-color: #FFFFFF !important;
 } 
 #topMain.nav-pills>li:hover>a, 
 #topMain.nav-pills>li:focus>a {
@@ -67,7 +67,13 @@
 	display:inline-block;
 }
 
-
+#sign-up {
+	background-color: #FA490F;
+	padding: 0px 6px;
+	border-radius: 4px;
+	color: #FFF;
+	font-weight: bold;
+}
 
 @media only screen and (max-width: 1215px) {
 	#topMain.nav-pills>li>a {
@@ -93,7 +99,6 @@
 		padding-top:0;
 	}
 
-
 	#topMain>li {
 		border-bottom:rgba(0,0,0,0.1) 1px solid;
 	}
@@ -101,13 +106,18 @@
 		border-bottom:0;
 	}
 
-		#header li.search .search-box {
-			margin:0 !important;
-			position:fixed;
-			left:0; right:0;
-			top:60px !important;
-			width:100%;
-			background-color:#fff;
-			border-top:rgba(0,0,0,0.1) 1px solid;
-		}
+	#header li.search .search-box {
+		margin:0 !important;
+		position:fixed;
+		left:0; right:0;
+		top:60px !important;
+		width:100%;
+		background-color:#fff;
+		border-top:rgba(0,0,0,0.1) 1px solid;
+	}
+	#sign-up {
+		background-color: #FFF !important;
+		padding: 0 0 !important;
+		color: #FA490F !important;
+	}
 }

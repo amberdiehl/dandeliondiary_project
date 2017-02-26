@@ -157,9 +157,9 @@
 						</a>
 
 						<nav class="nav-main">
-                            <div class="collapse navbar-collapse nav-main-collapse submenu-light pull-right">
+                            <div class="collapse navbar-collapse nav-main-collapse pull-right">
 
-								<ul id="topMain" class="nav navbar-nav nav-pills">
+								<ul id="topMain" class="nav nav-pills nav-main">
 
                                     {% if user.is_authenticated %}
                                         <li>
@@ -178,9 +178,7 @@
                                         <li><a href="{% url "public:home"%}#product">What is Dandelion Diary?</a></li>
                                         <li><a href="{% url "account_login" %}">LOGIN</a></li>
 						                <li><a href="{% url "account_signup" %}">
-                                            <span style="background-color: #FA490F;
-                                                padding: 6px 8px; border-radius: 3px; color: #FFF;">
-                                                <strong>SIGN UP NOW</strong></span></a></li>
+                                            <div id="sign-up">SIGN UP NOW</div></a></li>
 								    {% endif %}
                                 </ul>
 						    </div>
