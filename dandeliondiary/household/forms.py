@@ -43,6 +43,11 @@ class MyInfoForm(forms.Form):
         required=True,
         help_text=_("Your phone number; preferably, cell.")
     )
+    newsletter = forms.BooleanField(
+        label=_("Receive newsletter: "),
+        widget=forms.CheckboxInput,
+        required=False
+    )
     owner = forms.BooleanField(
         label=_("Household owner: "),
         widget=forms.CheckboxInput(attrs={'disabled': True}),
@@ -52,7 +57,7 @@ class MyInfoForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(MyInfoForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = ['first_name', 'last_name', 'phone_number', 'owner']
+        self.fields.keyOrder = ['first_name', 'last_name', 'phone_number', 'newsletter', 'owner']
 
     def clean_first_name(self):
         data = self.cleaned_data['first_name']

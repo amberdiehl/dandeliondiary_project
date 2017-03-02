@@ -163,6 +163,7 @@ def my_info(request):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'phone_number': household_member.phone_number,
+            'newsletter': household_member.newsletter,
             'owner': household_member.owner,
         }
     except ObjectDoesNotExist:
@@ -195,6 +196,7 @@ def my_info(request):
             # Create/update household member record; when new household, this creates household owner
             household_member.account = account
             household_member.phone_number = form.cleaned_data.get('phone_number')
+            household_member.newsletter = form.cleaned_data.get('newsletter')
             household_member.owner = form.cleaned_data.get('owner')
             household_member.save()
 
@@ -216,7 +218,7 @@ def my_info(request):
         'page_title': 'My Info',
         'url': 'household:my_info',
         'instructions': instructions,
-        'layout': ['b', 'e', 'b', 'e', ],
+        'layout': ['b', 'e', 'b', 'e', '-',],
         'password_link': True,
     }
 

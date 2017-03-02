@@ -48,6 +48,7 @@ class Member(models.Model):
     account = models.OneToOneField('account.Account')
     phone_number = models.CharField(max_length=12)
     owner = models.BooleanField(default=False)
+    newsletter = models.BooleanField(default=True)
     created_date = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
