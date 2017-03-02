@@ -38,6 +38,7 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .coverage
+.coveragerc
 .coverage.*
 .cache
 nosetests.xml
@@ -53,6 +54,7 @@ coverage.xml
 *.log
 local_settings.py
 local.py
+local_test.py
 production.py
 staticfiles/
 
