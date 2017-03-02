@@ -1,5 +1,6 @@
 import datetime
 import re
+from decimal import *
 from django.db.models import F, Sum
 from capture.models import MyExpenseItem
 from .models import MyBudgetCategory, MyBudget
@@ -19,14 +20,15 @@ Includes MyExpenseItem helpers to prevent circular references which are not supp
 """
 
 
-def helper_get_category_budget_and_expenses(category, filter_date=None, fetch_expenses=False):
+def helper_get_category_budget_and_expenses(category, filter_date=None, fetch_expenses=False, convert_annual=False):
     """
     Reminder that filter_date is used to get budget record effective for period (month) user selected and should be
     setup as last day of the month.
 
-    :param category:
-    :param filter_date:
-    :param fetch_expenses:
+    :param category: Expense category
+    :param filter_date: Used to determine correct budget to retrieve
+    :param fetch_expenses: Indicate if only budget info or to include expenses too
+    :param convert_annual: Indicate if an annual budget amount should be returned as monthly rate
     :return:
     """
 
@@ -40,26 +42,40 @@ def helper_get_category_budget_and_expenses(category, filter_date=None, fetch_ex
     if children:
 
         for child in children:
-            # child_budgets = MyBudget.objects.filter(category=child)\
-            #    .filter(effective_date__year__lte=filter_date.year, effective_date__month__lte=filter_date.month)\
-            #    .order_by('-effective_date')
             child_budgets = MyBudget.objects.filter(category=child).filter(effective_date__lte=filter_date)\
                 .order_by('-effective_date')
             if child_budgets:
-                budget_amount += child_budgets[0].amount
+                budget = child_budgets[0].amount
+
+                if child_budgets[0].annual_payment_month > 0:
+                    if convert_annual:
+                        monthly_amount = Decimal(budget / 12)
+                        budget = Decimal(monthly_amount.quantize(Decimal('.01'), rounding=ROUND_HALF_UP))
+                    else:
+                        if not child_budgets[0].annual_payment_month == filter_date.month:
+                            budget = 0
+
+                budget_amount += budget
 
             if fetch_expenses:
                 expense_total += get_expenses_for_period(child, from_date=filter_date)
 
     else:
 
-        # category_budgets = MyBudget.objects.filter(category=category) \
-        #    .filter(effective_date__year__lte=filter_date.year, effective_date__month__lte=filter_date.month) \
-        #    .order_by('-effective_date')
         category_budgets = MyBudget.objects.filter(category=category).filter(effective_date__lte=filter_date) \
             .order_by('-effective_date')
         if category_budgets:
-            budget_amount = category_budgets[0].amount
+            budget = category_budgets[0].amount
+
+            if category_budgets[0].annual_payment_month > 0:
+                if convert_annual:
+                    monthly_amount = Decimal(budget / 12)
+                    budget = Decimal(monthly_amount.quantize(Decimal('.01'), rounding=ROUND_HALF_UP))
+                else:
+                    if not category_budgets[0].annual_payment_month == filter_date.month:
+                        budget = 0
+
+            budget_amount = budget
 
         if fetch_expenses:
             expense_total = get_expenses_for_period(category, from_date=filter_date)

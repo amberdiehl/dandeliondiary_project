@@ -1,5 +1,6 @@
 import datetime
 
+from decimal import *
 from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -245,15 +246,16 @@ def ajax_dashboard_month_series(request, from_date, to_date):
 
             budgets = MyBudget.objects.filter(category__my_budget_group__household=me.get('household_key')) \
                 .filter(effective_date__lte=full_month) \
-                .values('category', 'amount') \
+                .values('category', 'amount', 'annual_payment_month') \
                 .order_by('-effective_date')
 
             for budget in budgets:
                 if budget['category'] in track_categories:
                     pass  # skip older budget record(s)
                 else:
-                    month_net += budget['amount']
                     track_categories.append(budget['category'])
+                    if budget['annual_payment_month'] == 0 or budget['annual_payment_month'] == this_date.month:
+                        month_net += budget['amount']
 
             expenses = MyExpenseItem.objects.filter(household=me.get('household_key')) \
                 .filter(expense_date__year=this_date.year, expense_date__month=this_date.month) \
@@ -1006,7 +1008,7 @@ def ajax_budget_summary(request):
 
             for category in categories:
 
-                category_budget = helper_get_category_budget_and_expenses(category)['budget']
+                category_budget = helper_get_category_budget_and_expenses(category, convert_annual=True)['budget']
                 group_total += category_budget
 
                 record = template.copy()

@@ -184,8 +184,8 @@
                                     if (data.formType == 'create') {
                                         $('form[id="jtable-create-form"]').prepend('<span id="helpBlock" ' +
                                             'class="help-block"><i>Instructions:</i> ' +
-                                            'Enter <b>monthly</b> budget amount. For items paid annually, enter the ' +
-                                            'annual amount divided by 12, and the month the item is paid.' +
+                                            'Enter <b>monthly recurring</b> or <b>annual payment</b> budget ' +
+                                            'amount. If budget amount is annual, select the month the item is paid.' +
                                             '</span>');
                                         var d = new Date();
                                         var month = d.getMonth()+1;
