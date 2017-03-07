@@ -22,6 +22,7 @@ These helpers may also be used across Compare, and Capture
 
 
 # Determine if module can be used; i.e. household must be setup first, subscription active.
+# TODO: Need to refactor this code so that every object is tracked separately as a possible exception.
 def helper_get_me(user_key):
     me = {}
     try:

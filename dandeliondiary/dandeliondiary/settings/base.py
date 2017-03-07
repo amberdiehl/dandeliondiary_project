@@ -155,6 +155,9 @@ ACCOUNT_EMAIL_CONFIRMATION_REQUIRED = False
 ACCOUNT_EMAIL_CONFIRMATION_EMAIL = True
 ACCOUNT_USE_AUTH_AUTHENTICATE = False
 
+# Override Django login to account URL
+LOGIN_URL = '/account/login/'
+
 # Avatar application settings
 AVATAR_AUTO_GENERATE_SIZES = (80, 64, 50,)
 AVATAR_DEFAULT_SIZE = 64
