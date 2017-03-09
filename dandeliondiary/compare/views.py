@@ -215,6 +215,7 @@ def ajax_dashboard_month_series(request, from_date, to_date):
 
     me = helper_get_me(request.user.pk)
     if me.get('redirect'):
+        response_data['status'] = 'ERROR'
         return JsonResponse(response_data)
 
     f_dt = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
@@ -283,6 +284,7 @@ def ajax_dashboard_month_series(request, from_date, to_date):
     column_chart['cols'] = cols
     column_chart['rows'] = rows
 
+    response_data['status'] = 'OK'
     response_data['monthSeries'] = column_chart
 
     return JsonResponse(response_data)
@@ -481,7 +483,7 @@ def ajax_create_group(request):
                                  request.POST.get('group_description'),
                                  request.POST.get('group_list_order')):
         response_data['Result'] = 'ERROR'
-        response_data['Message'] = 'Invalid group name, description and/or order given.'
+        response_data['Message'] = 'Invalid group name, description and/or list order given.'
         return JsonResponse(response_data)
 
     gr_name = request.POST.get('my_group_name')
@@ -528,10 +530,10 @@ def ajax_update_group(request):
                                  request.POST.get('group_description'),
                                  request.POST.get('group_list_order')):
         response_data['Result'] = 'ERROR'
-        response_data['Message'] = 'Invalid group name, description and/or order given.'
+        response_data['Message'] = 'Invalid group name, description and/or list order given.'
         return JsonResponse(response_data)
 
-    # Get buget group for received ID and validate association with logged in user household
+    # Get budget group for received ID and validate association with logged in user household
     id_hashed = request.POST.get('id')
     hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
     this = hashids.decode(id_hashed)[0]
@@ -617,6 +619,9 @@ def ajax_list_categories(request, s, pid):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid request.'
     else:
+
+        # TODO: Needs more validation.
+
         data = []
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
         this = hashids.decode(pid)[0]
@@ -875,6 +880,8 @@ def ajax_create_budget(request, pid):
         response_data['Result'] = 'ERROR'
         response_data['Message'] = 'Invalid budget amount, annual month, note and/or effective date given.'
         return JsonResponse(response_data)
+
+    # TODO: Capture invalid date; e.g. 2016-01-45
 
     hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
     category_obj = MyBudgetCategory.objects.get(pk=hashids.decode(pid)[0])
