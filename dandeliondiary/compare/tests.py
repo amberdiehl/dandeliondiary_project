@@ -112,7 +112,7 @@ class CompareTest(TestCase):
         bud0.category = cat0
         bud0.amount = 30.00
         bud0.annual_payment_month = 10
-        bud0.note = 'Old budget'
+        bud0.note = 'Get me 1'
         bud0.effective_date = datetime.datetime.strptime('2016-01-01', '%Y-%m-%d')
         bud0.save()
 
@@ -121,7 +121,7 @@ class CompareTest(TestCase):
         bud1.category = cat0
         bud1.amount = 40.00
         bud1.annual_payment_month = 10
-        bud1.note = ''
+        bud1.note = 'Get me 2'
         bud1.effective_date = datetime.datetime.strptime('2017-01-01', '%Y-%m-%d')
         bud1.save()
 
@@ -143,6 +143,12 @@ class CompareTest(TestCase):
         group.household = household
         group.my_group_name = 'Vehicles'
         group.group_description = 'Vehicle items'
+        group.save()
+
+        group = MyBudgetGroup()
+        group.household = household
+        group.my_group_name = 'Miscellaneous'
+        group.group_description = 'Miscellaneous stuff'
         group.save()
 
         """
@@ -190,11 +196,11 @@ class CompareTest(TestCase):
     Test the budget models.
     """
     def test_mybudgetgroup_model(self):
-        group = MyBudgetGroup.objects.get(pk=1)
+        group = MyBudgetGroup.objects.get(my_group_name='Pets')
         self.assertEquals(str(group), 'Pets')
 
     def test_mybudgetcategory_model(self):
-        category = MyBudgetCategory.objects.get(pk=1)
+        category = MyBudgetCategory.objects.get(my_category_name='Bedding')
         self.assertEquals(str(category), 'Bedding')
 
     def test_mybudget_model(self):
@@ -340,7 +346,9 @@ class CompareTest(TestCase):
         self.assertEquals(logged_in, True)
 
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        pid = hashids.encode(1)
+
+        group = MyBudgetGroup.objects.get(my_group_name='Pets')
+        pid = hashids.encode(group.pk)
 
         response = self.client.get('/compare/ajax/be_categories/' + pid + '/2017-01-31/', secure=True)
         result = json.loads(response.content)
@@ -361,7 +369,7 @@ class CompareTest(TestCase):
 
         self.assertEquals(response.status_code, 200)
         self.assertEquals(result['Result'], 'OK')
-        self.assertEquals(len(result['Records']), 2)
+        self.assertEquals(len(result['Records']), 3)
 
     # Test ajax_create_group
     def test_ajax_create_group(self):
@@ -466,13 +474,13 @@ class CompareTest(TestCase):
         self.assertEquals(result['Result'], 'ERROR')
         self.assertEquals(result['Message'], 'Error getting budget group.')
 
+        group = MyBudgetGroup.objects.get(my_group_name='Household')  # Belongs to debbiesmith
         data3 = {
-            'id': hashids.encode(3),
-            'my_group_name': 'new group',
+            'id': hashids.encode(group.pk),
+            'my_group_name': 'group',
             'group_description': 'description',
             'group_list_order': 99,
         }
-
         response = self.client.post('/compare/ajax/update_group/', data=data3, secure=True)
         result = json.loads(response.content)
 
@@ -480,13 +488,13 @@ class CompareTest(TestCase):
         self.assertEquals(result['Result'], 'ERROR')
         self.assertEquals(result['Message'], 'Invalid request for budget group.')
 
+        group = MyBudgetGroup.objects.get(my_group_name='Miscellaneous')
         data = {
-            'id': hashids.encode(1),
-            'my_group_name': 'new group',
-            'group_description': 'description',
+            'id': hashids.encode(group.pk),
+            'my_group_name': 'Miscellaneous',
+            'group_description': 'Miscellaneous expenses',
             'group_list_order': 99,
         }
-
         response = self.client.post('/compare/ajax/update_group/', data=data, secure=True)
         result = json.loads(response.content)
 
@@ -524,8 +532,9 @@ class CompareTest(TestCase):
         self.assertEquals(result['Message'], 'Error getting budget group.')
 
         # Belongs to a different household
+        group = MyBudgetGroup.objects.get(my_group_name='Household')  # Belongs to debbiesmith
         data2 = {
-            'id': hashids.encode(3)
+            'id': hashids.encode(group.pk)
         }
         response = self.client.post('/compare/ajax/delete_group/', data=data2, secure=True)
         result = json.loads(response.content)
@@ -535,8 +544,9 @@ class CompareTest(TestCase):
         self.assertEquals(result['Message'], 'Invalid request for budget group.')
 
         # Is a core budget group item used for comparisons across households
+        group = MyBudgetGroup.objects.get(my_group_name='Pets')
         data3 = {
-            'id': hashids.encode(1)
+            'id': hashids.encode(group.pk)
         }
         response = self.client.post('/compare/ajax/delete_group/', data=data3, secure=True)
         result = json.loads(response.content)
@@ -547,8 +557,9 @@ class CompareTest(TestCase):
                                              'deleted.')
 
         # None of the above, it can be deleted
+        group = MyBudgetGroup.objects.get(my_group_name='Miscellaneous')
         data = {
-            'id': hashids.encode(2)
+            'id': hashids.encode(group.pk)
         }
         response = self.client.post('/compare/ajax/delete_group/', data=data, secure=True)
         result = json.loads(response.content)
@@ -566,19 +577,22 @@ class CompareTest(TestCase):
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
 
         # Flag 'p': return just parent categories; pid is group
-        response = self.client.get('/compare/ajax/list_categories/p/' + hashids.encode(1) + '/', secure=True)
+        group = MyBudgetGroup.objects.get(my_group_name='Pets')
+        response = self.client.get('/compare/ajax/list_categories/p/' + hashids.encode(group.pk) + '/', secure=True)
         result = json.loads(response.content)
         self.assertEquals(result['Result'], 'OK')
         self.assertEquals(len(result['Records']), 2)
 
         # Flag 'h': parent with child categories mashed (2 become 1)
-        response = self.client.get('/compare/ajax/list_categories/h/' + hashids.encode(1) + '/', secure=True)
+        group = MyBudgetGroup.objects.get(my_group_name='Pets')
+        response = self.client.get('/compare/ajax/list_categories/h/' + hashids.encode(group.pk) + '/', secure=True)
         result = json.loads(response.content)
         self.assertEquals(result['Result'], 'OK')
         self.assertEquals(len(result['Records']), 3)
 
         # Flag 'c': return just child categories; pid is parent category
-        response = self.client.get('/compare/ajax/list_categories/c/' + hashids.encode(2) + '/', secure=True)
+        category = MyBudgetCategory.objects.get(my_category_name='Eats')
+        response = self.client.get('/compare/ajax/list_categories/c/' + hashids.encode(category.pk) + '/', secure=True)
         result = json.loads(response.content)
         self.assertEquals(result['Result'], 'OK')
         self.assertEquals(len(result['Records']), 2)
@@ -591,7 +605,8 @@ class CompareTest(TestCase):
         self.assertEquals(logged_in, True)
 
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        pid = hashids.encode(1)
+        group = MyBudgetGroup.objects.get(my_group_name='Pets')
+        pid = hashids.encode(group.pk)
 
         data0 = {
             'my_category_name': '$$bogus!;'
@@ -644,8 +659,9 @@ class CompareTest(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertEquals(result['Result'], 'ERROR')
 
+        category = MyBudgetCategory.objects.get(my_category_name='Bedding')
         data = {
-            'id': hashids.encode(1),
+            'id': hashids.encode(category.pk),
             'my_category_name': 'Bedding and stuff'
         }
         response = self.client.post('/compare/ajax/update_category/', data=data, secure=True)
@@ -681,16 +697,18 @@ class CompareTest(TestCase):
         self.assertEquals(result['Result'], 'ERROR')
 
         # Has perma-key
+        category = MyBudgetCategory.objects.get(my_category_name='Bedding')
         data2 = {
-            'id': hashids.encode(1),
+            'id': hashids.encode(category.pk),
         }
         response = self.client.post('/compare/ajax/delete_category/', data=data2, secure=True)
         result = json.loads(response.content)
         self.assertEquals(response.status_code, 200)
         self.assertEquals(result['Result'], 'ERROR')
 
+        category = MyBudgetCategory.objects.get(my_category_name='Eats')
         data = {
-            'id': hashids.encode(4),
+            'id': hashids.encode(category.pk),
         }
         response = self.client.post('/compare/ajax/delete_category/', data=data, secure=True)
         result = json.loads(response.content)
@@ -705,7 +723,8 @@ class CompareTest(TestCase):
         self.assertEquals(logged_in, True)
 
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        pid = hashids.encode(1)
+        parent_category = MyBudgetCategory.objects.get(my_category_name='Bedding')
+        pid = hashids.encode(parent_category.pk)
 
         data0 = {
             'my_category_name': '$totally bogus$!;'
@@ -731,7 +750,8 @@ class CompareTest(TestCase):
         self.assertEquals(logged_in, True)
 
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        pid = hashids.encode(1)
+        category = MyBudgetCategory.objects.get(my_category_name='Bedding')
+        pid = hashids.encode(category.pk)
 
         response = self.client.get('/compare/ajax/list_budgets/' + pid + '/', secure=True)
         result = json.loads(response.content)
@@ -747,7 +767,8 @@ class CompareTest(TestCase):
         self.assertEquals(logged_in, True)
 
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
-        pid = hashids.encode(1)
+        category = MyBudgetCategory.objects.get(my_category_name='Bedding')
+        pid = hashids.encode(category.pk)
 
         data0 = {
             'amount': '123.aa',  # <--
@@ -822,7 +843,7 @@ class CompareTest(TestCase):
         self.assertEquals(result['Result'], 'ERROR')
 
         data1 = {
-            'id': hashids.encode(2),
+            'id': hashids.encode(1),
             'amount': '123.aa',  # <--
             'annual_payment_month': 0,
             'note': 'This is a note.',
@@ -834,7 +855,7 @@ class CompareTest(TestCase):
         self.assertEquals(result['Result'], 'ERROR')
 
         data2 = {
-            'id': hashids.encode(2),
+            'id': hashids.encode(1),
             'amount': 123.00,
             'annual_payment_month': 'aa',  # <--
             'note': 'This is a note.',
@@ -846,7 +867,7 @@ class CompareTest(TestCase):
         self.assertEquals(result['Result'], 'ERROR')
 
         data3 = {
-            'id': hashids.encode(2),
+            'id': hashids.encode(1),
             'amount': 123.00,
             'annual_payment_month': 0,
             'note': '#$;This is a note!',  # <--
@@ -858,7 +879,7 @@ class CompareTest(TestCase):
         self.assertEquals(result['Result'], 'ERROR')
 
         data4 = {
-            'id': hashids.encode(2),
+            'id': hashids.encode(1),
             'amount': 123.00,
             'annual_payment_month': 0,
             'note': 'This is a note.',
@@ -877,16 +898,18 @@ class CompareTest(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertEquals(result['Result'], 'ERROR')
 
+        budget = MyBudget.objects.get(note='Get me 1')
         data_a = {
-            'id': hashids.encode(1)
+            'id': hashids.encode(budget.pk)
         }
         response = self.client.post('/compare/ajax/change_budget/d/', data=data_a, secure=True)
         result = json.loads(response.content)
         self.assertEquals(response.status_code, 200)
         self.assertEquals(result['Result'], 'OK')
 
+        budget = MyBudget.objects.get(note='Get me 2')
         data_b = {
-            'id': hashids.encode(2),
+            'id': hashids.encode(budget.pk),
             'amount': 75.00,
             'annual_payment_month': 10,
             'note': 'Need more money.',

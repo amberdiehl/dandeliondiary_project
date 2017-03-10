@@ -1,27 +1,26 @@
-import os
 import datetime
 import json
+import os
+
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, RequestFactory
 from django.test import Client
-from django.contrib.auth.models import User
+from django.test import TestCase
 from django.urls import reverse
+from hashids import Hashids
+
+from django.contrib.auth.models import User
 from account.models import Account
 from core.models import BudgetModel, RigType, UseType, IncomeType
 from household.models import RVHousehold, HouseholdMembers, Member
 from compare.models import MyBudgetGroup, MyBudgetCategory
-
-from hashids import Hashids
-
-HASH_SALT = 'nowis Ag00d tiM3for tW0BR3wskies'
-HASH_MIN_LENGTH = 16
-
 from .models import *
-from .views import *
 
 import logging
 log = logging.getLogger(__name__)
+
+HASH_SALT = 'nowis Ag00d tiM3for tW0BR3wskies'
+HASH_MIN_LENGTH = 16
 
 
 # For now, all test cases for capture are defined in one class
@@ -29,9 +28,6 @@ class CaptureTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-
-        user = User.objects.create_user('testuser', email='testuser@gmail.com', password='password')
-        account = Account.objects.get(user=user)
 
         budget_model = BudgetModel()
         budget_model.budget_model = 'test budget model'
@@ -52,6 +48,9 @@ class CaptureTest(TestCase):
         income.income_type = 'test income type'
         income.income_type_description = 'test income type description'
         income.save()
+
+        user = User.objects.create_user('peggylee', email='peggylee@gmail.com', password='password')
+        account = Account.objects.get(user=user)
 
         household = RVHousehold()
         household.members_in_household = 2
@@ -158,7 +157,7 @@ class CaptureTest(TestCase):
 
         # purposefully ensure client is NOT successfully logged in
         self.client = Client()
-        logged_in = self.client.login(username='testuser', password='wrong')
+        logged_in = self.client.login(username='peggylee', password='wrong')
         self.assertEquals(logged_in, False)
 
         # Test adding new expense view
@@ -193,7 +192,7 @@ class CaptureTest(TestCase):
     def test_new_expense(self):
 
         self.client = Client()
-        logged_in = self.client.login(username='testuser', password='password')
+        logged_in = self.client.login(username='peggylee', password='password')
         self.assertEquals(logged_in, True)
 
         # Test successful get of view with user logged in
@@ -201,16 +200,16 @@ class CaptureTest(TestCase):
         self.assertEquals(response.status_code, 200)
 
         # Setup for posting new expense record
-        user = User.objects.get(username='testuser')
+        user = User.objects.get(username='peggylee')
         account = Account.objects.get(user=user)
-        household = RVHousehold.objects.get(pk=1)
+        household = RVHousehold.objects.get(householdmembers__member_account=account.pk)
 
         me = {
             'household_obj': household,
             'account_obj': account
         }
 
-        category = MyBudgetCategory.objects.get(pk=1)
+        category = MyBudgetCategory.objects.get(my_budget_group__household=household)
 
         form_data = {
             'note': 'what a note this is',
@@ -227,7 +226,7 @@ class CaptureTest(TestCase):
     def test_explore_expenses(self):
 
         self.client = Client()
-        logged_in = self.client.login(username='testuser', password='password')
+        logged_in = self.client.login(username='peggylee', password='password')
         self.assertEquals(logged_in, True)
 
         response = self.client.post(reverse('capture:explore_expenses'), secure=True)
@@ -237,11 +236,15 @@ class CaptureTest(TestCase):
     def test_ajax_list_expenses(self):
 
         self.client = Client()
-        logged_in = self.client.login(username='testuser', password='password')
+        logged_in = self.client.login(username='peggylee', password='password')
         self.assertEquals(logged_in, True)
 
+        user = User.objects.get(username='peggylee')
+        account = Account.objects.get(user=user)
+        household = RVHousehold.objects.get(householdmembers__member_account=account.pk)
+
         me = {
-            'household_obj': 1,
+            'household_obj': household,
         }
 
         data = {
@@ -262,7 +265,7 @@ class CaptureTest(TestCase):
     def test_ajax_change_expense_flag(self):
 
         self.client = Client()
-        logged_in = self.client.login(username='testuser', password='password')
+        logged_in = self.client.login(username='peggylee', password='password')
         self.assertEquals(logged_in, True)
 
         # Incorrect flag should result in 404
@@ -273,7 +276,7 @@ class CaptureTest(TestCase):
     def test_ajax_change_expense_update_fields_validation(self):
 
         self.client = Client()
-        logged_in = self.client.login(username='testuser', password='password')
+        logged_in = self.client.login(username='peggylee', password='password')
         self.assertEquals(logged_in, True)
 
         # An invalid expense date, amount, or note is rejected
@@ -318,7 +321,7 @@ class CaptureTest(TestCase):
     def test_ajax_change_expense_id_validation(self):
 
         self.client = Client()
-        logged_in = self.client.login(username='testuser', password='password')
+        logged_in = self.client.login(username='peggylee', password='password')
         self.assertEquals(logged_in, True)
 
         # ID with invalid characters is rejected
@@ -334,7 +337,7 @@ class CaptureTest(TestCase):
         # ID with valid hash be no record is rejected
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
         data = {
-            'id': hashids.encode(123)
+            'id': hashids.encode(99999999)
         }
         response = self.client.post('/capture/ajax/change_expense/d/', data=data, secure=True)
         result = json.loads(response.content)
@@ -348,12 +351,17 @@ class CaptureTest(TestCase):
     def test_ajax_change_expense_delete(self):
 
         self.client = Client()
-        logged_in = self.client.login(username='testuser', password='password')
+        logged_in = self.client.login(username='peggylee', password='password')
         self.assertEquals(logged_in, True)
 
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+
+        user = User.objects.get(username='peggylee')
+        account = Account.objects.get(user=user)
+        expense_item = MyExpenseItem.objects.get(who=account)
+
         data = {
-            'id': hashids.encode(1)
+            'id': hashids.encode(expense_item.pk)
         }
         response = self.client.post('/capture/ajax/change_expense/d/', data=data, secure=True)
         result = json.loads(response.content)
@@ -365,12 +373,17 @@ class CaptureTest(TestCase):
     def test_ajax_change_expense_update(self):
 
         self.client = Client()
-        logged_in = self.client.login(username='testuser', password='password')
+        logged_in = self.client.login(username='peggylee', password='password')
         self.assertEquals(logged_in, True)
 
         hashids = Hashids(salt=HASH_SALT, min_length=HASH_MIN_LENGTH)
+
+        user = User.objects.get(username='peggylee')
+        account = Account.objects.get(user=user)
+        expense_item = MyExpenseItem.objects.get(who=account)
+
         data = {
-            'id': hashids.encode(1),
+            'id': hashids.encode(expense_item.pk),
             'expense_date': '2017-01-01',
             'amount': 59.59,
             'note': 'I am a valid note.'

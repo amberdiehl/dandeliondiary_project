@@ -53,6 +53,7 @@ coverage.xml
 # Django stuff:
 *.log
 logfile
+logfile*
 local_settings.py
 local.py
 local_test.py
