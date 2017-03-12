@@ -1,11 +1,20 @@
 from __future__ import with_statement
-from fabric.api import abort, local, settings
+from fabric.api import abort, local, settings, env, run, cd, task, execute, runs_once, prefix
 from fabric.contrib.console import confirm
+from fabric.network import disconnect_all
 
 """
 IMPORTANT: Deployment assumes all feature branches ready for production have been committed and merged into master
            and that the user is currently on master to indicate readiness.
 """
+
+
+env.hosts = [
+    'ssh.pythonanywhere.com',
+]
+
+# Set the username
+env.user   = "amberdiehl"
 
 
 def print_message(msg):
@@ -47,53 +56,57 @@ def push():
     local("git push origin")
 
 
-def ssh():
-    """
-    Login into PythonAnywhere host
-    :return:
-    """
-    local("ssh amberdiehl@ssh.pythonanywhere.com")
-    # password must be supplied manually
-
-
-def pull():
+def remote_pull():
     """
     Pull changes for deployment
     :return:
     """
-    local("git pull origin")
+    with cd("~/dandeliondiary_project/dandeliondiary"):
+        run("git pull origin")
     # credentials must be supplied manually
 
 
-def run_migrations():
+@task
+def remote_get_migration_status():
+    with settings(warn_only=True):
+        return run("./manage.py showmigrations --list --settings=dandeliondiary.settings.production "
+                   "| grep '\[ ]'")
+
+
+@task
+@runs_once
+def remote_run_migrations():
     """
     Determine if there are migrations to run and, if so, run them
     :return:
     """
-    with settings(warn_only=True):
-        migrations = local("./manage.py showmigrations --list --settings=dandeliondiary.settings.production "
-                           "| grep '\[ ]'", capture=True)
-    if migrations.failed:
-        print_message("No migrations found.")
-    else:
-        print_message("Applying migrations...")
-        local("./manage.py migrate --settings=dandeliondiary.settings.production")
+    with cd("~/dandeliondiary_project/dandeliondiary"):
+        with prefix('workon dd-venv'):
+            result = execute(remote_get_migration_status)
+            if result['ssh.pythonanywhere.com'] == '':
+                print_message("No migrations found.")
+            else:
+                print_message("Applying migrations...")
+                print(result['ssh.pythonanywhere.com'])
+                run("./manage.py migrate --settings=dandeliondiary.settings.production")
 
 
-def restart_server():
+@task
+def remote_restart_server():
     """
-    Restart the server
+    Restart the web server
     :return:
     """
-    local("touch /var/www/www_dandeliondiary_com_wsgi.py")
+    print_message('Restarting the web server...')
+    run("touch /var/www/www_dandeliondiary_com_wsgi.py")
 
 
-def exit_ssh():
+def exit_remote():
     """
     Exit from ssh session
     :return:
     """
-    local("exit")
+    disconnect_all()
 
 
 """
@@ -113,12 +126,10 @@ def deploy():
 
     push()
 
-    ssh()
+    remote_pull()
 
-    pull()
+    remote_run_migrations()
 
-    run_migrations()
+    remote_restart_server()
 
-    restart_server()
-
-    exit_ssh()
+    exit_remote()
