@@ -114,6 +114,7 @@ Main scripts
 """
 
 
+@task
 def deploy():
     """
     Deploy latest release/changes for Dandelion Diary to production
