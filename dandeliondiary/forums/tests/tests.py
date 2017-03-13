@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from pinax.forums.models import Forum, ForumCategory
+from forums.models import Forum, ForumCategory
 
 
 class ForumCategoryTests(TestCase):
@@ -10,8 +10,8 @@ class ForumCategoryTests(TestCase):
         self.assertEquals(str(cat), cat.title)
 
     def test_get_absolute_url(self):
-        cat = ForumCategory.objects.create(title="Software")
-        self.assertEquals(cat.get_absolute_url(), "/category/1/")
+        cat = ForumCategory.objects.create(title="Category Title")
+        self.assertEquals(cat.get_absolute_url(), "/contribute/category/2/")
 
     def test_forums_ordered_properly(self):
         cat = ForumCategory.objects.create(title="Software")
