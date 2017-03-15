@@ -42,7 +42,7 @@ def run_tests():
     Make sure tests pass before continuing
     :return:
     """
-    local("./manage.py test capture compare forums --settings=dandeliondiary.settings.local_test")
+    local("./manage.py test capture compare forums household --settings=dandeliondiary.settings.local_test")
 
 
 def push():

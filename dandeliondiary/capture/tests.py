@@ -2,8 +2,10 @@ import datetime
 import json
 import os
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
+
 from django.test import Client
 from django.test import TestCase
 from django.urls import reverse
@@ -29,10 +31,13 @@ class CaptureTest(TestCase):
     @classmethod
     def setUpClass(cls):
 
-        budget_model = BudgetModel()
-        budget_model.budget_model = 'test budget model'
-        budget_model.budget_model_description = 'test budget model description'
-        budget_model.save()
+        try:
+            budget_model = BudgetModel.objects.get(budget_model='RVHousehold')
+        except ObjectDoesNotExist:
+            budget_model = BudgetModel()
+            budget_model.budget_model = 'RVHousehold'
+            budget_model.budget_model_description = 'Budget model for RV community'
+            budget_model.save()
 
         rig = RigType()
         rig.rig_type = 'test rig type'

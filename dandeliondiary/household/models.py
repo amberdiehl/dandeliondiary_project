@@ -72,7 +72,7 @@ class HouseholdInvite(models.Model):
     invite_date = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
-        return "".format(self.email)
+        return "{}".format(self.email)
 
 
 # Household payments

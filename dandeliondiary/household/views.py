@@ -383,6 +383,7 @@ def household_vehicles(request):
 
     # get household for vehicles
     try:
+        # TODO: should use 'me' routine instead to ensure redirect when subscription has expired?
         membership = HouseholdMembers.objects.get(member_account=account)
     except ObjectDoesNotExist:
         return redirect('household:household_dashboard')
@@ -626,6 +627,8 @@ def ajax_change_member_status(request):
     if mbr_household.household_membership != owner_household.household_membership:
         result['status'] = 'ERROR'
         return JsonResponse(result)
+
+    # TODO: need to validate owner provided is same as logged in
 
     if change_to_status == 'Deactivate':
         new_status = False

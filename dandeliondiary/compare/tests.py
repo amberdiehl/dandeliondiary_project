@@ -1,6 +1,8 @@
 import datetime
 import json
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from django.test import Client
 from django.test import TestCase
 from django.urls import reverse
@@ -24,10 +26,13 @@ class CompareTest(TestCase):
     def setUpClass(cls):
 
         # Build models associated with core app
-        budget_model = BudgetModel()
-        budget_model.budget_model = 'test budget model'
-        budget_model.budget_model_description = 'test budget model description'
-        budget_model.save()
+        try:
+            budget_model = BudgetModel.objects.get(budget_model='RVHousehold')
+        except ObjectDoesNotExist:
+            budget_model = BudgetModel()
+            budget_model.budget_model = 'RVHousehold'
+            budget_model.budget_model_description = 'Budget model for RV community'
+            budget_model.save()
 
         rig = RigType()
         rig.rig_type = 'test rig type'
