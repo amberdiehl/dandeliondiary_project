@@ -1,8 +1,12 @@
 import re
+
+from django.db.models import Count
+
 from compare.models import MyBudgetGroup, MyBudgetCategory
 from core.helpers import helpers_get_current_location_categories
 from compare.helpers import helper_get_category_budget_and_expenses
 
+from .models import MyExpenseItem
 
 RE_VALID_EXPENSE_NOTE = re.compile(r'^[\w\d ,.\-=()*\+]{0,512}$')
 RE_VALID_CATEGORY_NAME = re.compile(r'^[\w ]{1,50}$')
@@ -12,19 +16,17 @@ RE_VALID_HASH_KEY = re.compile(r'^[\w\d]{16}$')
 RE_VALID_PAGE_VALUE = re.compile(r'^[\d]+$')
 
 
-def helper_budget_categories(household, place_types=None):
+def helper_budget_categories(household, place_types=None, top_load=False):
     """
     Creates values to be used in both budget category choosers. If google places is found, first chooser contains
     categories associated with the places returned. These are excluded from the second chooser. When there are no
     google place values, all categories appear in second chooser only.
 
-    This parallel approach is taken to reduce server-side processing. Rather than show a person all the places found
-    it is assumed that out of the list, an approprate 'hit' will be found in the budget categories and, by showing
-    them up front saves making the user select a google place found and an ajax call to create a list of categories
-    that match it.
-
     Group is used to create tiered organization and cannot be selected. Child categories are collapsed with
     their parents, and it is the child key that is used so that expenses are associated with them.
+
+    If requested (top_load=True), frequently used categories are placed first in the list. They are limited to
+    top 5 and appear in the structure as if in a budget group, "Frequently Used".
 
     Category names are shortened if they contain "(e.g. ...)".
 
@@ -33,8 +35,36 @@ def helper_budget_categories(household, place_types=None):
 
     categories_at_this_location = helpers_get_current_location_categories(place_types)
 
-    all_choices1 = ()  # for categories based on google places
-    all_choices2 = ()  # for categories not associated with google places
+    all_choices1 = (0, '------'),  # for categories based on google places
+    all_choices2 = (0, '------'),  # for categories not associated with google places
+
+    if top_load:
+
+        choices2 = ()
+
+        top_categories = MyBudgetCategory.objects.filter(my_budget_group__household=household) \
+            .values('my_category_name', 'id', 'parent_category', 'my_budget_group', )\
+            .annotate(number_of_expenses=Count('myexpenseitem'))\
+            .order_by('-number_of_expenses')\
+            .filter(number_of_expenses__gt=0)[:5]
+
+        for category in top_categories:
+            if category['parent_category']:
+                parent_category = MyBudgetCategory.objects.get(pk=category['parent_category'])
+                category_name = parent_category.my_category_name + ' - ' + display_name(category['my_category_name'])
+            else:
+                if category['my_category_name'] in ['Insurance', 'Other', ]:
+                    group = MyBudgetGroup.objects.get(pk=category['my_budget_group'])
+                    category_name = group.my_group_name + ' - ' + display_name(category['my_category_name'])
+                else:
+                    category_name = display_name(category['my_category_name'])
+
+            choice = (category['id'], category_name)
+            choices2 += choice,
+
+        if choices2:
+            group_choices2 = ('Frequently Used', choices2)
+            all_choices2 += group_choices2,
 
     groups = MyBudgetGroup.objects.filter(household=household).order_by('group_list_order')
     for ndx, group in enumerate(groups):
@@ -75,10 +105,6 @@ def helper_budget_categories(household, place_types=None):
         if choices2:
             group_choices2 = (group.my_group_name, choices2)
 
-        if ndx == 0:
-            all_choices1 += (0, '------'),
-            all_choices2 += (0, '------'),
-
         if group_choices1:
             all_choices1 += group_choices1,
 
@@ -111,7 +137,12 @@ def get_remaining_budget(c_id, date):
 
 
 def is_expense_place_type(a, b):
-  return not set(a).isdisjoint(b)
+    return not set(a).isdisjoint(b)
+
+
+"""
+  Validators for input associated with ajax views follow
+"""
 
 
 def validate_expense_inputs(date, amount, note):

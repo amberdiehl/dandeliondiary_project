@@ -131,7 +131,7 @@ def new_expense(request):
             except Exception as err:
                 pass
 
-        category_choices = helper_budget_categories(me.get('household_key'), place_types)
+        category_choices = helper_budget_categories(me.get('household_key'), place_types, top_load=True)
         form.fields['choose_category_place'].choices = category_choices[0]
         form.fields['choose_category'].choices = category_choices[1]
         form.fields['choose_place'].choices = places
