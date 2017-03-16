@@ -13,11 +13,27 @@
           rel="stylesheet" type="text/css" />
 
     <script>
+
         $(function() {
             $( "#id_expense_date" ).datepicker({
                 dateFormat: 'yy-mm-dd'
             });
         });
+
+        $( document ).ready(function() {
+
+            var elSplit = document.getElementById('id_split');
+
+            elSplit.addEventListener('click', function() {
+                if ($('#showSplit').css('display') == 'none'){
+                    $('#showSplit').css("display", "block");
+                } else {
+                    $('#showSplit').css("display", "none");
+                }
+            }, false)
+
+        });
+
     </script>
 
 {% endblock %}
@@ -54,6 +70,13 @@
                 <!-- /ALERTS -->
 
                 <fieldset>
+
+                    <div class="row"> <!-- split? -->
+                        <div class="col-md-6 col-sm-6">
+                            <label>{{ form.split.label }} {{ form.split }}</label>
+                        </div>
+                    </div>
+
                     <div class="row"><div class="form-group"> <!-- amount -->
                         <div class="col-md-6 col-sm-6">
                             <label>{{ form.amount.label }}</label>
@@ -116,6 +139,52 @@
                             {% endif %}
                         </div>
                     </div></div>
+
+                    <!-- Split expense -->
+                    <div id="showSplit" style="display:{% if form.split.value %} block{% else %} none{% endif %}; background-color: whitesmoke;">
+
+                        <div class="row" style="margin-left: 5px;"><div class="form-group"> <!-- amount to split -->
+                            <div class="col-md-6 col-sm-6">
+                                <label>{{ form.amount_split.label }}</label>
+                                <label class="input margin-bottom-10">{{ form.amount_split }}
+                                    <b class="tooltip tooltip-right">{{ form.amount_split.help_text }}</b>
+                                </label>
+                                {% if form.amount_split.errors %}
+                                    <div class="alert alert-mini alert-danger margin-bottom-15">
+                                        {% for error in form.amount_split.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div></div>
+                        <div class="row" style="margin-left: 5px;"><div class="form-group"> <!-- category split -->
+                            <div class="col-md-6 col-sm-6">
+                                <label>{{ form.choose_category_split.label }}</label>
+                                <label class="input margin-bottom-10">{{ form.choose_category_split }}
+                                    <b class="tooltip tooltip-right">{{ form.choose_category_split.help_text }}</b>
+                                </label>
+                                {% if form.choose_category_split.errors %}
+                                    <div class="alert alert-mini alert-danger margin-bottom-15">
+                                        {% for error in form.choose_category_split.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div></div>
+                        <div class="row" style="margin-left: 5px;"><div class="form-group"> <!-- note for split -->
+                            <div class="col-md-6 col-sm-6">
+                                <label>{{ form.note_split.label }}</label>
+                                <label class="input margin-bottom-10">{{ form.note_split }}
+                                    <b class="tooltip tooltip-right">{{ form.note_split.help_text }}</b>
+                                </label>
+                                {% if form.note_split.errors %}
+                                    <div class="alert alert-mini alert-danger margin-bottom-15">
+                                        {% for error in form.note_split.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div></div>
+
+                    </div>
+
                     <div class="row"><div class="form-group"> <!-- expense date -->
                         <div class="col-md-6 col-sm-6">
                             <label>{{ form.expense_date.label }}</label>

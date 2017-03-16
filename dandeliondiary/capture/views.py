@@ -49,10 +49,15 @@ def new_expense(request):
 
             if form.is_valid():
 
+                split = form.cleaned_data.get('split')
+
                 # Create expense record
                 expense = MyExpenseItem()
                 expense.note = form.cleaned_data.get('note')
                 expense.amount = form.cleaned_data.get('amount')
+                if split:
+                    adjustment_amount = form.cleaned_data.get('amount_split')
+                    expense.amount -= adjustment_amount
                 expense.household = me.get('household_obj')
                 expense.who = me.get('account_obj')
                 category = int(form.cleaned_data.get('choose_category_place'))
@@ -66,6 +71,14 @@ def new_expense(request):
                     form.cleaned_data['expense_date'] = datetime.datetime.today().date()
                 expense.expense_date = form.cleaned_data.get('expense_date')
                 expense.save()
+
+                remaining_budget = get_remaining_budget(category, expense.expense_date)
+                message = 'Got it! You have {} left in your {} budget.'\
+                    .format(remaining_budget, expense.category.my_category_name.lower())
+                if remaining_budget > 0:
+                    messages.success(request, message)
+                else:
+                    messages.error(request, message)
 
                 receipt_file = form.cleaned_data.get('receipt')
                 if receipt_file:
@@ -82,14 +95,26 @@ def new_expense(request):
                     receipt.receipt.name = file_name
                     receipt.save()
 
-                messages.success(request, 'Your information has been saved.')
+                if split:
+                    expense = MyExpenseItem()
+                    expense.note = form.cleaned_data.get('note_split')
+                    expense.amount = form.cleaned_data.get('amount_split')
+                    expense.household = me.get('household_obj')
+                    expense.who = me.get('account_obj')
+                    category_split = int(form.cleaned_data.get('choose_category_split'))
+                    expense.category = MyBudgetCategory.objects.get(pk=category_split)
+                    if not form.cleaned_data.get('expense_date'):
+                        form.cleaned_data['expense_date'] = datetime.datetime.today().date()
+                    expense.expense_date = form.cleaned_data.get('expense_date')
+                    expense.save()
 
-                remaining_budget = get_remaining_budget(category, expense.expense_date)
-                message = 'You have {} left in your budget.'.format(remaining_budget)
-                if remaining_budget > 0:
-                    messages.success(request, message)
-                else:
-                    messages.error(request, message)
+                    remaining_budget = get_remaining_budget(category_split, expense.expense_date)
+                    message = 'Got it! You have {} left in your {} budget.'\
+                        .format(remaining_budget, expense.category.my_category_name.lower())
+                    if remaining_budget > 0:
+                        messages.success(request, message)
+                    else:
+                        messages.error(request, message)
 
                 form = NewExpenseForm()
 
@@ -134,6 +159,7 @@ def new_expense(request):
         category_choices = helper_budget_categories(me.get('household_key'), place_types, top_load=True)
         form.fields['choose_category_place'].choices = category_choices[0]
         form.fields['choose_category'].choices = category_choices[1]
+        form.fields['choose_category_split'].choices = category_choices[1]
         form.fields['choose_place'].choices = places
 
         context = {

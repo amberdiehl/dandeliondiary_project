@@ -30,11 +30,11 @@ class NewExpenseForm(forms.Form):
         label=_("Amount:"),
         max_digits=11,
         decimal_places=2,
-        min_value=1,
+        min_value=0.01,
         max_value=999999999.99,
         widget=forms.NumberInput(attrs={'placeholder': '0.00'}),
         required=True,
-        help_text=_("Purchase amount.")
+        help_text=_("Total purchase amount.")
     )
     note = forms.CharField(
         label=_("Note:"),
@@ -69,14 +69,46 @@ class NewExpenseForm(forms.Form):
         required=False,
         help_text=_("Capture your receipt for your records.")
     )
+    split = forms.BooleanField(
+        label=_("Split?"),
+        required=False
+    )
+    amount_split = forms.DecimalField(
+        label=_("Split amount:"),
+        max_digits=11,
+        decimal_places=2,
+        min_value=0,
+        max_value=999999999.99,
+        widget=forms.NumberInput(attrs={'placeholder': '0.00'}),
+        required=False,
+        help_text=_("Split amount from total purchase.")
+    )
+    note_split = forms.CharField(
+        label=_("Split note:"),
+        max_length=512,
+        widget=forms.TextInput(attrs={'placeholder': 'Optional brief purchase note.'}),
+        required=False,
+        help_text=_("Optional brief note to remember something about this purchase.")
+    )
+    choose_category_split = CategoryCustomChoiceField(
+        validators=[validate_option_value],
+        label=_("Split category:"),
+        help_text=_("Apply this amount to this category.")
+    )
 
     def clean_note(self):
         note = self.cleaned_data['note']
         if not validate_expense_note_input(note):
-            error = 'Special characters in your note must be limited to: . , () + - / and =.'
+            error = 'Special characters in your note must be limited to: . , () + - and =.'
             raise forms.ValidationError(_(error))
         return note
 
+    def clean_note_split(self):
+        note = self.cleaned_data['note_split']
+        if not validate_expense_note_input(note):
+            error = 'Special characters in your note must be limited to: . , () + - and =.'
+            raise forms.ValidationError(_(error))
+        return note
 
     def clean_receipt(self):
         receipt = self.cleaned_data['receipt']
@@ -93,6 +125,8 @@ class NewExpenseForm(forms.Form):
         return receipt
 
     def clean(self):
+
+        # For the main expense capture, either regular or place category must have a value
         value1 = int(self.cleaned_data['choose_category_place'])
         value2 = int(self.cleaned_data['choose_category'])
 
@@ -115,5 +149,16 @@ class NewExpenseForm(forms.Form):
             if value1 != 0:
                 self.add_error('choose_place', 'You selected an expense category based on place; '
                                                'select place.')
+
+        if self.cleaned_data['split']:
+
+            split_amount = self.cleaned_data['amount_split']
+            if not split_amount:
+                self.add_error('amount_split', "With split selected, you must enter an amount to split.")
+
+            split_category = int(self.cleaned_data['choose_category_split'])
+            if split_category == 0:
+                self.add_error('choose_category_split', 'With split selected, you must choose a category for split '
+                                                        'amount')
 
         return self.cleaned_data

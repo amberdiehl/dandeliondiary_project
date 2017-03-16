@@ -130,7 +130,7 @@ def get_remaining_budget(c_id, date):
     Get amount remaining in category budget.
     """
 
-    # Get budget amount and related expenes based on expense effective date
+    # Get budget amount and related expenses based on expense effective date
     result = helper_get_category_budget_and_expenses(c_id, filter_date=date, fetch_expenses=True)
 
     return result['budget'] - result['expenses']
