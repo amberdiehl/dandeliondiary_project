@@ -227,6 +227,23 @@
             },
             recordUpdated: function (event, data) {
                 $('#Explore_Expenses_Container').jtable('reload')
+            },
+            // Add table footer, count and sum of records showing on page
+            recordsLoaded: function (event, data){
+                var footer = $('table.jtable').find('tfoot');
+                if (!footer.length) {
+                    footer = $('<tfoot>').appendTo('table.jtable');
+                    footer.append($('<td id="count">00</td><td id="sum" colspan="6">0.00</td>'));
+                }
+                var count = 0;
+                var total = 0;
+                var items = data.serverResponse['Records'];
+                $.each(items, function(index, value){
+                    count += 1;
+                    total += parseFloat(value.amount);
+                });
+                $('#count').html(count);
+                $('#sum').html('$' + total);
             }
         });
         //Re-load records when user clicks 'load records' button.

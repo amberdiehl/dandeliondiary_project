@@ -1,4 +1,5 @@
 import datetime, random
+
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
@@ -12,6 +13,7 @@ from household.helpers import helper_get_me
 from core.helpers import helpers_add_google_place
 from .helpers import \
     helper_budget_categories, \
+    composite_category_name, \
     get_remaining_budget, \
     is_expense_place_type, \
     validate_filter_inputs, validate_expense_inputs, validate_id_input, validate_paging_input
@@ -262,8 +264,8 @@ def ajax_list_expenses(request):
         record['id'] = hashids.encode(expense.pk)
         record['expense_date'] = expense.expense_date
         record['amount'] = expense.amount
-        expense_category = MyBudgetCategory.objects.get(pk=expense.category.pk)
-        record['category'] = expense_category.my_category_name
+        c = MyBudgetCategory.objects.get(pk=expense.category.pk)
+        record['category'] = composite_category_name(c.my_category_name, c.parent_category, c.my_budget_group)
         record['note'] = expense.note
 
         try:

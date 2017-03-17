@@ -49,17 +49,10 @@ def helper_budget_categories(household, place_types=None, top_load=False):
             .filter(number_of_expenses__gt=0)[:5]
 
         for category in top_categories:
-            if category['parent_category']:
-                parent_category = MyBudgetCategory.objects.get(pk=category['parent_category'])
-                category_name = parent_category.my_category_name + ' - ' + display_name(category['my_category_name'])
-            else:
-                if category['my_category_name'] in ['Insurance', 'Other', ]:
-                    group = MyBudgetGroup.objects.get(pk=category['my_budget_group'])
-                    category_name = group.my_group_name + ' - ' + display_name(category['my_category_name'])
-                else:
-                    category_name = display_name(category['my_category_name'])
 
-            choice = (category['id'], category_name)
+            choice = (category['id'],
+                      composite_category_name(category['my_category_name'], category['parent_category'],
+                                              category['my_budget_group']))
             choices2 += choice,
 
         if choices2:
@@ -112,6 +105,42 @@ def helper_budget_categories(household, place_types=None, top_load=False):
             all_choices2 += group_choices2,
 
     return all_choices1, all_choices2
+
+
+def composite_category_name(name, my_parent, my_group):
+    """
+    Create a composite name for category when: 1) there's a parent (e.g. Parent Name - Child Name) or 2) in specific
+    instances where category name alone is confusing by including group (e.g. Group Name - Category Name). This also
+    calls the "display_name" function which truncates the category name to just the label, eliminating clarifying
+    info, if it has it, e.g. (this, that, and another thing, etc.).
+
+    Two examples of composites:
+
+    "RV - Fuel" so as to distinguish from Fuel purchases associated with a tow vehicle. And "Pets - Insurance" to
+    distinguish between insurance for vehicles, health care, etc.
+
+    :param name: Name of the category
+    :param my_parent: Either the key or object of the category's parent category
+    :param my_group: Either the key or the object of the category's group
+    :return: Category name formatted as specified above
+    """
+    if my_parent:
+        if type(my_parent) is int:
+            parent_category = MyBudgetCategory.objects.get(pk=my_parent)
+        else:
+            parent_category = my_parent
+        category_name = parent_category.my_category_name + ' - ' + display_name(name)
+    else:
+        if name in ['Insurance', 'Other', ]:
+            if type(my_group) is int:
+                group = MyBudgetGroup.objects.get(pk=my_group)
+            else:
+                group = my_group
+            category_name = group.my_group_name + ' - ' + display_name(name)
+        else:
+            category_name = display_name(name)
+
+    return category_name
 
 
 def display_name(name):
