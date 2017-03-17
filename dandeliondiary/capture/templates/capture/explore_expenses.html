@@ -243,7 +243,7 @@
                     total += parseFloat(value.amount);
                 });
                 $('#count').html(count);
-                $('#sum').html('$' + total);
+                $('#sum').html('$' + total.toFixed(2));
             }
         });
         //Re-load records when user clicks 'load records' button.
