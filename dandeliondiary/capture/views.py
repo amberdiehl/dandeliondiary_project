@@ -1,11 +1,13 @@
-import datetime, random
+import csv, datetime, random
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from django.contrib.auth.models import User
+
 
 from google import get_nearby_places, byteify
 
@@ -191,6 +193,28 @@ def explore_expenses(request):
         }
 
     return render(request, 'capture/explore_expenses.html', context)
+
+
+@login_required
+def export_expenses_to_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Expense Date', 'Group', 'Parent Category', 'Category', 'Amount', 'Who', 'Note'])
+
+    expenses = MyExpenseItem.objects.all()\
+        .values_list('expense_date',
+                     'category__my_budget_group__my_group_name',
+                     'category__parent_category__my_category_name',
+                     'category__my_category_name',
+                     'amount',
+                     'who__user__username',
+                     'note')
+    for expense in expenses:
+        writer.writerow(expense)
+
+    return response
 
 
 @login_required
