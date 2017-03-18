@@ -1,6 +1,7 @@
 import datetime
 
 from decimal import *
+from django.forms import fields
 from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -9,6 +10,7 @@ from django.db.models import Count, Sum
 
 from hashids import Hashids
 
+from capture.helpers import helper_budget_categories
 from household.helpers import helper_get_me
 from .helpers import *
 
@@ -45,11 +47,18 @@ def compare_dashboard(request):
         for yr in range(start_year, current_year+1):
             years += yr,
 
+        category_choices = helper_budget_categories(me.get('household_key'), [], top_load=True,
+                                                    no_selection='All categories')
+        category_chooser = fields.ChoiceField(
+            choices=category_choices[1]
+        )
+
         context = {
             'page_title': 'Compare Dashboard',
             'url': 'compare:compare_dashboard',
             'options': get_month_options(),
             'years': sorted(years, reverse=True),
+            'choose_category': category_chooser.widget.render('choose_category', 0)
         }
 
         return render(request, 'compare/compare_dashboard.html', context)
@@ -200,7 +209,7 @@ def ajax_dashboard_snapshot(request, dt):
 
 
 @login_required
-def ajax_dashboard_month_series(request, from_date, to_date):
+def ajax_dashboard_month_series(request, from_date, to_date, category):
     """
     Gets the net difference of budget and expenses for a given series of months. Note that although dates require
     "day" being 01, the entire month of expenses are retrieved.
@@ -208,6 +217,7 @@ def ajax_dashboard_month_series(request, from_date, to_date):
     :param request:
     :param from_date: Must use format 2016-01-01 where day is always set to 01
     :param to_date: Must use format 2016-12-01 where day is always set to 01
+    :param category: If provided, s/b category key to filter results
     :return:
     """
 
@@ -238,6 +248,7 @@ def ajax_dashboard_month_series(request, from_date, to_date):
         track_categories = []
         month_net = 0
         month_abbr = this_date.strftime('%b')
+        category_key = int(category)
 
         if this_date <= today:
 
@@ -250,6 +261,9 @@ def ajax_dashboard_month_series(request, from_date, to_date):
                 .values('category', 'amount', 'annual_payment_month') \
                 .order_by('-effective_date')
 
+            if category_key:
+                budgets = budgets.filter(category=category_key)
+
             for budget in budgets:
                 if budget['category'] in track_categories:
                     pass  # skip older budget record(s)
@@ -258,9 +272,16 @@ def ajax_dashboard_month_series(request, from_date, to_date):
                     if budget['annual_payment_month'] == 0 or budget['annual_payment_month'] == this_date.month:
                         month_net += budget['amount']
 
-            expenses = MyExpenseItem.objects.filter(household=me.get('household_key')) \
-                .filter(expense_date__year=this_date.year, expense_date__month=this_date.month) \
-                .aggregate(Sum('amount'))
+            if not category_key:
+                expenses = MyExpenseItem.objects.filter(household=me.get('household_key')) \
+                    .filter(expense_date__year=this_date.year, expense_date__month=this_date.month) \
+                    .aggregate(Sum('amount'))
+            else:
+                expenses = MyExpenseItem.objects.filter(household=me.get('household_key')) \
+                    .filter(expense_date__year=this_date.year, expense_date__month=this_date.month) \
+                    .filter(category=category_key) \
+                    .aggregate(Sum('amount'))
+
             if expenses.get('amount__sum') is None:
                 pass
             else:

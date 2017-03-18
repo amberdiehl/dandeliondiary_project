@@ -1,4 +1,4 @@
-from django.conf.urls import include, url
+from django.conf.urls import url
 from . import views
 
 urlpatterns = [
@@ -7,7 +7,8 @@ urlpatterns = [
     url(r'^budget/$', views.budget, name='budget'),
     url(r'^budgets_expenses/$', views.budget_and_expenses, name='budgets_expenses'),
     url(r'^ajax/dashboard_snapshot/(?P<dt>\d{4}-\d{2}-\d{2})/$', views.ajax_dashboard_snapshot),
-    url(r'^ajax/dashboard_month_series/(?P<from_date>\d{4}-\d{2}-\d{2})/(?P<to_date>\d{4}-\d{2}-\d{2})/$',
+    url(r'^ajax/dashboard_month_series/(?P<from_date>\d{4}-\d{2}-\d{2})/'
+        r'(?P<to_date>\d{4}-\d{2}-\d{2})/(?P<category>[0-9]+)/$',
         views.ajax_dashboard_month_series),
     url(r'^ajax/dashboard_budget/(?P<dt>\d{4}-\d{2}-\d{2})/$', views.ajax_dashboard_budget),
     url(r'^ajax/list_groups/$', views.ajax_list_groups),

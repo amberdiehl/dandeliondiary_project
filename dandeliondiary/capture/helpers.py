@@ -16,7 +16,7 @@ RE_VALID_HASH_KEY = re.compile(r'^[\w\d]{16}$')
 RE_VALID_PAGE_VALUE = re.compile(r'^[\d]+$')
 
 
-def helper_budget_categories(household, place_types=None, top_load=False):
+def helper_budget_categories(household, place_types=None, top_load=False, no_selection='------'):
     """
     Creates values to be used in both budget category choosers. If google places is found, first chooser contains
     categories associated with the places returned. These are excluded from the second chooser. When there are no
@@ -35,8 +35,8 @@ def helper_budget_categories(household, place_types=None, top_load=False):
 
     categories_at_this_location = helpers_get_current_location_categories(place_types)
 
-    all_choices1 = (0, '------'),  # for categories based on google places
-    all_choices2 = (0, '------'),  # for categories not associated with google places
+    all_choices1 = (0, no_selection),  # for categories based on google places
+    all_choices2 = (0, no_selection),  # for categories not associated with google places
 
     if top_load:
 

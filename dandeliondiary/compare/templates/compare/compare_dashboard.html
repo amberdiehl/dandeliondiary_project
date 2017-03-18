@@ -65,8 +65,12 @@
                                 <option value="{{ yr }}">{{ yr }}</option>
                             {% endfor %}
                         </select>
+                    {{ choose_category }}
                         <script>
                             document.getElementById("chooseYear").onchange = function () {
+                                drawYearView();
+                            };
+                            document.getElementsByName("choose_category")[0].onchange = function() {
                                 drawYearView();
                             };
                         </script>
@@ -162,12 +166,13 @@
         function drawYearView() {
 
             var year = document.getElementById('chooseYear').value;
+            var category = document.getElementsByName('choose_category')[0].value;
 
             var from_date = year + '-01-01';
             var to_date = year + '-12-01';
 
             var jsonData = $.ajax({
-                url: "/compare/ajax/dashboard_month_series/" + from_date + '/' + to_date + '/',
+                url: "/compare/ajax/dashboard_month_series/" + from_date + '/' + to_date + '/' + category + '/',
                 dataType: "json",
                 async: false
             }).responseText;
