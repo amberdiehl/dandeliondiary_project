@@ -310,7 +310,7 @@ class CompareTest(TestCase):
         logged_in = self.client.login(username='bobbysue', password='password')
         self.assertEquals(logged_in, True)
 
-        response = self.client.get('/compare/ajax/dashboard_month_series/2017-01-01/2017-12-01/',
+        response = self.client.get('/compare/ajax/dashboard_month_series/2017-01-01/2017-12-01/0/',
                                    secure=True)
         result = json.loads(response.content)
 
