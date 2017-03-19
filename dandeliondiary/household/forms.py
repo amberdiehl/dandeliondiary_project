@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+from core.models import IncomeType
 from models import RVHousehold, Vehicle
 from helpers import *
 import re
@@ -101,6 +102,8 @@ class MyInfoForm(forms.Form):
 
 
 class HouseholdProfileForm(forms.ModelForm):
+
+    income_type = forms.ModelChoiceField(queryset=IncomeType.objects.order_by('income_type'))
 
     class Meta:
         model = RVHousehold
