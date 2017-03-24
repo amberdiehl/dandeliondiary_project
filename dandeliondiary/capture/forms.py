@@ -9,11 +9,17 @@ from helpers import validate_expense_note_input
 
 
 RE_VALID_CHOICE_VALUE = re.compile(r'^[\d]*$')
+RE_VALID_CHOICE_PLACE = re.compile(r'^[\w\' .&-^]*$')
 
 
 def validate_option_value(value):
     if not re.match(RE_VALID_CHOICE_VALUE, value):
         raise ValidationError('Malformed option.')
+
+
+def validate_place_value(value):
+    if not re.match(RE_VALID_CHOICE_PLACE, value):
+        raise ValidationError('Malformed place value provided.')
 
 
 class CategoryCustomChoiceField(forms.ChoiceField):
@@ -43,13 +49,8 @@ class NewExpenseForm(forms.Form):
         required=False,
         help_text=_("Optional brief note to remember something about this purchase.")
     )
-    choose_category_place = CategoryCustomChoiceField(
-        validators=[validate_option_value],
-        label=_("Budget place category:"),
-        help_text=_("Apply this purchase to a budget category.")
-    )
     choose_place = CategoryCustomChoiceField(
-        validators=[validate_option_value],
+        validators=[validate_place_value],
         label=_("Place"),
         help_text=_("Purchase made at this location.")
     )
@@ -95,6 +96,23 @@ class NewExpenseForm(forms.Form):
         label=_("Split category:"),
         help_text=_("Apply this amount to this category.")
     )
+    hidden_places = forms.CharField(
+        widget=forms.HiddenInput
+    )
+    hidden_categories = forms.CharField(
+        widget=forms.HiddenInput
+    )
+
+    def clean_choose_place(self):
+        place = self.cleaned_data['choose_place']
+        return place
+
+    def clean_choose_category(self):
+        category = self.cleaned_data['choose_category']
+        if category == '0':
+            error = 'Please select a budget category.'
+            raise forms.ValidationError(_(error))
+        return category
 
     def clean_note(self):
         note = self.cleaned_data['note']
@@ -126,29 +144,13 @@ class NewExpenseForm(forms.Form):
 
     def clean(self):
 
-        # For the main expense capture, either regular or place category must have a value
-        value1 = int(self.cleaned_data['choose_category_place'])
-        value2 = int(self.cleaned_data['choose_category'])
-
-        # A place based or non-place based expense category must be selected, but not both
-        if value1 == 0 and value2 == 0:
-            self.add_error('choose_category', "Select a budget category.")
-            self.add_error('choose_category_place', "Select a budget category.")
-
-        if value1 and value2:
-            self.add_error('choose_category', "Make only one budget category selection.")
-            self.add_error('choose_category_place', "Make only one budget category selection.")
-
-        # If place based selection is made, place must also be selected
-        try:
-            value3 = int(self.cleaned_data['choose_place'])
-        except ValueError:
-            if value1 == 0:
-                self.add_error('choose_category_place', 'Select a place based expense category.')
-        else:
-            if value1 != 0:
-                self.add_error('choose_place', 'You selected an expense category based on place; '
-                                               'select place.')
+        selected_place = self.cleaned_data['choose_place']
+        if not selected_place == '0':
+            category = self.cleaned_data.get('choose_category', None)
+            if category:
+                place_categories = self.cleaned_data.get('hidden_categories', '')
+                if category not in place_categories:
+                    self.add_error('choose_category', "Select a category associated with the place you have selected.")
 
         if self.cleaned_data['split']:
 
@@ -158,7 +160,6 @@ class NewExpenseForm(forms.Form):
 
             split_category = int(self.cleaned_data['choose_category_split'])
             if split_category == 0:
-                self.add_error('choose_category_split', 'With split selected, you must choose a category for split '
-                                                        'amount')
+                self.add_error('choose_category_split', 'With split selected, you must choose a split category.')
 
         return self.cleaned_data

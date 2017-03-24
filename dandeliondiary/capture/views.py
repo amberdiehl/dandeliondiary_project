@@ -14,7 +14,7 @@ from google import get_nearby_places, byteify
 from household.helpers import helper_get_me
 from core.helpers import helpers_add_google_place
 from .helpers import \
-    helper_budget_categories, \
+    helper_budget_categories, helper_budget_categories_places, \
     composite_category_name, \
     get_remaining_budget, \
     is_expense_place_type, \
@@ -31,9 +31,16 @@ from hashids import Hashids
 HASH_SALT = 'nowis Ag00d tiM3for tW0BR3wskies'
 HASH_MIN_LENGTH = 16
 
-GOOGLE_LOCATION_RADIUS = 35
-# from uscampgrounds.models import *
-# camps = Campground.objects.all().distance(origin).order_by('distance')
+GOOGLE_MOBILE_RADIUS = 35
+GOOGLE_DESKTOP_RADIUS = 2500
+
+MOBILE_DEVICES = ['sony', 'symbian', 'nokia', 'samsung', 'mobile', 'windows ce', 'epoc', 'opera mini', 'nitro', 'j2me',
+                  'midp-', 'cldc-', 'netfront', 'mot', 'up.browser', 'up.link', 'audiovox', 'blackberry', 'ericsson,',
+                  'panasonic', 'philips', 'sanyo', 'sharp', 'sie-', 'portalmmm',  'blazer',  'avantgo',  'danger',
+                  'palm', 'series60', 'palmsource', 'pocketpc', 'smartphone', 'rover', 'ipaq', 'au-mic,', 'alcatel',
+                  'ericy', 'up.link', 'docomo', 'vodafone/', 'wap1.', 'wap2.', 'plucker', '480x640', 'sec', 'fennec',
+                  'android', 'google wireless transcoder', 'nintendo', 'webtv', 'playstation',
+                  ]
 
 
 # Capture a new expense item
@@ -43,40 +50,73 @@ def new_expense(request):
     me = helper_get_me(request.user.pk)
     if me.get('redirect'):
         return redirect('household:household_dashboard')
-    else:
 
-        geo = None
+    location_message = ''
 
-        if request.method == 'POST':
+    if request.method == 'POST':
 
-            form = NewExpenseForm(request.POST, request.FILES)
+        form = NewExpenseForm(request.POST, request.FILES)
 
-            if form.is_valid():
+        if form.is_valid():
 
-                split = form.cleaned_data.get('split')
+            split = form.cleaned_data.get('split')
 
-                # Create expense record
+            # Create expense record
+            expense = MyExpenseItem()
+            expense.note = form.cleaned_data.get('note')
+            expense.amount = form.cleaned_data.get('amount')
+            if split:
+                adjustment_amount = form.cleaned_data.get('amount_split')
+                expense.amount -= adjustment_amount
+            expense.household = me.get('household_obj')
+            expense.who = me.get('account_obj')
+            category = int(form.cleaned_data.get('choose_category'))
+            expense.category = MyBudgetCategory.objects.get(pk=category)
+            place = form.cleaned_data.get('choose_place').split('^')
+            if len(place) > 1:
+                expense.google_place = helpers_add_google_place(place[0], place[1], place[2], place[3])
+            if not form.cleaned_data.get('expense_date'):
+                form.cleaned_data['expense_date'] = datetime.datetime.today().date()
+            expense.expense_date = form.cleaned_data.get('expense_date')
+            expense.save()
+
+            remaining_budget = get_remaining_budget(category, expense.expense_date)
+            message = 'Got it! You have {} left in your {} budget.'\
+                .format(remaining_budget, expense.category.my_category_name.lower())
+            if remaining_budget > 0:
+                messages.success(request, message)
+            else:
+                messages.error(request, message)
+
+            receipt_file = form.cleaned_data.get('receipt')
+            if receipt_file:
+
+                hashids = Hashids(salt=settings.MEDIA_HASH_SALT, min_length=settings.MEDIA_HASH_MIN_LENGTH)
+                to_hash1 = hashids.encode(random.randint(1, 999999999999))
+                to_hash2 = hashids.encode(expense.pk)
+                file_name = '{}{}.{}'.format(to_hash1, to_hash2, receipt_file.content_type.split('/')[1])
+
+                receipt = MyReceipt()
+                receipt.expense_item = expense
+                receipt.original_name = receipt_file.name
+                receipt.receipt = receipt_file
+                receipt.receipt.name = file_name
+                receipt.save()
+
+            if split:
                 expense = MyExpenseItem()
-                expense.note = form.cleaned_data.get('note')
-                expense.amount = form.cleaned_data.get('amount')
-                if split:
-                    adjustment_amount = form.cleaned_data.get('amount_split')
-                    expense.amount -= adjustment_amount
+                expense.note = form.cleaned_data.get('note_split')
+                expense.amount = form.cleaned_data.get('amount_split')
                 expense.household = me.get('household_obj')
                 expense.who = me.get('account_obj')
-                category = int(form.cleaned_data.get('choose_category_place'))
-                if category == 0:
-                    category = int(form.cleaned_data.get('choose_category'))
-                expense.category = MyBudgetCategory.objects.get(pk=category)
-                place = form.cleaned_data.get('choose_place').replace('(','').replace(')','').replace("'",'').split(',')
-                if len(place) > 1:
-                    expense.google_place = helpers_add_google_place(place[0], place[1], place[2], place[3])
+                category_split = int(form.cleaned_data.get('choose_category_split'))
+                expense.category = MyBudgetCategory.objects.get(pk=category_split)
                 if not form.cleaned_data.get('expense_date'):
                     form.cleaned_data['expense_date'] = datetime.datetime.today().date()
                 expense.expense_date = form.cleaned_data.get('expense_date')
                 expense.save()
 
-                remaining_budget = get_remaining_budget(category, expense.expense_date)
+                remaining_budget = get_remaining_budget(category_split, expense.expense_date)
                 message = 'Got it! You have {} left in your {} budget.'\
                     .format(remaining_budget, expense.category.my_category_name.lower())
                 if remaining_budget > 0:
@@ -84,99 +124,29 @@ def new_expense(request):
                 else:
                     messages.error(request, message)
 
-                receipt_file = form.cleaned_data.get('receipt')
-                if receipt_file:
-
-                    hashids = Hashids(salt=settings.MEDIA_HASH_SALT, min_length=settings.MEDIA_HASH_MIN_LENGTH)
-                    to_hash1 = hashids.encode(random.randint(1, 999999999999))
-                    to_hash2 = hashids.encode(expense.pk)
-                    file_name = '{}{}.{}'.format(to_hash1, to_hash2, receipt_file.content_type.split('/')[1])
-
-                    receipt = MyReceipt()
-                    receipt.expense_item = expense
-                    receipt.original_name = receipt_file.name
-                    receipt.receipt = receipt_file
-                    receipt.receipt.name = file_name
-                    receipt.save()
-
-                if split:
-                    expense = MyExpenseItem()
-                    expense.note = form.cleaned_data.get('note_split')
-                    expense.amount = form.cleaned_data.get('amount_split')
-                    expense.household = me.get('household_obj')
-                    expense.who = me.get('account_obj')
-                    category_split = int(form.cleaned_data.get('choose_category_split'))
-                    expense.category = MyBudgetCategory.objects.get(pk=category_split)
-                    if not form.cleaned_data.get('expense_date'):
-                        form.cleaned_data['expense_date'] = datetime.datetime.today().date()
-                    expense.expense_date = form.cleaned_data.get('expense_date')
-                    expense.save()
-
-                    remaining_budget = get_remaining_budget(category_split, expense.expense_date)
-                    message = 'Got it! You have {} left in your {} budget.'\
-                        .format(remaining_budget, expense.category.my_category_name.lower())
-                    if remaining_budget > 0:
-                        messages.success(request, message)
-                    else:
-                        messages.error(request, message)
-
-                form = NewExpenseForm()
-
-            else:
-
-                messages.warning(request, "Please fix the errors noted below.")
-
-        else:
-
             form = NewExpenseForm()
 
-        # Attempt to get geolocation information to preselect categories
-        position = ()
-        if request.GET.get('lat') and request.GET.get('lon'):
-            position = (request.GET.get('lat'),request.GET.get('lon'))
-            geo = '?lat={}&lon={}'.format(request.GET.get('lat'),request.GET.get('lon'))
-            location_message = ('success', 'Geolocation used for expense category assistance.')
         else:
-            location_message = ('warning', 'Geolocation failed; category assistance unavailable.')
 
-        places = [(0, '------'), ]  # collect places to show for user selection
-        place_types = []  # collect place types to enable expense category chooser based on location
-        places_error = ''  # show error in case cause is change in IP address
-        if position:
-            try:
-                nearby_json = byteify(get_nearby_places(position, GOOGLE_LOCATION_RADIUS))
-                if nearby_json['status'] == 'OK':
-                    types = GooglePlaceType.objects.all().values_list('type', flat=True)
-                    for place in nearby_json['results']:
-                        if is_expense_place_type(place['types'], types):  # only show places where type is valid
-                            item = (place['place_id'], place['name'], place['geometry']['location']['lat'],
-                                    place['geometry']['location']['lng'])
-                            places += (item, place['name']),
-                            place_types.append(place['types'])  # this is an array of arrays
-                    places.sort(key=lambda items: items[1])
-                else:
-                    places_error = 'status: {} error message: {}'.format(nearby_json['status'],
-                                                                         nearby_json['error_message'])
-            except Exception as err:
-                pass
+            messages.warning(request, "Please fix the errors noted below.")
 
-        category_choices = helper_budget_categories(me.get('household_key'), place_types, top_load=True)
-        form.fields['choose_category_place'].choices = category_choices[0]
-        form.fields['choose_category'].choices = category_choices[1]
-        form.fields['choose_category_split'].choices = category_choices[1]
-        form.fields['choose_place'].choices = places
+    else:
 
-        context = {
-            'form': form,
-            'places': len(places),
-            'places_error': places_error,
-            'page_title': 'Capture New Expense',
-            'url': 'capture:new_expense',
-            'geo': geo,
-            'location_message': location_message,
-        }
+        form = NewExpenseForm()
+        location_message = ('error', 'Getting geo location information.')
 
-        return render(request, 'capture/new_expense.html', context)
+    category_choices = helper_budget_categories(me.get('household_key'), top_load=True)
+    form.fields['choose_category'].choices = category_choices
+    form.fields['choose_category_split'].choices = category_choices
+
+    context = {
+        'form': form,
+        'page_title': 'Capture New Expense',
+        'url': 'capture:new_expense',
+        'location_message': location_message,
+    }
+
+    return render(request, 'capture/new_expense.html', context)
 
 
 @login_required
@@ -215,6 +185,57 @@ def export_expenses_to_csv(request):
         writer.writerow(expense)
 
     return response
+
+
+@login_required
+def ajax_categories_by_place(request, lat, lon):
+
+    response_data = {}
+
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        response_data['Status'] = 'ERROR'
+        response_data['Message'] = 'Invalid request.'
+        return JsonResponse(response_data)
+
+    if any(device in request.environ['HTTP_USER_AGENT'].lower() for device in MOBILE_DEVICES):
+        radius = GOOGLE_MOBILE_RADIUS
+    else:
+        radius = GOOGLE_DESKTOP_RADIUS
+
+    position = (lat, lon)
+    places = []  # collect places to show for user selection
+    place_types = []  # collect place types to enable expense category chooser based on location
+
+    try:
+        nearby_json = byteify(get_nearby_places(position, radius))
+        if nearby_json['status'] == 'OK':
+
+            # Collect places for place chooser
+            types = GooglePlaceType.objects.all().values_list('type', flat=True)
+            for place in nearby_json['results']:
+                if is_expense_place_type(place['types'], types):  # only show places where type is valid
+                    item = "{}^{}^{}^{}".format(place['place_id'], place['name'], place['geometry']['location']['lat'],
+                            place['geometry']['location']['lng'])
+                    places += (item, place['name']),
+                    place_types.append(place['types'])  # this is an array of arrays
+            places.sort(key=lambda items: items[1])
+
+            response_data['Status'] = 'OK'
+            response_data['places'] = places
+            response_data['category_places'] = helper_budget_categories_places(me.get('household_key'), place_types)
+
+        else:
+
+            response_data['Status'] = 'ERROR'
+            response_data['Message'] = '{}: {}'.format(nearby_json['status'], nearby_json['error_message'])
+
+    except Exception as err:
+
+        response_data['Status'] = 'ERROR'
+        response_data['Message'] = 'ERROR: {}'.format(err)
+
+    return JsonResponse(response_data)
 
 
 @login_required

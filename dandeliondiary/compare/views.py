@@ -47,10 +47,10 @@ def compare_dashboard(request):
         for yr in range(start_year, current_year+1):
             years += yr,
 
-        category_choices = helper_budget_categories(me.get('household_key'), [], top_load=True,
+        category_choices = helper_budget_categories(me.get('household_key'), top_load=True,
                                                     no_selection='All categories')
         category_chooser = fields.ChoiceField(
-            choices=category_choices[1]
+            choices=category_choices
         )
 
         context = {

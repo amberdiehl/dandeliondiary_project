@@ -23,14 +23,49 @@
         $( document ).ready(function() {
 
             var elSplit = document.getElementById('id_split');
-
             elSplit.addEventListener('click', function() {
+
                 if ($('#showSplit').css('display') == 'none'){
                     $('#showSplit').css("display", "block");
                 } else {
                     $('#showSplit').css("display", "none");
                 }
-            }, false)
+
+            }, false);
+
+            var elSubmit = document.getElementById('submitForm');
+            elSubmit.addEventListener('click', function() {
+
+                var elPlacesHTML = document.getElementById('id_hidden_places');
+                if (elPlacesHTML.value.length > 0) {
+
+                    var elPlaceChooser = document.getElementById('id_choose_place');
+                    var choice = elPlaceChooser.options[elPlaceChooser.selectedIndex].value;
+
+                    elPlacesHTML.value = removeSelected(elPlacesHTML.value);
+                    elPlacesHTML.value = addSelected(elPlacesHTML.value, choice);
+                }
+
+            }, false);
+
+            function removeSelected(str) {
+                var x = str.indexOf(' selected="selected"');
+                if (x == -1) {
+                    return str;
+                } else {
+                    return str.substring(0, x) + str.substring((x + 20));
+                }
+            }
+
+            function addSelected(str, val) {
+                var x = str.indexOf(val);
+                if (x == -1) {
+                    return str;
+                } else {
+                    var offset = val.length + 1;
+                    return str.substring(0, x + offset) + ' selected="selected"' + str.substring(x + offset);
+                }
+            }
 
         });
 
@@ -57,7 +92,8 @@
                 <!-- ALERTS -->
                 <div class="row"><div class="col-md-6 col-sm-6">
                     {% if not messages %}
-                    <div class="alert alert-{{ location_message.0 }} margin-bottom-15">{{ location_message.1 }}</div>
+                        <div id='geoMessage' class="alert alert-{{ location_message.0 }} margin-bottom-15">
+                            {{ location_message.1 }}</div>
                     {% endif %}
                     {% if messages %}
                         {% for msg in messages %}
@@ -90,42 +126,39 @@
                             {% endif %}
                         </div>
                     </div></div>
-                    <div class="{% if places > 1 %}show{% else %}hide{% endif %}">
-                        <div class="row"><div class="form-group"> <!-- choose category based on place -->
+
+                    <div id="geo" style="display: {% if form.hidden_places.value %}block{% else %}none{% endif %};">
+                        <div class="row"><div class="form-group"> <!-- choose place -->
                             <div class="col-md-6 col-sm-6">
-                                <label>{{ form.choose_category_place.label }}</label>
-                                <label class="input margin-bottom-10">{{ form.choose_place }}</label>
+                                <label>{{ form.choose_place.label }}</label>
+                                <label class="input margin-bottom-10">{{ form.choose_place }}
+                                    <b class="tooltip tooltip-right">{{ form.choose_place.help_text }}</b>
+                                    {{ form.hidden_places }}
+                                </label>
                                 {% if form.choose_place.errors %}
                                     <div class="alert alert-mini alert-danger margin-bottom-15">
                                         {% for error in form.choose_place.errors %}{{ error }}{% endfor %}
                                     </div>
                                 {% endif %}
-                                <label class="input margin-bottom-10">{{ form.choose_category_place }}</label>
-                                {% if form.choose_category_place.errors %}
-                                    <div class="alert alert-mini alert-danger margin-bottom-15">
-                                        {% for error in form.choose_category_place.errors %}{{ error }}{% endfor %}
-                                    </div>
-                                {% endif %}
-                                <a href="#allCategories" data-toggle="collapse" class="pull-right">
-                                    OR use non-place based categories</a>
                             </div>
                         </div></div>
                     </div>
-                    <div id="allCategories" class="collapse {% if places <= 1 %}in{% endif %}">
-                        <div class="row"><div class="form-group"> <!-- choose category -->
-                            <div class="col-md-6 col-sm-6">
-                                <label>{{ form.choose_category.label }}</label>
-                                <label class="input margin-bottom-10">{{ form.choose_category }}
-                                    <b class="tooltip tooltip-right">{{ form.choose_category.help_text }}</b>
-                                </label>
-                                {% if form.choose_category.errors %}
-                                    <div class="alert alert-mini alert-danger margin-bottom-15">
-                                        {% for error in form.choose_category.errors %}{{ error }}{% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div></div>
-                    </div>
+
+                    <div class="row"><div class="form-group"> <!-- choose category -->
+                        <div class="col-md-6 col-sm-6">
+                            <label>{{ form.choose_category.label }}</label>
+                            <label class="input margin-bottom-10">{{ form.choose_category }}
+                                <b class="tooltip tooltip-right">{{ form.choose_category.help_text }}</b>
+                                {{ form.hidden_categories }}
+                            </label>
+                            {% if form.choose_category.errors %}
+                                <div class="alert alert-mini alert-danger margin-bottom-15">
+                                    {% for error in form.choose_category.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div></div>
+
                     <div class="row"><div class="form-group"> <!-- note -->
                         <div class="col-md-6 col-sm-6">
                             <label>{{ form.note.label }}</label>
@@ -156,6 +189,7 @@
                                 {% endif %}
                             </div>
                         </div></div>
+
                         <div class="row" style="margin-left: 5px;"><div class="form-group"> <!-- category split -->
                             <div class="col-md-6 col-sm-6">
                                 <label>{{ form.choose_category_split.label }}</label>
@@ -169,6 +203,7 @@
                                 {% endif %}
                             </div>
                         </div></div>
+
                         <div class="row" style="margin-left: 5px;"><div class="form-group"> <!-- note for split -->
                             <div class="col-md-6 col-sm-6">
                                 <label>{{ form.note_split.label }}</label>
@@ -198,6 +233,7 @@
                             {% endif %}
                         </div>
                     </div></div>
+
                     <div class="row"><div class="form-group"> <!-- receipt -->
                         <div class="col-md-6 col-sm-6">
                             <label>{{ form.receipt.label }}</label>
@@ -211,16 +247,15 @@
                             {% endif %}
                         </div>
                     </div></div>
+
                 </fieldset>
 
-                <div class="row">
-                        <div class="col-md-12">
-                            <button type="submit" class="btn btn-primary btn-bordered pull-right"><i class="fa fa-check"></i>
-                                {% trans "Save" %}</button>
-                        </div>
-                    </div>
+                    <div class="row"><div class="col-md-12">
+                        <button id="submitForm" type="submit" class="btn btn-primary btn-bordered pull-right">
+                            <i class="fa fa-check"></i>{% trans "Save" %}</button>
+                    </div></div>
 
-                </div>
+            </div>
 
         </form>
 
@@ -230,40 +265,111 @@
 
 {% block scripts %}
 
-    <script src="{% static 'js/QueryData.compressed.js' %}"></script>
-
     <script>
 
-        // window.onload = function() {
         function getGeoLocation() {
 
-            var startPos;
-            var geoOptions = {
-                timeout: 100 * 1000,
-                enableHighAccuracy: true
-            };
+            // Been here, done that. Use saved values rather than fetching geo and google place info again.
+            var placesHTML = $('#id_hidden_places').val();
+            if ( placesHTML.length > 0 ) {
 
-            var geoSuccess = function(position) {
-                startPos = position;
-                //document.getElementById('startLat').innerHTML = startPos.coords.latitude;
-                //document.getElementById('startLon').innerHTML = startPos.coords.longitude;
-                window.location.href = window.location.href +  
-                        '?lat=' + startPos.coords.latitude +  '&lon=' + startPos.coords.longitude;
-            };
+                // Prepend place information again; 'selected' was managed on click event for submit
+                $('#id_choose_place').append(placesHTML);
 
-            var geoError = function(error) {
-                console.log('Error occurred. Error code: ' + error.code);
-                // error.code can be:
-                //   0: unknown error
-                //   1: permission denied
-                //   2: position unavailable (error response from location provider)
-                //   3: timed out
-            };
+                var categoriesHTML = $('#id_hidden_categories').val();
+                var $el = $("#id_choose_category");
+                var choice = $el.find(":selected").val();
 
-            var getData = new QueryData();
-            if (!('lat' in getData)) {
+                $el.find("option").eq(0).remove();
+                $el.prepend(categoriesHTML);
+
+                if (choice == '0') {
+                    $("select#id_choose_category")[0].selectedIndex = 0;
+                }
+
+
+            } else {
+
+                var geoOptions = {
+                    timeout: 100 * 1000,
+                    enableHighAccuracy: true
+                };
+
+                var geoSuccess = function (position) {
+                    $('#geoMessage').removeClass('alert-error').removeClass('alert-warning').addClass('alert-success')
+                        .html('Found location, getting geo based categories.');
+                    setupCategoryPlace(position);
+                };
+
+                var geoError = function (error) {
+                    console.log('Error occurred. Error code: ' + error.code);
+                    // error.code can be:
+                    //   0: unknown error
+                    //   1: permission denied
+                    //   2: position unavailable (error response from location provider)
+                    //   3: timed out
+                };
+
                 navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions);
+
             }
+        }
+
+        function setupCategoryPlace(pos) {
+
+            var request = $.ajax({
+                url: '/capture/ajax/places/' + pos.coords.latitude + '/' + pos.coords.longitude + '/',
+                dataType: "json"
+            });
+
+            request.done(function (result) {
+                if (result.Status == 'OK') {
+
+                    var places = result.places;
+                    if (places.length > 0) {
+
+                        var $el0 = $('#id_choose_place');
+                        var places_html = "<option value='0'>------</option>";
+                        for (i = 0; i < places.length; i++) {
+                            var option = places[i];
+                                places_html += '<option value="' + option[0] + '">' + option[1] + '</option>';
+                        }
+                        $el0.append(places_html);
+                        $el0.find("option").eq(0).attr('selected', 'selected');
+                        $("select#id_choose_place")[0].selectedIndex = 0;
+
+                        var categories = result.category_places;
+                        var $el1 = $("#id_choose_category");
+                        $el1.find("option").eq(0).remove();
+                        $el1.prepend(categories);
+                        $el1.find("option").eq(0).attr('selected', 'selected');
+                        $("select#id_choose_category")[0].selectedIndex = 0;
+
+                        // Save this information with the form to prevent fetching again if form has errors
+                        $('#id_hidden_places').val(places_html);
+                        $('#id_hidden_categories').val(categories);
+
+                        $('#geoMessage').html('Geo location categories found.');
+                        $('#geo').css('display', 'block');
+
+                    } else {
+
+                        $('#geoMessage').html('No categories were found based on geo location.');
+                    }
+
+                } else {
+
+                    $('#geoMessage').removeClass('alert-error').removeClass('alert-success').addClass('alert-warning')
+                        .html(result.Message);
+                }
+            });
+
+            request.fail(function (jqXHR, textStatus) {
+
+                $('#geoMessage').removeClass('alert-error').removeClass('alert-success').addClass('alert-warning')
+                    .html('Oops! Something went wrong. Categories by geo location not available.');
+
+            });
 
         }
      

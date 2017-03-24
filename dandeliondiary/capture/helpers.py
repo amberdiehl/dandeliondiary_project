@@ -16,12 +16,8 @@ RE_VALID_HASH_KEY = re.compile(r'^[\w\d]{16}$')
 RE_VALID_PAGE_VALUE = re.compile(r'^[\d]+$')
 
 
-def helper_budget_categories(household, place_types=None, top_load=False, no_selection='------'):
+def helper_budget_categories(household, top_load=False, no_selection='------'):
     """
-    Creates values to be used in both budget category choosers. If google places is found, first chooser contains
-    categories associated with the places returned. These are excluded from the second chooser. When there are no
-    google place values, all categories appear in second chooser only.
-
     Group is used to create tiered organization and cannot be selected. Child categories are collapsed with
     their parents, and it is the child key that is used so that expenses are associated with them.
 
@@ -33,14 +29,11 @@ def helper_budget_categories(household, place_types=None, top_load=False, no_sel
     The comma located at the end of each tuple add is what causes python to create tuples in tuples.
     """
 
-    categories_at_this_location = helpers_get_current_location_categories(place_types)
-
-    all_choices1 = (0, no_selection),  # for categories based on google places
-    all_choices2 = (0, no_selection),  # for categories not associated with google places
+    all_choices = (0, no_selection),
 
     if top_load:
 
-        choices2 = ()
+        choices = ()
 
         top_categories = MyBudgetCategory.objects.filter(my_budget_group__household=household) \
             .values('my_category_name', 'id', 'parent_category', 'my_budget_group', )\
@@ -53,20 +46,20 @@ def helper_budget_categories(household, place_types=None, top_load=False, no_sel
             choice = (category['id'],
                       composite_category_name(category['my_category_name'], category['parent_category'],
                                               category['my_budget_group']))
-            choices2 += choice,
+            choices += choice,
 
-        if choices2:
-            group_choices2 = ('Frequently Used', choices2)
-            all_choices2 += group_choices2,
+        if choices:
+            group_choices = ('Frequently Used', choices)
+            all_choices += group_choices,
 
     groups = MyBudgetGroup.objects.filter(household=household).order_by('group_list_order')
     for ndx, group in enumerate(groups):
 
-        choices1 = ()
-        choices2 = ()
+        choices = ()
 
         categories = MyBudgetCategory.objects.filter(my_budget_group=group).filter(parent_category=None)\
             .order_by('my_category_name')
+
         for category in categories:
 
             children = MyBudgetCategory.objects.filter(parent_category=category).order_by('my_category_name')
@@ -76,35 +69,48 @@ def helper_budget_categories(household, place_types=None, top_load=False, no_sel
 
                     choice = (child.pk, display_name(category.my_category_name) + ' - ' +
                               display_name(child.my_category_name))
-
-                    if child.category_perma_key in categories_at_this_location:
-                        choices1 += choice,
-                    else:
-                        choices2 += choice,
+                    choices += choice,
             else:
 
                 choice = (category.pk, display_name(category.my_category_name))
+                choices += choice,
 
-                if category.category_perma_key in categories_at_this_location:
-                    choices1 += choice,
-                else:
-                    choices2 += choice,
+        group_choices = ()
+        if choices:
+            group_choices = (group.my_group_name, choices)
 
-        group_choices1 = ()
-        if choices1:
-            group_choices1 = (group.my_group_name, choices1)
+        if group_choices:
+            all_choices += group_choices,
 
-        group_choices2 = ()
-        if choices2:
-            group_choices2 = (group.my_group_name, choices2)
+    return all_choices
 
-        if group_choices1:
-            all_choices1 += group_choices1,
 
-        if group_choices2:
-            all_choices2 += group_choices2,
+def helper_budget_categories_places(household, place_types):
+    """
+    Returns categories in pre-formatted HTML to be prepended to the category chooser.
+    :param household: user's household
+    :param place_types: google place types
+    :return: HTML formatted for category chooser
+    """
 
-    return all_choices1, all_choices2
+    categories_at_this_location = helpers_get_current_location_categories(place_types)
+
+    all_choices = "<option value='0'>------</option>"
+    all_choices += "<optgroup label='Geo Categories'>"
+
+    categories = MyBudgetCategory.objects.filter(my_budget_group__household=household) \
+        .filter(category_perma_key__in=categories_at_this_location) \
+        .values_list('id', 'my_category_name', 'parent_category', 'my_budget_group') \
+        .order_by('my_category_name')
+
+    for category in categories:
+
+        all_choices += "<option value='{}'>{}</option>"\
+            .format(category[0],composite_category_name(category[1], category[2], category[3]))
+
+    all_choices += '</optgroup>'
+
+    return all_choices
 
 
 def composite_category_name(name, my_parent, my_group):
