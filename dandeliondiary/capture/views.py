@@ -31,7 +31,7 @@ from hashids import Hashids
 HASH_SALT = 'nowis Ag00d tiM3for tW0BR3wskies'
 HASH_MIN_LENGTH = 16
 
-GOOGLE_MOBILE_RADIUS = 35
+GOOGLE_MOBILE_RADIUS = 130
 GOOGLE_DESKTOP_RADIUS = 2500
 
 MOBILE_DEVICES = ['sony', 'symbian', 'nokia', 'samsung', 'mobile', 'windows ce', 'epoc', 'opera mini', 'nitro', 'j2me',

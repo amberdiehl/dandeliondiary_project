@@ -97,10 +97,12 @@ class NewExpenseForm(forms.Form):
         help_text=_("Apply this amount to this category.")
     )
     hidden_places = forms.CharField(
-        widget=forms.HiddenInput
+        widget=forms.HiddenInput,
+        required=False,
     )
     hidden_categories = forms.CharField(
-        widget=forms.HiddenInput
+        widget=forms.HiddenInput,
+        required=False,
     )
 
     def clean_choose_place(self):
@@ -145,7 +147,7 @@ class NewExpenseForm(forms.Form):
     def clean(self):
 
         selected_place = self.cleaned_data['choose_place']
-        if not selected_place == '0':
+        if not selected_place == '0' and not selected_place == '':
             category = self.cleaned_data.get('choose_category', None)
             if category:
                 place_categories = self.cleaned_data.get('hidden_categories', '')
