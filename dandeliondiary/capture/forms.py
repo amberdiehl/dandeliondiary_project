@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
 from helpers import validate_expense_note_input
+from models import MyNoteTag
 
 
 RE_VALID_CHOICE_VALUE = re.compile(r'^[\d]*$')
@@ -165,3 +166,21 @@ class NewExpenseForm(forms.Form):
                 self.add_error('choose_category_split', 'With split selected, you must choose a split category.')
 
         return self.cleaned_data
+
+
+class MyNoteTagForm(forms.ModelForm):
+
+    class Meta:
+        model = MyNoteTag
+        fields = ['tag', ]
+        widgets = {
+            'tag': forms.TextInput(attrs={'placeholder': 'Note tag'}),
+        }
+
+    def clean_tag(self):
+        new_tag = self.cleaned_data['tag']
+        # Validate use of special characters
+        if not validate_expense_note_input(new_tag):
+            error = 'Limited special characters to: . , ( ) + - ='
+            raise forms.ValidationError(_(error))
+        return new_tag

@@ -1,5 +1,6 @@
 import csv, datetime, random
 
+from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
@@ -7,6 +8,7 @@ from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.forms import modelformset_factory
 
 
 from google import get_nearby_places, byteify
@@ -22,9 +24,9 @@ from .helpers import \
 
 from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
-from .models import MyExpenseItem, MyReceipt
+from .models import MyExpenseItem, MyReceipt, MyNoteTag
 
-from .forms import NewExpenseForm
+from .forms import NewExpenseForm, MyNoteTagForm
 
 from hashids import Hashids
 
@@ -139,11 +141,14 @@ def new_expense(request):
     form.fields['choose_category'].choices = category_choices
     form.fields['choose_category_split'].choices = category_choices
 
+    tags = MyNoteTag.objects.filter(household=me.get('household_obj')).order_by('tag')
+
     context = {
         'form': form,
         'page_title': 'Capture New Expense',
         'url': 'capture:new_expense',
         'location_message': location_message,
+        'tags': tags,
     }
 
     return render(request, 'capture/new_expense.html', context)
@@ -163,6 +168,80 @@ def explore_expenses(request):
         }
 
     return render(request, 'capture/explore_expenses.html', context)
+
+
+@login_required
+def maintain_tags(request):
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        return redirect('household:household_dashboard')
+    else:
+
+        TagFormSet = modelformset_factory(MyNoteTag, form=MyNoteTagForm, fields=('tag', ), can_delete=True, extra=3)
+
+        if request.method == 'POST':
+
+            formset = TagFormSet(request.POST)
+            if formset.is_valid():
+
+                for ndx, form in enumerate(formset):
+                    if form.is_valid() and not form.empty_permitted:
+
+                        if ndx in formset._deleted_form_indexes:
+                            messages.warning(
+                                request,
+                                "'{}' has been deleted.".format(form.cleaned_data.get('tag'))
+                            )
+                            formset.save()
+
+                        else:
+
+                            if form.changed_data:
+                                form.save()
+                                messages.success(request, 'Your information has been saved.')
+
+                    else:
+
+                        if form.changed_data:
+
+                            try:
+                                new_tag = form.save(commit=False)
+
+                            except ValueError:
+                                pass  # Error is raised when tag is empty but delete was selected
+
+                            else:
+                                new_tag.household = me.get('household_obj')
+                                try:
+                                    new_tag.save()
+
+                                except IntegrityError:
+                                    messages.warning(
+                                        request,
+                                        "'{}' was not saved because it is a duplicate tag."
+                                            .format(form.cleaned_data.get('tag'))
+                                    )
+
+                                else:
+                                    messages.success(request, "'{}' has been added."
+                                                     .format(form.cleaned_data.get('tag')))
+
+                return redirect('capture:maintain_tags')
+
+            else:
+                messages.warning(request, "Please fix the error(s) noted below.")
+
+        else:
+
+            formset = TagFormSet(queryset=MyNoteTag.objects.filter(household=me.get('household_obj')).order_by('tag'))
+
+        context = {
+            'formset': formset,
+            'page_title': 'Maintain Note Tags',
+            'url': 'capture:maintain_tags',
+        }
+
+    return render(request, 'capture/tags.html', context)
 
 
 @login_required

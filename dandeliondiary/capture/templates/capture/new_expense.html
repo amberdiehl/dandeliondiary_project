@@ -69,6 +69,31 @@
 
         });
 
+        function toggleNoteTags(obj, tag) {
+            var note = $('#' + obj);
+
+            if (note.val().indexOf(tag) >= 0) {
+                // remove tag when found
+                note.val(function(index, val){
+                    return val.replace(tag, '');
+                });
+            } else {
+                // add tag when not found
+                note.val(function(index, val){
+                    return val += (' ' + tag + ' ');
+                });
+            }
+
+            // get rid of extra white space independently
+            note.val(function(index, val){
+               return val.replace(/\s+/g, ' ');
+            });
+            note.val(function(index, val){
+               return val.replace(/^\s+/g, '');
+            });
+
+        }
+
     </script>
 
 {% endblock %}
@@ -162,7 +187,7 @@
                     <div class="row"><div class="form-group"> <!-- note -->
                         <div class="col-md-6 col-sm-6">
                             <label>{{ form.note.label }}</label>
-                            <label class="input margin-bottom-10">{{ form.note }}
+                            <label id="note" class="input margin-bottom-10">{{ form.note }}
                                 <b class="tooltip tooltip-right">{{ form.note.help_text }}</b>
                             </label>
                             {% if form.note.errors %}
@@ -171,6 +196,14 @@
                                 </div>
                             {% endif %}
                         </div>
+                        {% if tags %}
+                            <div class="col-md-4 col-sm-4">Note Quick Tags:
+                            {% for tag in tags %}
+                                <button type="button" class="btn btn-xs"
+                                        onclick="toggleNoteTags('id_note', '{{ tag.tag }}')">{{ tag.tag }}</button>
+                            {% endfor %}
+                            </div>
+                        {% endif %}
                     </div></div>
 
                     <!-- Split expense -->
@@ -216,6 +249,15 @@
                                     </div>
                                 {% endif %}
                             </div>
+                            {% if tags %}
+                                <div class="col-md-4 col-sm-4">Note Quick Tags:
+                                    {% for tag in tags %}
+                                        <button type="button" class="btn btn-xs"
+                                            onclick="toggleNoteTags('id_note_split', '{{ tag.tag }}')">{{ tag.tag }}
+                                        </button>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div></div>
 
                     </div>

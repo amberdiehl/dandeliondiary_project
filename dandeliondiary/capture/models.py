@@ -30,6 +30,18 @@ class MyReceipt(models.Model):
         return self.original_name
 
 
+# Note tags
+class MyNoteTag(models.Model):
+    household = models.ForeignKey('household.Household')
+    tag = models.CharField(max_length=30)
+
+    class Meta:
+        unique_together = ("household", "tag")
+
+    def __str__(self):
+        return self.tag
+
+
 # Handler to delete receipt image file when receipt object is deleted
 @receiver(post_delete, sender=MyReceipt)
 def receipt_post_delete_handler(sender, **kwargs):
