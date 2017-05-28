@@ -358,24 +358,24 @@ def ajax_dashboard_month_series(request, from_date, to_date, category):
 
             if abs(category_data['average_variance']) > abs(.05):
 
-                var_percent = sum(1 for x in category_data['variances'] if x < 0) / len(category_data['variances'])
-                if var_percent > .7:
+                var_percent = float(sum(1 for x in category_data['variances'] if x < 0)) / len(category_data['variances'])
+                if var_percent > float(.6):
                     analysis['primary_neg_drivers'].append('{} is over budget {}% of the time.'
                                                    .format(category_data['name'], int(var_percent*100)))
                 else:
-                    if var_percent > .4:
+                    if var_percent > float(.4):
                         analysis['secondary_drivers'].append('{} - over'.format(category_data['name']))
 
-                var_percent = sum(1 for x in category_data['variances'] if x > 0) / len(category_data['variances'])
-                if var_percent > .7:
+                var_percent = float(sum(1 for x in category_data['variances'] if x > 0)) / len(category_data['variances'])
+                if var_percent > float(.6):
                     analysis['primary_pos_drivers'].append('{} is under budget {}% of the time.'
                                                            .format(category_data['name'], int(var_percent * 100)))
                 else:
-                    if var_percent > .4:
+                    if var_percent > float(.4):
                         analysis['secondary_drivers'].append('{} - under'.format(category_data['name']))
 
         # Forecast expenses for current and future months based on past average variances
-        for ndx in range(today.month, 12):
+        for ndx in range(today.month, 13):
             category_dict = analysis_data[ndx]
             for category_data in category_dict:
                 avg_var = analysis_by_category[category_data['category']]['average_variance']
