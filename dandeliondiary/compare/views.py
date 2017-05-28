@@ -241,37 +241,40 @@ def ajax_dashboard_month_series(request, from_date, to_date, category):
     ]
     rows = []
 
+    # Create dictionary object to store analysis data
+    analysis_data = {}
+
     this_date = f_dt
 
     while this_date <= t_dt:
 
-        track_categories = []
         month_net = 0
         month_abbr = this_date.strftime('%b')
         category_key = int(category)
 
+        # Select effective budget based on last day of month (period) being processed, not first day
+        future_date = this_date + datetime.timedelta(days=32)
+        full_month = future_date.replace(day=1) - datetime.timedelta(days=1)
+
+        # Get all, most current, budget records for the household
+        budgets = MyBudget.objects.filter(category__my_budget_group__household=me.get('household_key')) \
+            .filter(effective_date__year__lte=this_date.year, effective_date__lte=full_month) \
+            .values('category', 'category__my_category_name', 'amount', 'annual_payment_month') \
+            .order_by('category', '-effective_date') \
+            .distinct('category')
+
+        # Filter to just one category when category has been selected by user
+        if category_key:
+            budgets = budgets.filter(category=category_key)
+
         if this_date <= today:
 
-            # Select effective budget based on last day of month (period) being processed, not first day
-            future_date = this_date + datetime.timedelta(days=32)
-            full_month = future_date.replace(day=1) - datetime.timedelta(days=1)
-
-            budgets = MyBudget.objects.filter(category__my_budget_group__household=me.get('household_key')) \
-                .filter(effective_date__lte=full_month) \
-                .values('category', 'amount', 'annual_payment_month') \
-                .order_by('-effective_date')
-
-            if category_key:
-                budgets = budgets.filter(category=category_key)
-
+            # Get the sum of budgets for the month; only add an annual budget amount when set for the current month
             for budget in budgets:
-                if budget['category'] in track_categories:
-                    pass  # skip older budget record(s)
-                else:
-                    track_categories.append(budget['category'])
-                    if budget['annual_payment_month'] == 0 or budget['annual_payment_month'] == this_date.month:
-                        month_net += budget['amount']
+                if budget['annual_payment_month'] == 0 or budget['annual_payment_month'] == this_date.month:
+                    month_net += budget['amount']
 
+            # Get the sum of expenses for the entire month, or for an individual category if selected by user
             if not category_key:
                 expenses = MyExpenseItem.objects.filter(household=me.get('household_key')) \
                     .filter(expense_date__year=this_date.year, expense_date__month=this_date.month) \
@@ -282,10 +285,21 @@ def ajax_dashboard_month_series(request, from_date, to_date, category):
                     .filter(category=category_key) \
                     .aggregate(Sum('amount'))
 
+            # If expenses, subtract to get net for month
             if expenses.get('amount__sum') is None:
                 pass
             else:
                 month_net -= expenses.get('amount__sum')
+
+            # Capture category level actual budget and expense data to produce analysis
+            analysis_data[this_date.month] = list(budgets)
+            for category_dict in analysis_data[this_date.month]:
+                category_dict['expenses'] = get_expenses_for_period(category_dict['category'], this_date, full_month)
+
+        else:
+
+            # Capture future budgets for analysis
+            analysis_data[this_date.month] = list(budgets)
 
         if month_net < 0:
             color = '#FA490F'
@@ -305,8 +319,97 @@ def ajax_dashboard_month_series(request, from_date, to_date, category):
     column_chart['cols'] = cols
     column_chart['rows'] = rows
 
+    analysis = {
+        'totalBudget': 0,
+        'totalExpenses': 0,
+        'forecastVariance': 0,
+        'primary_neg_drivers': [],
+        'primary_pos_drivers': [],
+        'secondary_drivers': []
+    }
+    analysis_by_category = {}
+    if today.month >= 3:  # TODO: Need to convert to at least 3 months of expenses, not assume beginning of year
+
+        analysis['show'] = True
+
+        # Calculate variances for past months
+        for ndx in range(1, today.month):
+            for category_dict in analysis_data[ndx]:
+                if category_dict['annual_payment_month'] in [0, ndx]:
+                    variance = 1 - (category_dict['expenses'] / category_dict['amount'])
+                else:
+                    if category_dict['expenses'] > 0:  # Mistimed annual payment
+                        variance = Decimal(-1)
+                    else:
+                        variance = Decimal(0)  # Annual payment that has not occurred yet
+
+                if category_dict['category'] in analysis_by_category:
+                    analysis_by_category[category_dict['category']]['variances'].append(variance)
+                else:
+                    analysis_by_category[category_dict['category']] = {}
+                    analysis_by_category[category_dict['category']]['variances'] = [variance]
+                    analysis_by_category[category_dict['category']]['name'] = category_dict['category__my_category_name']
+
+        # Evaluate variances
+        for category in analysis_by_category:
+
+            category_data = analysis_by_category[category]
+            category_data['average_variance'] = sum(category_data['variances']) / len(category_data['variances'])
+
+            if abs(category_data['average_variance']) > abs(.05):
+
+                var_percent = sum(1 for x in category_data['variances'] if x < 0) / len(category_data['variances'])
+                if var_percent > .7:
+                    analysis['primary_neg_drivers'].append('{} is over budget {}% of the time.'
+                                                   .format(category_data['name'], int(var_percent*100)))
+                else:
+                    if var_percent > .4:
+                        analysis['secondary_drivers'].append('{} - over'.format(category_data['name']))
+
+                var_percent = sum(1 for x in category_data['variances'] if x > 0) / len(category_data['variances'])
+                if var_percent > .7:
+                    analysis['primary_pos_drivers'].append('{} is under budget {}% of the time.'
+                                                           .format(category_data['name'], int(var_percent * 100)))
+                else:
+                    if var_percent > .4:
+                        analysis['secondary_drivers'].append('{} - under'.format(category_data['name']))
+
+        # Forecast expenses for current and future months based on past average variances
+        for ndx in range(today.month, 12):
+            category_dict = analysis_data[ndx]
+            for category_data in category_dict:
+                avg_var = analysis_by_category[category_data['category']]['average_variance']
+                if avg_var < 0:
+                    estimated_expenses = ((1 + abs(avg_var)) * category_data['amount'])
+                else:
+                    estimated_expenses = (1 - avg_var) * category_data['amount']
+
+                if category_data['annual_payment_month'] in [0, ndx]:
+                    if ndx == today.month:
+                        if estimated_expenses > category_data['expenses']:
+                            category_data['actual_expenses'] = category_data['expenses']
+                            category_data['expenses'] = estimated_expenses
+                    else:
+                        category_data['actual_expenses'] = 0
+                        category_data['expenses'] = estimated_expenses
+
+        # Calculate overall projected spending
+        for ndx in range(1, 13):
+            category_dict = analysis_data[ndx]
+            for category_data in category_dict:
+                if category_data['annual_payment_month'] in [0, ndx]:
+                    analysis['totalBudget'] += category_data['amount']
+                analysis['totalExpenses'] += category_data.get('expenses', 0)
+        analysis['totalExpenses'] = int(analysis['totalExpenses'])
+        analysis['forecastVariance'] = analysis['totalBudget'] - analysis['totalExpenses']
+
+    else:
+
+        analysis['show'] = False
+
     response_data['status'] = 'OK'
     response_data['monthSeries'] = column_chart
+    response_data['analysis'] = analysis
 
     return JsonResponse(response_data)
 

@@ -75,6 +75,23 @@
                             };
                         </script>
                         <div class="col-md-12" id="chart_year_view"></div>
+                        <div class="col-md-12" id="analysis" style="display: none;">
+                            <div class="row padding-20">
+                                <h4>Budget Analysis</h4>
+                                <table>
+                                    <thead></thead>
+                                    <tr><td>Annual Budget:</td><td id="totalBudget"></td></tr>
+                                    <tr><td>Forecast Total Expenses:</td><td id="forecastExpenses"></td></tr>
+                                    <tr><td>Forecast Variance:</td><td id="forecastVariance"></td></tr>
+                                    <tr><td colspan="2">Categories below are primary negative drivers:</td></tr>
+                                    <tr><td colspan="2" id="negativeDrivers"></td></tr>
+                                    <tr><td colspan="2">Categories below are primary positive drivers:</td></tr>
+                                    <tr><td colspan="2" id="positiveDrivers"></td></tr>
+                                    <tr><td colspan="2">Categories below are secondary drivers:</td></tr>
+                                    <tr><td colspan="2" id="secondaryDrivers"></td></tr>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="Budget_View" class="tab-pane fade">
@@ -178,6 +195,17 @@
             }).responseText;
             var data = JSON.parse(jsonData);
 
+            if (data.analysis.show == true) {
+                $('#analysis').attr('style', 'display:block;');
+                $('#totalBudget').html('$' + data.analysis.totalBudget);
+                $('#forecastExpenses').html('$'+ data.analysis.totalExpenses);
+                $('#forecastVariance').html('$' + data.analysis.forecastVariance);
+
+                $('#negativeDrivers').html(formatBudgetDrivers(data.analysis.primary_neg_drivers));
+                $('#positiveDrivers').html(formatBudgetDrivers(data.analysis.primary_pos_drivers));
+                $('#secondaryDrivers').html(formatBudgetDrivers(data.analysis.secondary_drivers));
+            }
+
             // Draw year view column chart
             var data2 = new google.visualization.DataTable(data.monthSeries);
             var options2 = {
@@ -221,6 +249,23 @@
             var chart1 = new google.visualization.PieChart(document.getElementById('chart_budget'));
             chart1.draw(data1, options1);
 
+        }
+
+        function formatBudgetDrivers(a) {
+
+            var drivers = '<ul>';
+
+            if (a.length == 0) {
+                    drivers += '<li>None.</li>';
+            } else {
+                $.each(a, function (index, value) {
+                    drivers += '<li>' + value + '</li>';
+                });
+            }
+
+            drivers += '</ul>';
+
+            return drivers;
         }
 
     </script>
