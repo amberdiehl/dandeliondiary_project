@@ -2,9 +2,14 @@
 {% load staticfiles %}
 {% load i18n %}
 
-{% block title %}{% trans "Learn About Contribute" %}{% endblock %}
+{% block title %}{% trans "Dandelion Diary Learn About Contribute" %}{% endblock %}
 
 {% block static %}
+
+    <meta name="keywords" content="expense, tracking, budgeting, analysis, easy, immediate, rv" />
+    <meta name="description" content="Use Dandelion Diary to share ideas based on experiences and places visited
+    to help others save money" />
+
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -59,9 +64,6 @@
 	                </div>
 
                 </div>
-
-                <p>There's much more to come. Dandelion Diary is currently in <a href="{% url "public:faq"%}#beta">beta</a>.
-                    Sign up and receive our newsletter of upcoming features.</p>
 
                 <p>Learn more about <a href="{% url "public:capture" %}">Capture</a> or
                     <a href="{% url "public:compare" %}">Compare</a>.</p>

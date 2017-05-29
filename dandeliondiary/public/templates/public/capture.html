@@ -2,9 +2,14 @@
 {% load staticfiles %}
 {% load i18n %}
 
-{% block title %}{% trans "Learn About Capture" %}{% endblock %}
+{% block title %}{% trans "Dandelion Diary Learn About Capture" %}{% endblock %}
 
 {% block static %}
+
+    <meta name="keywords" content="expense, tracking, budgeting, analysis, easy, immediate, rv" />
+    <meta name="description" content="Using Dandelion Diary capture expenses real time, store digital receipts, use
+    custom tags on expenses for easier record keeping" />
+
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -46,10 +51,10 @@
                         expenses&#8212;no additional subscription fees.</li>
                     <li>Digitally capture receipts&#8212;no more paper clutter or filing.</li>
                     <li>Make free-form notations for easy expense searching and filtering.</li>
+                    <li>Create custom note tags to more quickly make notations for expenses.</li>
+                    <li>Split a single capture into multiple expense records for mixed purchases.</li>
+                    <li>Export expenses and review in your favorite spreadsheet application.</li>
                 </ul>
-
-                <p>There's much more to come. Dandelion Diary is currently in <a href="{% url "public:faq"%}#beta">beta</a>.
-                    Sign up and receive our newsletter of upcoming features.</p>
 
                 <div class="callout alert alert-success margin-top-60 margin-bottom-60">
 

@@ -2,9 +2,14 @@
 {% load staticfiles %}
 {% load i18n %}
 
-{% block title %}{% trans "Learn About Compare" %}{% endblock %}
+{% block title %}{% trans "Dandelion Diary Learn About Compare" %}{% endblock %}
 
 {% block static %}
+
+    <meta name="keywords" content="expense, tracking, budgeting, analysis, easy, immediate, rv" />
+    <meta name="description" content="Immediate graphical feedback and insights regarding expenses each month, for the
+    year, and year over year" />
+
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}
@@ -42,15 +47,12 @@
                     <li>Completely customizable to fit your spending patterns and needs.</li>
                     <li>Add, rather than change, budget information&#8212;ensures an accurate
                         view of current versus historical data.</li>
-                    <li>Visualize your numbers with snapshots, trends, and patterns using easy to read
+                    <li>Visualize your numbers with snapshots, month-over-month trends, and patterns using easy to read
                         graphs and charts.</li>
                     <li>Obtain compelling insights and recommendations from Dandelion Diary.</li>
                     <li>See how you stack up to your peers (users with like household characteristics) through
                         comparative benchmarks.</li>
                 </ul>
-
-                <p>There's much more to come. Dandelion Diary is currently in <a href="{% url "public:faq"%}#beta">beta</a>.
-                    Sign up and receive our newsletter of upcoming features.</p>
 
                 <div class="callout alert alert-success margin-top-60 margin-bottom-60">
 
