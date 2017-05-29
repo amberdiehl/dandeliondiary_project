@@ -166,7 +166,7 @@ AVATAR_GRAVATAR_BACKUP = False
 AVATAR_CHANGE_TEMPLATE = "avatar/avatar.html"
 
 # Google analytics
-GOOGLE_ANALYTICS_PROPERTY_ID = 'UA-92296339-1'
+GOOGLE_ANALYTICS_PROPERTY_ID = 'UA-100097451-1'
 GOOGLE_ANALYTICS_DOMAIN = 'dandeliondiary.com'
 
 # Internationalization
