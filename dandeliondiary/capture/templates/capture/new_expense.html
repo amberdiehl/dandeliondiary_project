@@ -132,6 +132,20 @@
 
                 <fieldset>
 
+                    <div class="row"><div class="form-group"> <!-- receipt total -->
+                        <div class="col-md-6 col-sm-6">
+                            <label>{{ form.amount_receipt.label }}</label>
+                            <label class="input margin-bottom-10">{{ form.amount_receipt }}
+                                <b class="tooltip tooltip-right">{{ form.amount_receipt.help_text }}</b>
+                            </label>
+                            {% if form.amount_receipt.errors %}
+                                <div class="alert alert-mini alert-danger margin-bottom-15">
+                                    {% for error in form.amount_receipt.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div></div>
+
                     <div class="row"> <!-- split? -->
                         <div class="col-md-6 col-sm-6">
                             <label>{{ form.split.label }} {{ form.split }}</label>

@@ -33,15 +33,25 @@ class CategoryCustomChoiceField(forms.ChoiceField):
 
 class NewExpenseForm(forms.Form):
 
-    amount = forms.DecimalField(
-        label=_("Amount:"),
+    amount_receipt = forms.DecimalField(
+        label=_("Receipt total:"),
         max_digits=11,
         decimal_places=2,
         min_value=0.01,
         max_value=999999999.99,
         widget=forms.NumberInput(attrs={'placeholder': '0.00'}),
         required=True,
-        help_text=_("Total purchase amount.")
+        help_text=_("Amount total as shown on receipt.")
+    )
+    amount = forms.DecimalField(
+        label=_("Amount:"),
+        max_digits=11,
+        decimal_places=2,
+        min_value=0,
+        max_value=999999999.99,
+        widget=forms.NumberInput(attrs={'placeholder': '0.00'}),
+        required=False,
+        help_text=_("Purchase amount; leave empty if same as receipt total.")
     )
     note = forms.CharField(
         label=_("Note:"),

@@ -66,7 +66,12 @@ def new_expense(request):
             # Create expense record
             expense = MyExpenseItem()
             expense.note = form.cleaned_data.get('note')
-            expense.amount = form.cleaned_data.get('amount')
+            if split or form.cleaned_data.get('amount'):
+                expense.note += ' Receipt {}.'.format(form.cleaned_data.get('amount_receipt'))
+            if not form.cleaned_data.get('amount'):
+                expense.amount = form.cleaned_data.get('amount_receipt')
+            else:
+                expense.amount = form.cleaned_data.get('amount')
             if split:
                 adjustment_amount = form.cleaned_data.get('amount_split')
                 expense.amount -= adjustment_amount
@@ -108,6 +113,7 @@ def new_expense(request):
             if split:
                 expense = MyExpenseItem()
                 expense.note = form.cleaned_data.get('note_split')
+                expense.note += ' Receipt {}.'.format(form.cleaned_data.get('amount_receipt'))
                 expense.amount = form.cleaned_data.get('amount_split')
                 expense.household = me.get('household_obj')
                 expense.who = me.get('account_obj')
