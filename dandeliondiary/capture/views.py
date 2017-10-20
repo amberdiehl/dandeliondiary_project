@@ -375,6 +375,11 @@ def ajax_list_expenses(request):
         if filters['inNote']:
             expenses = expenses.filter(note__icontains=filters['inNote'])
 
+        if filters['ckReconciled'] == 'true':
+            expenses = expenses.filter(reconciled=False)
+        else:
+            pass
+
     record_count = len(expenses)
 
     # Handle pagination
@@ -391,6 +396,7 @@ def ajax_list_expenses(request):
         c = MyBudgetCategory.objects.get(pk=expense.category.pk)
         record['category'] = composite_category_name(c.my_category_name, c.parent_category, c.my_budget_group)
         record['note'] = expense.note
+        record['reconciled'] = expense.reconciled
 
         try:
             receipt = MyReceipt.objects.get(expense_item=expense)
@@ -461,6 +467,10 @@ def ajax_change_expense(request, s):
         if not expense.note == request.POST.get('note'):
             expense.note = request.POST.get('note')
             record['note'] = request.POST.get('note')
+        reconciled = request.POST.get('reconciled', 'false')
+        if not expense.reconciled == reconciled:
+            expense.reconciled = reconciled.title()
+            record['reconciled'] = reconciled
         expense.save()
         response_data['Result'] = 'OK'
         response_data['Record'] = record

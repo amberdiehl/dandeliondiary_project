@@ -14,6 +14,7 @@ class MyExpenseItem(models.Model):
     category = models.ForeignKey('compare.MyBudgetCategory')
     google_place = models.ForeignKey('core.GooglePlaceDetail', null=True, blank=True)
     expense_date = models.DateField(default=timezone.now, blank=True)
+    reconciled = models.BooleanField(default=False, blank=True)
     created_at = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):

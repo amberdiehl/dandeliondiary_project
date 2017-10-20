@@ -75,21 +75,24 @@
                         <div class="box-static box-transparent box-bordered">
                             <table style="border-spacing: 5px;">
                                 <tr>
-                                    <td>From Date:</td><td><input type="date" name="frDate" id="frDate" /></td>
-                                    <td>To Date:</td><td><input type="date" name="toDate" id="toDate" /></td>
-                                    <td rowspan="3" width="20%">
+                                    <td>From date:</td><td><input type="date" name="frDate" id="frDate" /></td>
+                                    <td>To date:</td><td><input type="date" name="toDate" id="toDate" /></td>
+                                    <td rowspan="4" width="20%">
                                         To filter by a specific date or amount (not a range), enter "from" value only.
                                         Do not include '$' when specifying amounts. Values for category and notes are
                                         not case sensitive.
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>From Amount:</td><td><input type="number" name="frAmount" id="frAmount" /></td>
-                                    <td>To Amount:</td><td><input type="number" name="toAmount" id="toAmount" /></td>
+                                    <td>From amount:</td><td><input type="number" name="frAmount" id="frAmount" /></td>
+                                    <td>To amount:</td><td><input type="number" name="toAmount" id="toAmount" /></td>
                                 </tr>
                                 <tr>
-                                    <td>Category Contains:</td><td><input type="text" name="inCategory" id="inCategory" /></td>
-                                    <td>Note Contains:</td><td><input type="text" name="inNote" id="inNote" /></td>
+                                    <td>Category<br/>contains:</td><td><input type="text" name="inCategory" id="inCategory" /></td>
+                                    <td>Note<br/>contains:</td><td><input type="text" name="inNote" id="inNote" /></td>
+                                </tr>
+                                <tr>
+                                    <td>Hide<br/>reconciled:</td><td colspan="3"><input type="checkbox" name="ckReconciled" id="ckReconciled" /></td>
                                 </tr>
                                 <tr>
                                     <td colspan="4">
@@ -188,7 +191,7 @@
                 note: {
                     title: 'Note',
                     type: 'textarea',
-                    width: '50%'
+                    width: '45%'
                 },
                 receipt: {
                     title: 'Receipt',
@@ -204,6 +207,12 @@
                         return html;
                     },
                     edit: false
+                },
+                reconciled: {
+                    title: 'Reconciled',
+                    type: 'checkbox',
+                    values: {false: 'No', true: 'Yes'},
+                    width: '5%'
                 }
             },
             //Validate form when it is being submitted
@@ -262,7 +271,8 @@
                 frAmount: $('#frAmount').val(),
                 toAmount: $('#toAmount').val(),
                 inCategory: $('#inCategory').val(),
-                inNote: $('#inNote').val()
+                inNote: $('#inNote').val(),
+                ckReconciled: $('#ckReconciled').prop('checked')
             });
         });
         $('#Explore_Expenses_Container').jtable('load');
