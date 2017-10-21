@@ -24,7 +24,7 @@ from .helpers import \
 
 from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
-from .models import MyExpenseItem, MyReceipt, MyNoteTag
+from capture.models import MyExpenseItem, MyReceipt, MyNoteTag
 
 from .forms import NewExpenseForm, MyNoteTagForm
 
@@ -252,13 +252,32 @@ def maintain_tags(request):
 
 @login_required
 def export_expenses_to_csv(request):
+
+    from_date = request.GET.get('frDate', '')
+    if from_date:
+        try:
+            valid_date = datetime.datetime.strptime(from_date, '%Y-%m-%d')
+        except ValueError:
+            from_date = ''
+    if not from_date:
+        from_date = '1900-01-01'
+
+    to_date = request.GET.get('toDate', '')
+    if to_date:
+        try:
+            valid_date = datetime.datetime.strptime(to_date, '%Y-%m-%d')
+        except ValueError:
+            to_date = ''
+    if not to_date:
+        to_date = datetime.datetime.today().strftime('%Y-%m-%d')
+
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
 
     writer = csv.writer(response)
     writer.writerow(['Expense Date', 'Group', 'Parent Category', 'Category', 'Amount', 'Who', 'Note'])
 
-    expenses = MyExpenseItem.objects.all()\
+    expenses = MyExpenseItem.objects.filter(expense_date__gte=from_date).filter(expense_date__lte=to_date) \
         .values_list('expense_date',
                      'category__my_budget_group__my_group_name',
                      'category__parent_category__my_category_name',
@@ -266,6 +285,7 @@ def export_expenses_to_csv(request):
                      'amount',
                      'who__user__username',
                      'note')
+
     for expense in expenses:
         writer.writerow(expense)
 

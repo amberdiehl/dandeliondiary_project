@@ -29,7 +29,28 @@
         $("#inNote").val('');
         $('#buttonFilter').removeClass('btn-amber').addClass('btn-default');
         showHide();
+        setExportURLFilter('clear');
         $("#LoadRecordsButton").click();
+    }
+    function setExportURLFilter(s){
+
+        var $anchor = $("#exp_expenses");
+        var $fDate = $("#frDate");
+        var $tDate = $("#toDate");
+
+        if ($fDate.val() || $tDate.val()) {}
+        var href = $anchor.attr('href');
+
+        if (s === 'set') {
+            if ($fDate.val() && $tDate.val()) {
+                $anchor.attr('href', href + '?frDate=' + $fDate.val() + '&toDate=' + $tDate.val());
+                $anchor.text('Download my expenses for the period ' + $fDate.val() + ' to ' + $tDate.val());
+            }
+            } else {
+            var hrefParts = href.split('?');
+            $anchor.attr('href', hrefParts[0]);
+            $anchor.text('Download my expenses');
+        }
     }
     $(function() {
         $( "#frDate" ).datepicker({
@@ -137,7 +158,7 @@
 
                 <!-- Export expenses -->
                 <div align="right">
-                    <a href="{% url "capture:export_expenses" %}">Download my expenses</a>
+                    <a id="exp_expenses" href="{% url "capture:export_expenses" %}">Download my expenses</a>
                 </div>
 
                 <!-- Display Table of Expenses -->
@@ -265,6 +286,7 @@
             e.preventDefault();
             $('#buttonFilter').removeClass('btn-default').addClass('btn-amber');
             showHide();
+            setExportURLFilter('set');
             $('#Explore_Expenses_Container').jtable('load', {
                 frDate: $('#frDate').val(),
                 toDate: $('#toDate').val(),
