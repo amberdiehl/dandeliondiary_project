@@ -1,4 +1,4 @@
-import csv, datetime, random
+import csv, datetime, random, decimal
 
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
@@ -347,19 +347,19 @@ def export_expenses_to_csv(request):
         baseline = amber_pd - (amber_not_shared + amber_split_50_50 + scot_iou)
         writer.writerow(['i', 'Baseline:', baseline, 'a - (c + d + h)', '', '', ''])
 
-        reimbursement = baseline * .15
+        reimbursement = decimal.Decimal(baseline) * .15
         writer.writerow(['j', 'Baseline reimbursement:', reimbursement, 'i * .15', '', '', ''])
 
-        reimbursement += amber_split_50_50 * .5
+        reimbursement += decimal.Decimal(amber_split_50_50) * .5
         writer.writerow(['k', 'Plus 50-50 split:', reimbursement, 'j + (d * .5)', '', '', ''])
 
         reimbursement += scot_iou
         writer.writerow(['l', 'Plus Scot IOU:', reimbursement, 'k + h', '', '', ''])
 
-        reimbursement -= (scot_pd - (scot_not_shared + scot_split_50_50 + amber_iou)) * .85
+        reimbursement -= decimal.Decimal((scot_pd - (scot_not_shared + scot_split_50_50 + amber_iou))) * .85
         writer.writerow(['m', 'Less Scot pd:', reimbursement, '(b - (f + g + e)) * .85', '', '', ''])
 
-        reimbursement -= scot_split_50_50 * .5
+        reimbursement -= decimal.Decimal(scot_split_50_50) * .5
         writer.writerow(['n', 'Less 50-50 split:', reimbursement, 'm - (g * .5)', '', '', ''])
 
         reimbursement -= amber_iou
