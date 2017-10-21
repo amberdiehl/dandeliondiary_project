@@ -329,7 +329,7 @@ def export_expenses_to_csv(request):
     if amber_pd or scot_pd:
         check_total = amber_pd + scot_pd
         check_msg = 'Error'
-        if check_msg == total_expenses:
+        if check_total == total_expenses:
             check_msg = 'OK'
         writer.writerow(['', '', '', '', '', '', ''])
         writer.writerow(['a', 'Amber pd.', amber_pd, '', '', '', ''])
@@ -343,30 +343,36 @@ def export_expenses_to_csv(request):
         writer.writerow(['f', 'Scot, not shared:', scot_not_shared, '', '', '', ''])
         writer.writerow(['g', 'Scot, 50-50 split', scot_split_50_50, '', '', '', ''])
         writer.writerow(['h', 'Scot, IOU:', scot_iou, '', '', '', ''])
+        writer.writerow(['', '', '', '', '', '', ''])
 
         baseline = amber_pd - (amber_not_shared + amber_split_50_50 + scot_iou)
-        writer.writerow(['i', 'Baseline:', baseline, 'a - (c + d + h)', '', '', ''])
+        writer.writerow(['i', 'Baseline:', '', baseline, 'a - (c + d + h)', '', ''])
 
         reimbursement = baseline * decimal.Decimal(.15)
-        writer.writerow(['j', 'Baseline reimbursement:', reimbursement, 'i * .15', '', '', ''])
+        writer.writerow(['j', 'Baseline reimbursement:', '', reimbursement, 'i * .15', '', ''])
+        writer.writerow(['', '', '', '', '', '', ''])
 
         reimbursement += amber_split_50_50 * decimal.Decimal(.5)
-        writer.writerow(['k', 'Plus 50-50 split:', reimbursement, 'j + (d * .5)', '', '', ''])
+        writer.writerow(['k', 'Plus 50-50 split:', amber_split_50_50 * decimal.Decimal(.5), reimbursement, 'j + (d * .5)', '', ''])
 
         reimbursement += scot_iou
-        writer.writerow(['l', 'Plus Scot IOU:', reimbursement, 'k + h', '', '', ''])
+        writer.writerow(['l', 'Plus Scot IOU:', scot_iou, reimbursement, 'k + h', '', ''])
 
         reimbursement -= (scot_pd - (scot_not_shared + scot_split_50_50 + amber_iou)) * decimal.Decimal(.85)
-        writer.writerow(['m', 'Less Scot pd:', reimbursement, '(b - (f + g + e)) * .85', '', '', ''])
+        writer.writerow(['m', 'Less Scot pd:', (scot_pd - (scot_not_shared + scot_split_50_50 + amber_iou)) * decimal.Decimal(.85), reimbursement, '(b - (f + g + e)) * .85', '', ''])
 
         reimbursement -= scot_split_50_50 * decimal.Decimal(.5)
-        writer.writerow(['n', 'Less 50-50 split:', reimbursement, 'm - (g * .5)', '', '', ''])
+        writer.writerow(['n', 'Less 50-50 split:', scot_split_50_50 * decimal.Decimal(.5), reimbursement, 'm - (g * .5)', '', ''])
 
         reimbursement -= amber_iou
-        writer.writerow(['o', 'Less Amber IOU:', reimbursement, 'n - e', '', '', ''])
+        writer.writerow(['o', 'Less Amber IOU:', amber_iou, reimbursement, 'n - e', '', ''])
 
         writer.writerow(['', '', '', '', '', '', ''])
-        writer.writerow(['Amount to reimburse Amber:', reimbursement, '', '', '', '', ''])
+        if reimbursement < 0:
+            reimbursement_message = 'Amber to reimburse Scot:'
+        else:
+            reimbursement_message = 'Scot to reimburse Amber:'
+        writer.writerow([reimbursement_message, reimbursement, '', '', '', '', ''])
 
     return response
 
