@@ -286,8 +286,87 @@ def export_expenses_to_csv(request):
                      'who__user__username',
                      'note')
 
+    # Create buckets for tags that support reconciliation of expenses
+    amber_pd = 0
+    scot_pd = 0
+    amber_not_shared = 0
+    scot_not_shared = 0
+    amber_split_50_50 = 0
+    scot_split_50_50 = 0
+    amber_iou = 0
+    scot_iou = 0
+    total_expenses = 0
+
+    # Write expenses to the CSV file, tally amounts as you go
     for expense in expenses:
+
         writer.writerow(expense)
+
+        # Tally items by tag
+        if 'Amber pd.' in expense[6]:
+            amber_pd += expense[4]
+            if 'Not shared.' in expense[6]:
+                amber_not_shared += expense[4]
+            if '50-50 split.' in expense[6]:
+                amber_split_50_50 += expense[4]
+            if 'Scot IOU.' in expense[6]:
+                scot_iou += expense[4]
+
+        if 'Scot pd.' in expense[6]:
+            scot_pd += expense[4]
+            if 'Not shared.' in expense[6]:
+                scot_not_shared += expense[4]
+            if '50-50 split.' in expense[6]:
+                scot_split_50_50 += expense[4]
+            if 'Amber IOU.' in expense[6]:
+                amber_iou += expense[4]
+
+        total_expenses += expense[4]
+
+    # Create and write reconciliation to the file
+    writer.writerow(['Count:', len(expenses), '', '', '', '', ''])
+    writer.writerow(['Total expenses:', total_expenses, '', '', '', '', ''])
+    if amber_pd or scot_pd:
+        check_total = amber_pd + scot_pd
+        check_msg = 'Error'
+        if check_msg == total_expenses:
+            check_msg = 'OK'
+        writer.writerow(['', '', '', '', '', '', ''])
+        writer.writerow(['a', 'Amber pd.', amber_pd, '', '', '', ''])
+        writer.writerow(['b', 'Scot pd.', scot_pd, '', '', '', ''])
+        writer.writerow(['', 'Check total:', check_total, check_msg, '', '', ''])
+        writer.writerow(['', '', '', '', '', '', ''])
+        writer.writerow(['c', 'Amber, not shared:', amber_not_shared, '', '', '', ''])
+        writer.writerow(['d', 'Amber, 50-50 split:', amber_split_50_50, '', '', '', ''])
+        writer.writerow(['e', 'Amber, IOU:', amber_iou, '', '', '', ''])
+        writer.writerow(['', '', '', '', '', '', ''])
+        writer.writerow(['f', 'Scot, not shared:', scot_not_shared, '', '', '', ''])
+        writer.writerow(['g', 'Scot, 50-50 split', scot_split_50_50, '', '', '', ''])
+        writer.writerow(['h', 'Scot, IOU:', scot_iou, '', '', '', ''])
+
+        baseline = amber_pd - (amber_not_shared + amber_split_50_50 + scot_iou)
+        writer.writerow(['i', 'Baseline:', baseline, 'a - (c + d + h)', '', '', ''])
+
+        reimbursement = baseline * .15
+        writer.writerow(['j', 'Baseline reimbursement:', reimbursement, 'i * .15', '', '', ''])
+
+        reimbursement += amber_split_50_50 * .5
+        writer.writerow(['k', 'Plus 50-50 split:', reimbursement, 'j + (d * .5)', '', '', ''])
+
+        reimbursement += scot_iou
+        writer.writerow(['l', 'Plus Scot IOU:', reimbursement, 'k + h', '', '', ''])
+
+        reimbursement -= (scot_pd - (scot_not_shared + scot_split_50_50 + amber_iou)) * .85
+        writer.writerow(['m', 'Less Scot pd:', reimbursement, '(b - (f + g + e)) * .85', '', '', ''])
+
+        reimbursement -= scot_split_50_50 * .5
+        writer.writerow(['n', 'Less 50-50 split:', reimbursement, 'm - (g * .5)', '', '', ''])
+
+        reimbursement -= amber_iou
+        writer.writerow(['o', 'Less Amber IOU:', reimbursement, 'n - e', '', '', ''])
+
+        writer.writerow(['', '', '', '', '', '', ''])
+        writer.writerow(['Amount to reimburse Amber:', reimbursement, '', '', '', '', ''])
 
     return response
 
