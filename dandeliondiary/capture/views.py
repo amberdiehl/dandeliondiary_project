@@ -1,4 +1,4 @@
-import csv, datetime, random, decimal
+import csv, datetime, random, decimal, operator
 
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
@@ -20,13 +20,14 @@ from .helpers import \
     composite_category_name, \
     get_remaining_budget, \
     is_expense_place_type, \
+    format_statement_date, \
     validate_filter_inputs, validate_expense_inputs, validate_id_input, validate_paging_input
 
 from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
 from capture.models import MyExpenseItem, MyReceipt, MyNoteTag
 
-from .forms import NewExpenseForm, MyNoteTagForm
+from .forms import NewExpenseForm, MyNoteTagForm, UploadFileForm
 
 from hashids import Hashids
 
@@ -591,3 +592,153 @@ def ajax_change_expense(request, s):
         response_data['Record'] = record
 
     return JsonResponse(response_data)
+
+
+def reconcile_expenses(request):
+
+    step = 1
+    headings = []
+    statement_expenses_reconciled = []
+    statement_expenses_not_reconciled = []
+
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+
+            period_end_date = datetime.datetime.strptime(form.cleaned_data['period'], '%Y-%m-%d')
+            period_start_date = period_end_date.replace(day=1)
+            dd_period_expenses = MyExpenseItem.objects.filter(expense_date__gte=period_start_date) \
+                .filter(expense_date__lte=period_end_date)
+
+            statement_expenses = csv.DictReader(form.cleaned_data['file'])
+
+            can_process_checked = False
+            date_key = None
+            amount_key = None
+
+            for item in statement_expenses:
+
+                # First time only, validate we can find a date and amount field.
+                if not can_process_checked:
+                    date_key = next(k for k, v in item.items() if 'Date' in k)
+                    amount_key = next(k for k, v in item.items() if 'Amount' in k)
+                    if not date_key or not amount_key:
+                        # Raise an error and cease processing
+                        pass
+
+                    headings.append(date_key)
+                    headings.append(amount_key)
+                    for key, v in item.items():
+                        if key not in headings:
+                            headings.append(key)
+                    headings.append('Info Message')
+                    headings.append('Quick Add')
+
+                    can_process_checked = True
+
+                # Validate and convert statement date to date object
+                result = format_statement_date(item[date_key], form.cleaned_data['date_format'])
+                if not result[0] == 'OK':
+                    # Raise an error and cease processing
+                    pass
+                else:
+                    item_date = result[1]
+
+                if item_date.year == period_end_date.year and item_date.month == period_end_date.month:
+
+                    expenses = None
+                    match_limit = 0
+                    info_msg = ''
+
+                    # First look for items where statement amount matches an expense amount in DandelionDiary.
+                    dd_matches_set_a = dd_period_expenses.filter(amount=abs(decimal.Decimal(item[amount_key])))
+                    if len(dd_matches_set_a) > 0:  # One or more expense amounts in DandelionDiary match statement
+                        if len(dd_matches_set_a) == 1:  # If only one matches, we're good to go
+                            expenses = dd_matches_set_a
+                        else:
+                            match_limit = 1
+
+                    # If no match on amount, try based on receipt amount recorded in note tag.
+                    if not expenses and not match_limit:
+                        dd_matches_set_a = dd_period_expenses\
+                            .filter(note__icontains=abs(decimal.Decimal(item[amount_key])))
+                        if len(dd_matches_set_a) > 0: # One or more expense notes in DandelionDiary match statement
+                            if len(dd_matches_set_a) == 1:
+                                expenses = dd_matches_set_a
+                            else:
+                                if len(dd_matches_set_a) < 3:  # If split match, we're good to go
+                                    if dd_matches_set_a[0].expense_date == dd_matches_set_a[1].expense_date:
+                                        expenses = dd_matches_set_a
+                                    else:
+                                        match_limit = 1  # Not a split; try to match based on date
+                                else:
+                                    match_limit = 2  # Try to narrow the mayhem down by date
+
+                    # If match limit, expenses were found but need to be narrowed by date.
+                    if not expenses and match_limit:
+                        early_date = item_date - datetime.timedelta(days=2)
+                        dd_matches_set_b = dd_matches_set_a.filter(expense_date__gte=early_date)\
+                            .filter(expense_date__lte=item_date)
+                        if len(dd_matches_set_b) > 0:
+                            if len(dd_matches_set_b) <= match_limit:
+                                expenses = dd_matches_set_b
+                            else:
+                                info_msg = 'This item has an amount matching one or more expenses occurring ' \
+                                            'within a couple days of each other. '
+                        else:
+                            info_msg = 'This item has an amount matching one or more expenses, but the expense ' \
+                                        'dates recorded do not occur within a 2 day period of the statement date.'
+
+                    if expenses:
+
+                        for expense in expenses:
+                            reconciled_item = {}
+                            reconciled_item['expense_date'] = expense.expense_date
+                            category = MyBudgetCategory.objects.get(pk=expense.category.pk)
+                            reconciled_item['category'] = category.my_category_name
+                            reconciled_item['amount'] = expense.amount
+                            reconciled_item['note'] = expense.note
+
+                            if expense.reconciled is False:
+                                expense.reconciled = True
+                                expense.save()
+
+                                reconciled_item['tag'] = ''
+
+                            else:
+                                reconciled_item['tag'] = '*'
+
+                            statement_expenses_reconciled.append(reconciled_item)
+
+                    else:
+
+                        item['Info Message'] = info_msg
+                        if info_msg:
+                            item['Quick Add'] = ''
+                        else:
+                            item['Quick Add'] = 'insert button'
+                        item.update()
+
+                        ordered_item = []
+                        for heading in headings:
+                            ordered_item.append(item[heading])
+
+                        statement_expenses_not_reconciled.append(ordered_item)
+
+            # return HttpResponseRedirect('/success/url/')
+            step = 3
+
+    else:
+        form = UploadFileForm()
+
+    context = {
+        'page_title': 'Reconcile Expenses',
+        'url': 'capture:reconcile_expenses',
+        'step': step,
+        'form': form,
+        'expenses_reconciled': sorted(statement_expenses_reconciled, key=lambda k: k['expense_date']),
+        'expenses_not_reconciled': sorted(statement_expenses_not_reconciled, key=operator.itemgetter(0)),
+        'headings': headings,
+    }
+
+    return render(request, 'capture/reconcile_expenses.html', context)

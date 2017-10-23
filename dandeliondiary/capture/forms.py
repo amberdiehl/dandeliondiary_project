@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
+from compare.helpers import get_month_options
 from helpers import validate_expense_note_input
 from models import MyNoteTag
 
@@ -194,3 +195,19 @@ class MyNoteTagForm(forms.ModelForm):
             error = 'Limited special characters to: . , ( ) + - ='
             raise forms.ValidationError(_(error))
         return new_tag
+
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField(
+        label=_("CSV file:"),
+        widget=forms.FileInput(),
+        required=True,
+    )
+    period = forms.ChoiceField(
+        choices=get_month_options(),
+        required=True,
+    )
+    date_format = forms.ChoiceField(
+        choices=[('%m-%d-%Y','m-d-y'), ('%Y-%m-%d', 'y-m-d')],
+        required = True,
+    )

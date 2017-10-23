@@ -1,4 +1,4 @@
-import re
+import re, datetime
 
 from django.db.models import Count
 
@@ -173,6 +173,37 @@ def get_remaining_budget(c_id, date):
 
 def is_expense_place_type(a, b):
     return not set(a).isdisjoint(b)
+
+
+def format_statement_date(statement_date, format):
+    if '/' in statement_date:
+        statement_date = statement_date.replace('/', '-')
+
+    position = {'m': 0, 'd': 1, 'y': 2}
+    if format == '%Y-%m-%d':
+        position = {'y': 0, 'm': 1, 'd': 2}
+
+    date_parts = statement_date.split('-')
+
+    if len(date_parts[position['y']]) == 2:
+        date_parts[position['y']] = '20' + date_parts[position['y']]
+
+    if len(date_parts[position['m']]) == 1:
+        date_parts[position['m']] = '0' + date_parts[position['m']]
+
+    if len(date_parts[position['d']]) == 1:
+        date_parts[position['d']] = '0' + date_parts[position['d']]
+
+    formatted_date = date_parts[position['y']] + '-' + date_parts[position['m']] + '-' + date_parts[position['d']]
+
+    try:
+        check_date = datetime.datetime.strptime(formatted_date, '%Y-%m-%d')
+
+    except ValueError:
+        return ('Error: Invalid date.', formatted_date)
+
+    else:
+        return ('OK', check_date)
 
 
 """

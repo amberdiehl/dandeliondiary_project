@@ -1,0 +1,179 @@
+{% extends "site_base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+
+{% load capture_extras %}
+
+{% block title %}{% trans "Capture - Reconcile Expenses" %}{% endblock %}
+
+{% block static %}
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
+          rel="stylesheet" type="text/css" />
+
+{% endblock %}
+
+{% block body_classes %} bg-grey {% endblock %}{% block body_attributes %}{% endblock %}
+
+{% block body_container %}
+
+    {% include "./menu.html" %}
+
+    <div class="col-md-10 col-md-offset-1">
+
+        <form id="tag-form" class="margin-top-30 sky-form boxed centered" method="POST"
+              action="{% url url %}" {% if form.is_multipart %}enctype="multipart/form-data"{% endif %}>
+            {% csrf_token %}
+
+            <div class="box-static box-transparent box-bordered">
+
+            <h2>{% trans page_title %}</h2>
+
+            <!-- ALERTS -->
+            {% if messages %}
+                {% for msg in messages %}
+                    <div class="alert alert-{{ msg.level_tag }} margin-bottom-15" role="alert">{{ msg.message }}</div>
+                {% endfor %}
+            {% endif %}
+            <!-- /ALERTS -->
+
+            <div class="row">
+                <div class="col-md-12">
+<ul class="process-steps nav nav-tabs nav-justified">
+	<li{% if step == 1 %} class="active"{% endif %}>
+		<a href="#step1" data-toggle="tab">1</a>
+		<h5>Upload</h5>
+	</li>
+	<li>
+		<a href="#step2" data-toggle="tab">2</a>
+		<h5>Evaluate</h5>
+	</li>
+	<li{% if step == 3 %} class="active"{% endif %}>
+		<a href="#step3" data-toggle="tab">3</a>
+		<h5>Review</h5>
+	</li>
+	<li>
+		<a href="#step4" data-toggle="tab">4</a>
+		<h5>Add</h5>
+	</li>
+</ul>
+
+<div class="tab-content margin-top-60">
+	<div role="tabpanel" class="tab-pane{% if step == 1 %} active{% endif %}" id="step1">
+		<h4>Step 1: Upload</h4>
+                <p>Upload your credit card and other bank statement in CSV format.</p>
+        <p>Frequently, expenses for a month are split between mulitple statements.
+            We recommend you upload each applicable statement
+            separately and reconcile each rather than combining them manually before upload.
+            Combining takes more time and is prone to error.</p>
+        <fieldset>
+        <label>{{ form.file.label }}</label>
+        <label class="input margin-bottom-10">{{ form.file }}</label>
+        </fieldset>
+
+	</div>
+
+	<div role="tabpanel" class="tab-pane" id="step2">
+		<h4>Step 2: Evaluate</h4>
+        <p>Click "Evaluate" to have Dandelion Diary process your CSV file.</p>
+        <p>This process will automatically tag expenses "reconciled" when amounts you've recorded are found on your
+            statement. You can review and change reconciled amounts in Step 3. Amounts on your statement which are
+            not found are also tagged so that you can add them in Step 4, if desired. </p>
+        <div class="row">
+        <fieldset>
+            <div class="col-md-2">
+        <label>{{ form.period.label }}</label>
+        <label class="input margin-bottom-10">{{ form.period }}</label>
+                </div>
+              <div class="col-md-2">
+      <label>{{ form.date_format.label }}</label>
+        <label class="input margin-bottom-10">{{ form.date_format }}</label>
+              </div>
+        </fieldset>
+            </div>
+                           <div class="row"><div class="col-md-12">
+                        <button id="submitForm" type="submit" class="btn btn-primary btn-bordered pull-left">
+                            <i class="fa fa-check"></i>{% trans "Evalute" %}</button>
+                    </div></div>
+
+
+	</div>
+
+	<div role="tabpanel" class="tab-pane{% if step == 3 %} active{% endif %}" id="step3">
+		<h4>Step 3: Review</h4>
+    <p>The following expenses were reconciled to your statement. Any item tagged with an asterisk (*) means the item
+        was already marked as reconciled.</p>
+    <p>If you see something you think needs to be unreconciled, please use the 'Explore Expenses' feature.</p>
+    {% if step == 3 %}
+        <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead><td>Expense Date</td><td>Category</td><td>Amount</td><td>Note</td><td>Tag</td></thead>
+            <tbody>
+                {%  for expense in expenses_reconciled %}
+                    <tr>
+                    <td>{{ expense.expense_date }}</td>
+                    <td>{{ expense.category }}</td>
+                    <td>{{ expense.amount }}</td>
+                    <td>{{ expense.note }}</td>
+                    <td>{{ expense.tag }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>You must execute steps 1 and 2 first to see reconciliation results.</p>
+    {% endif %}
+	</div>
+
+    <div role="tabpanel" class="tab-pane" id="step4">
+		<h4>Step 4: Add</h4>
+        <p>The following items were not found in your recorded items OR could not be reconciled.</p><p>Items with
+            messages must be reconciled manually by you.</p>
+    {% if step == 3 %}
+        <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            {% for heading in headings %}
+            <td>{{ heading }}</td>
+            {% endfor %}
+            </thead>
+            <tbody>
+                {%  for statement_expense in expenses_not_reconciled %}
+                    <tr>
+                    {% for item in statement_expense %}
+                        {% if item == 'insert button' %}
+                            <td><button class="btn btn-primary btn-xs">Add</button></td>
+                        {% else %}
+                    <td>{{ item }}</td>
+                        {% endif %}
+                    {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>You must execute steps 1 and 2 first to see reconciliation results.</p>
+    {% endif %}
+	</div>
+
+</div>
+
+                </div>
+            </div>
+            </div>
+        </form>
+
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+    <script type="text/javascript">var plugin_path = "{% static "plugins/" %}";</script>
+    <script type="text/javascript" src="{% static "js/scripts.js" %}"></script>
+
+{% endblock %}
+
