@@ -12,6 +12,60 @@
     <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
           rel="stylesheet" type="text/css" />
 
+    <script>
+
+        function toggleNoteTags(obj, tag) {
+            var note = $('#' + obj);
+
+            if (note.val().indexOf(tag) >= 0) {
+                // remove tag when found
+                note.val(function(index, val){
+                    return val.replace(tag, '');
+                });
+            } else {
+                // add tag when not found
+                note.val(function(index, val){
+                    return val += (' ' + tag + ' ');
+                });
+            }
+
+            // get rid of extra white space independently
+            note.val(function(index, val){
+               return val.replace(/\s+/g, ' ');
+            });
+            note.val(function(index, val){
+               return val.replace(/^\s+/g, '');
+            });
+
+        }
+
+    </script>
+
+    <style>
+
+    a.linkbutton:link, a.linkbutton:visited {
+        background-color: #FA490F;
+        color: white;
+        padding: 2px 5px;
+        text-align: center;
+        font-size: 12px;
+        text-decoration: none;
+        display: inline-block;
+        border-radius: 5px;
+        border-color: #FA490F;
+        border-style: solid;
+        border-width: 1px;
+    }
+
+    a.linkbutton:hover, a.linkbutton:active {
+        background-color: white;
+        color: #FA490F;
+    }
+
+    td.form {
+        padding: 15px;
+    }
+    </style>
 {% endblock %}
 
 {% block body_classes %} bg-grey {% endblock %}{% block body_attributes %}{% endblock %}
@@ -28,141 +82,214 @@
 
             <div class="box-static box-transparent box-bordered">
 
-            <h2>{% trans page_title %}</h2>
+                <h2>{% trans page_title %}</h2>
 
-            <!-- ALERTS -->
-            {% if messages %}
-                {% for msg in messages %}
-                    <div class="alert alert-{{ msg.level_tag }} margin-bottom-15" role="alert">{{ msg.message }}</div>
-                {% endfor %}
-            {% endif %}
-            <!-- /ALERTS -->
-
-            <div class="row">
-                <div class="col-md-12">
-<ul class="process-steps nav nav-tabs nav-justified">
-	<li{% if step == 1 %} class="active"{% endif %}>
-		<a href="#step1" data-toggle="tab">1</a>
-		<h5>Upload</h5>
-	</li>
-	<li>
-		<a href="#step2" data-toggle="tab">2</a>
-		<h5>Evaluate</h5>
-	</li>
-	<li{% if step == 3 %} class="active"{% endif %}>
-		<a href="#step3" data-toggle="tab">3</a>
-		<h5>Review</h5>
-	</li>
-	<li>
-		<a href="#step4" data-toggle="tab">4</a>
-		<h5>Add</h5>
-	</li>
-</ul>
-
-<div class="tab-content margin-top-60">
-	<div role="tabpanel" class="tab-pane{% if step == 1 %} active{% endif %}" id="step1">
-		<h4>Step 1: Upload</h4>
-                <p>Upload your credit card and other bank statement in CSV format.</p>
-        <p>Frequently, expenses for a month are split between mulitple statements.
-            We recommend you upload each applicable statement
-            separately and reconcile each rather than combining them manually before upload.
-            Combining takes more time and is prone to error.</p>
-        <fieldset>
-        <label>{{ form.file.label }}</label>
-        <label class="input margin-bottom-10">{{ form.file }}</label>
-        </fieldset>
-
-	</div>
-
-	<div role="tabpanel" class="tab-pane" id="step2">
-		<h4>Step 2: Evaluate</h4>
-        <p>Click "Evaluate" to have Dandelion Diary process your CSV file.</p>
-        <p>This process will automatically tag expenses "reconciled" when amounts you've recorded are found on your
-            statement. You can review and change reconciled amounts in Step 3. Amounts on your statement which are
-            not found are also tagged so that you can add them in Step 4, if desired. </p>
-        <div class="row">
-        <fieldset>
-            <div class="col-md-2">
-        <label>{{ form.period.label }}</label>
-        <label class="input margin-bottom-10">{{ form.period }}</label>
-                </div>
-              <div class="col-md-2">
-      <label>{{ form.date_format.label }}</label>
-        <label class="input margin-bottom-10">{{ form.date_format }}</label>
-              </div>
-        </fieldset>
-            </div>
-                           <div class="row"><div class="col-md-12">
-                        <button id="submitForm" type="submit" class="btn btn-primary btn-bordered pull-left">
-                            <i class="fa fa-check"></i>{% trans "Evalute" %}</button>
-                    </div></div>
-
-
-	</div>
-
-	<div role="tabpanel" class="tab-pane{% if step == 3 %} active{% endif %}" id="step3">
-		<h4>Step 3: Review</h4>
-    <p>The following expenses were reconciled to your statement. Any item tagged with an asterisk (*) means the item
-        was already marked as reconciled.</p>
-    <p>If you see something you think needs to be unreconciled, please use the 'Explore Expenses' feature.</p>
-    {% if step == 3 %}
-        <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead><td>Expense Date</td><td>Category</td><td>Amount</td><td>Note</td><td>Tag</td></thead>
-            <tbody>
-                {%  for expense in expenses_reconciled %}
-                    <tr>
-                    <td>{{ expense.expense_date }}</td>
-                    <td>{{ expense.category }}</td>
-                    <td>{{ expense.amount }}</td>
-                    <td>{{ expense.note }}</td>
-                    <td>{{ expense.tag }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    {% else %}
-        <p>You must execute steps 1 and 2 first to see reconciliation results.</p>
-    {% endif %}
-	</div>
-
-    <div role="tabpanel" class="tab-pane" id="step4">
-		<h4>Step 4: Add</h4>
-        <p>The following items were not found in your recorded items OR could not be reconciled.</p><p>Items with
-            messages must be reconciled manually by you.</p>
-    {% if step == 3 %}
-        <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead>
-            {% for heading in headings %}
-            <td>{{ heading }}</td>
-            {% endfor %}
-            </thead>
-            <tbody>
-                {%  for statement_expense in expenses_not_reconciled %}
-                    <tr>
-                    {% for item in statement_expense %}
-                        {% if item == 'insert button' %}
-                            <td><button class="btn btn-primary btn-xs">Add</button></td>
-                        {% else %}
-                    <td>{{ item }}</td>
-                        {% endif %}
+                <!-- ALERTS -->
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="alert alert-{{ msg.level_tag }} margin-bottom-15"
+                             role="alert">{{ msg.message }}</div>
                     {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    {% else %}
-        <p>You must execute steps 1 and 2 first to see reconciliation results.</p>
-    {% endif %}
-	</div>
+                {% endif %}
+                <!-- /ALERTS -->
 
-</div>
+                <div class="row">
 
+                    <div class="col-md-12">
+
+                        <ul class="process-steps nav nav-tabs nav-justified">
+                            <li{% if step == 1 %} class="active"{% endif %}>
+                                <a href="#step1" data-toggle="tab">1</a>
+                                <h5>Upload</h5>
+                            </li>
+                            <li>
+                                <a href="#step2" data-toggle="tab">2</a>
+                                <h5>Evaluate</h5>
+                            </li>
+                            <li{% if step == 3 %} class="active"{% endif %}>
+                                <a href="#step3" data-toggle="tab">3</a>
+                                <h5>Review</h5>
+                            </li>
+                            <li>
+                                <a href="#step4" data-toggle="tab">4</a>
+                                <h5>Add</h5>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content margin-top-60">
+                            <div role="tabpanel" class="tab-pane{% if step == 1 %} active{% endif %}" id="step1">
+                                <h4>Step 1: Upload</h4>
+                                <p>Upload your credit card and other bank statement in CSV format.</p>
+                                <p>Frequently, expenses for a month are split between mulitple statements.
+                                    We recommend you upload each applicable statement
+                                    separately and reconcile each rather than combining them manually before upload.
+                                    Combining takes more time and is prone to error.</p>
+                                <fieldset>
+                                    <label>{{ form.file.label }}</label>
+                                    <label class="input margin-bottom-10">{{ form.file }}</label>
+                                </fieldset>
+
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="step2">
+                                <h4>Step 2: Evaluate</h4>
+                                <p>Click "Evaluate" to have Dandelion Diary process your CSV file.</p>
+                                <p>This process will automatically tag expenses "reconciled" when amounts you've
+                                    recorded are found on your
+                                    statement. You can review and change reconciled amounts in Step 3. Amounts on your
+                                    statement which are
+                                    not found are also tagged so that you can add them in Step 4, if desired. </p>
+                                <div class="row">
+                                    <fieldset>
+                                        <div class="col-md-2">
+                                            <label>{{ form.period.label }}</label>
+                                            <label class="input margin-bottom-10">{{ form.period }}</label>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label>{{ form.date_format.label }}</label>
+                                            <label class="input margin-bottom-10">{{ form.date_format }}</label>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button id="submitForm" type="submit"
+                                                class="btn btn-primary btn-bordered pull-left">
+                                            <i class="fa fa-check"></i>{% trans "Evalute" %}</button>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane{% if step == 3 %} active{% endif %}" id="step3">
+                                <h4>Step 3: Review</h4>
+                                <p>The following expenses were reconciled to your statement. Any item tagged with an
+                                    asterisk (*) means the item
+                                    was already marked as reconciled.</p>
+                                <p>If you see something you think needs to be unreconciled, please use the 'Explore
+                                    Expenses' feature.</p>
+                                {% if step == 3 %}
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                            <td>Expense Date</td>
+                                            <td>Category</td>
+                                            <td>Amount</td>
+                                            <td>Note</td>
+                                            <td>Tag</td>
+                                            </thead>
+                                            <tbody>
+                                            {% for expense in expenses_reconciled %}
+                                                <tr>
+                                                    <td>{{ expense.expense_date }}</td>
+                                                    <td>{{ expense.category }}</td>
+                                                    <td>{{ expense.amount }}</td>
+                                                    <td>{{ expense.note }}</td>
+                                                    <td>{{ expense.tag }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p>You must execute steps 1 and 2 first to see reconciliation results.</p>
+                                {% endif %}
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="step4">
+                                <h4>Step 4: Add</h4>
+                                <p>The following items were not found in your recorded items OR could not be
+                                    reconciled.</p>
+                                <p>Items with a message must be reconciled manually by you. For items without a
+                                message, and that don't require splitting or tracking an amount different than the
+                                total, you can click "Add" to record and reconcile the expense from here.</p>
+                                {% if step == 3 %}
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                            {% for heading in headings %}
+                                                <td>{{ heading }}</td>
+                                            {% endfor %}
+                                            </thead>
+                                            <tbody>
+                                            {% for statement_expense in expenses_not_reconciled %}
+                                                {% with count=forloop.counter0 %}
+                                                    <tr id="table_row_{{ count }}">
+                                                        {% for item in statement_expense %}
+                                                            {% if item == 'insert button' %}
+                                                                <td>
+                                                                    <a id="row_{{ count }}" class="linkbutton"
+                                                                       data-toggle="modal" href="#addExpenseModal">
+                                                                        Add
+                                                                    </a>
+                                                                    {% else %}
+                                                                <td id="row_{{ count }}-col_{{ forloop.counter0 }}">
+                                                                    {{ item }}</td>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endwith %}
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p>You must execute steps 1 and 2 first to see reconciliation results.</p>
+                                {% endif %}
+                            </div>
+
+                        </div>
+
+                        <!-- Modal form for adding an expense in "quick" format -->
+                        <div class="modal fade" id="addExpenseModal" tabindex="-1" role="dialog"
+                             aria-labelledby="myModalLabel"
+                             aria-hidden="true">
+                            <div id="test" class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">&times;
+                                        </button>
+                                        <h4 class="modal-title" id="myModalLabel">"Quick Add" Expense</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id='divAddExpenseMessage' class="alert alert-warning margin-bottom-30 hide"
+                                             role="alert">
+                                            <label id="lblAddExpenseMessage"></label>
+                                        </div>
+                                        <table class="formtable">
+                                            <tr><td class="form">Date:</td>
+                                                <td><input id="modalDate" type="text" readonly></td>
+                                                <td></td></tr>
+                                            <tr><td class="form">Amount:</td>
+                                                <td><input id="modalAmount" type="text" readonly></td>
+                                                <td></td></tr>
+                                            <tr><td class="form">Category:</td>
+                                                <td colspan="2">{{ category }}</td></tr>
+                                            <tr><td class="form">Note:</td>
+                                                <td><input id="modalNote" type="text"></td>
+                                                <td>Note Quick Tags:<br />
+                                                    {% for tag in tags %}
+                                                        <button type="button" class="btn btn-xs"
+                                                            onclick="toggleNoteTags('modalNote', '{{ tag.tag }}')">
+                                                            {{ tag.tag }}</button>
+                                                    {% endfor %}
+                                                </td></tr>
+                                        </table>
+                                        <input id="modalExpenseRow" type="hidden">
+                                        <button type="button" class="btn btn-primary" onclick="AddExpense();">Add</button>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-            </div>
             </div>
         </form>
 
@@ -172,8 +299,87 @@
 
 {% block scripts %}
 
-    <script type="text/javascript">var plugin_path = "{% static "plugins/" %}";</script>
-    <script type="text/javascript" src="{% static "js/scripts.js" %}"></script>
+    <script>
+
+        // Preload date and amount into the modal form.
+        $('.modal').on('show.bs.modal', function (e) {
+
+            var $linkButton = $(e.relatedTarget);
+            var buttonID = $linkButton.attr("id");
+
+            $('#modalExpenseRow').val('table_' + buttonID);
+
+            var rowDate = $('#'+buttonID+'-col_0').html();
+            var rowAmount = $('#'+buttonID+'-col_1').html();
+
+            $('#modalDate').val(rowDate.trim());
+            $('#modalAmount').val(parseFloat(rowAmount));
+
+        });
+
+        function AddExpense(event) {
+
+            var msgErr1 = 'Sorry, your request could not be completed. Please try again or contact Support.';
+            var msgErr2 = 'Please select an expense category.';
+
+            // Validate that category has been selected.
+            var category = $('select[name=modalCategory]').val();
+
+            if (category === '0') {
+
+                showMessage(msgErr2);
+
+            } else {
+
+                var date = $('#modalDate').val();
+                var amount = $('#modalAmount').val();
+                var note = $('#modalNote').val();
+
+                var request = $.ajax({
+                    type: 'GET',
+                    url: '/capture/ajax/add_quick_expense/',
+                    data: {
+                      dt: date,
+                      amt: amount,
+                      cat: category,
+                      nt: encodeURIComponent(note)
+                    },
+                    dataType: "json"
+                });
+
+                request.done(function( result ) {
+                    if (result.status == 'OK') {
+
+                        var table_row = $('#modalExpenseRow').val();
+                        $('#'+table_row).remove();
+                        $('#addExpenseModal').modal('hide');
+
+                    } else {
+                        showMessage(msgErr1);
+                    }
+                });
+
+                request.fail(function( jqXHR, textStatus ) {
+                    showMessage(msgErr1);
+                });
+            }
+        }
+
+        function showMessage(msg) {
+            $('#lblAddExpenseMessage').html(msg);
+            $('#divAddExpenseMessage').removeClass('hide').addClass('show')
+        }
+
+        $('.modal').on('hidden.bs.modal', function (e) {
+            $('#divAddExpenseMessage').removeClass('show').addClass('hide');
+            $('select[name=modalCategory]').val('0');
+            $('#modalNote').val('');
+        });
+
+    </script>
+
+    <!-- This page does not contain the js which enables the Dandelion Diary logo to remain present, while shrinking.
+    This is because when loaded, it interferes with the modal dialog boxes--they open and immediately close. -->
 
 {% endblock %}
 

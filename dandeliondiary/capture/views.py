@@ -1,4 +1,4 @@
-import csv, datetime, random, decimal, operator
+import csv, datetime, random, decimal, operator, urllib
 
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
@@ -8,7 +8,7 @@ from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, fields
 
 
 from google import get_nearby_places, byteify
@@ -21,7 +21,8 @@ from .helpers import \
     get_remaining_budget, \
     is_expense_place_type, \
     format_statement_date, \
-    validate_filter_inputs, validate_expense_inputs, validate_id_input, validate_paging_input
+    validate_filter_inputs, validate_expense_inputs, validate_expense_note_input, validate_id_input, \
+    validate_paging_input
 
 from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
@@ -594,7 +595,13 @@ def ajax_change_expense(request, s):
     return JsonResponse(response_data)
 
 
+@login_required
 def reconcile_expenses(request):
+
+    # Get household, validate active subscription
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        return redirect('household:household_dashboard')
 
     step = 1
     headings = []
@@ -613,6 +620,7 @@ def reconcile_expenses(request):
             statement_expenses = csv.DictReader(form.cleaned_data['file'])
 
             can_process_checked = False
+            error = False
             date_key = None
             amount_key = None
 
@@ -620,11 +628,19 @@ def reconcile_expenses(request):
 
                 # First time only, validate we can find a date and amount field.
                 if not can_process_checked:
-                    date_key = next(k for k, v in item.items() if 'Date' in k)
-                    amount_key = next(k for k, v in item.items() if 'Amount' in k)
-                    if not date_key or not amount_key:
-                        # Raise an error and cease processing
-                        pass
+                    try:
+                        date_key = next(k for k, v in item.items() if 'Date' in k)
+                    except:
+                        messages.warning(request, "Could not find Date in CSV file.")
+                        error = True
+                        break
+
+                    try:
+                        amount_key = next(k for k, v in item.items() if 'Amount' in k)
+                    except:
+                        messages.warning(request, "Could not find Amount in CSV file.")
+                        error = True
+                        break
 
                     headings.append(date_key)
                     headings.append(amount_key)
@@ -639,8 +655,10 @@ def reconcile_expenses(request):
                 # Validate and convert statement date to date object
                 result = format_statement_date(item[date_key], form.cleaned_data['date_format'])
                 if not result[0] == 'OK':
-                    # Raise an error and cease processing
-                    pass
+                    messages.warning(request, "CSV file contains one or more invalid dates or incorrect format was "
+                                              "selected.")
+                    error = True
+                    break
                 else:
                     item_date = result[1]
 
@@ -712,6 +730,9 @@ def reconcile_expenses(request):
 
                     else:
 
+                        item[date_key] = item_date.strftime('%Y-%m-%d')
+                        item[amount_key] = abs(decimal.Decimal(item[amount_key]))
+
                         item['Info Message'] = info_msg
                         if info_msg:
                             item['Quick Add'] = ''
@@ -726,10 +747,19 @@ def reconcile_expenses(request):
                         statement_expenses_not_reconciled.append(ordered_item)
 
             # return HttpResponseRedirect('/success/url/')
-            step = 3
+
+            if not error:
+                step = 3
 
     else:
         form = UploadFileForm()
+
+    category_choices = helper_budget_categories(me.get('household_key'), top_load=True)
+    category = fields.ChoiceField(choices=category_choices)
+    field_name = 'modalCategory'
+    category_html = category.widget.render(field_name, 0)
+
+    tags = MyNoteTag.objects.filter(household=me.get('household_obj')).order_by('tag')
 
     context = {
         'page_title': 'Reconcile Expenses',
@@ -739,6 +769,75 @@ def reconcile_expenses(request):
         'expenses_reconciled': sorted(statement_expenses_reconciled, key=lambda k: k['expense_date']),
         'expenses_not_reconciled': sorted(statement_expenses_not_reconciled, key=operator.itemgetter(0)),
         'headings': headings,
+        'category': category_html,
+        'tags': tags,
     }
 
     return render(request, 'capture/reconcile_expenses.html', context)
+
+
+@login_required
+def ajax_expense_quick_add(request):
+
+    response_data = {}
+
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        response_data['status'] = 'ERROR'
+        response_data['message'] = 'Invalid request.'
+        return JsonResponse(response_data)
+
+    try:
+        date = datetime.datetime.strptime(request.GET['dt'], '%Y-%m-%d')
+    except:
+        response_data['status'] = 'ERROR'
+        response_data['message'] = 'Invalid date.'
+        return JsonResponse(response_data)
+
+    try:
+        amount = decimal.Decimal(request.GET['amt'])
+    except:
+        response_data['status'] = 'ERROR'
+        response_data['message'] = 'Invalid amount.'
+        return JsonResponse(response_data)
+
+    try:
+        category_id = int(request.GET['cat'])
+    except:
+        response_data['status'] = 'ERROR'
+        response_data['message'] = 'Invalid category.'
+        return JsonResponse(response_data)
+
+    try:
+        note = urllib.unquote(request.GET['nt'])
+    except:
+        response_data['status'] = 'ERROR'
+        response_data['message'] = 'Invalid note.'
+        return JsonResponse(response_data)
+    else:
+        valid_note = validate_expense_note_input(note)
+        if not valid_note:
+            response_data['status'] = 'ERROR'
+            response_data['message'] = 'Invalid note.'
+            return JsonResponse(response_data)
+
+    category = MyBudgetCategory.objects.get(pk=category_id)
+
+    expense = MyExpenseItem()
+    expense.expense_date = date
+    expense.amount = amount
+    expense.category = category
+    expense.note = note
+    expense.household = me.get('household_obj')
+    expense.who = me.get('account_obj')
+    expense.reconciled = True
+    try:
+        expense.save()
+    except:
+        response_data['status'] = 'ERROR'
+        response_data['message'] = 'Save failed.'
+        return JsonResponse(response_data)
+
+    response_data['status'] = 'OK'
+    response_data['message'] = 'Expense added.'
+    return JsonResponse(response_data)

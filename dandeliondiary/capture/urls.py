@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^ajax/places/(?P<lat>[0-9.\-]+)/(?P<lon>[0-9.\-]+)/$', views.ajax_categories_by_place),
     url(r'^ajax/list_expenses/$', views.ajax_list_expenses),
     url(r'^ajax/change_expense/(?P<s>[d|u])/$', views.ajax_change_expense),
+    url(r'^ajax/add_quick_expense/$', views.ajax_expense_quick_add),
 ]
