@@ -279,7 +279,7 @@ def export_expenses_to_csv(request):
     writer = csv.writer(response)
     writer.writerow(['Expense Date', 'Group', 'Parent Category', 'Category', 'Amount', 'Who', 'Note'])
 
-    expenses = MyExpenseItem.objects.filter(expense_date__gte=from_date).filter(expense_date__lte=to_date) \
+    expenses = MyExpenseItem.objects.filter(expense_date__range=[from_date, to_date]).order_by("expense_date") \
         .values_list('expense_date',
                      'category__my_budget_group__my_group_name',
                      'category__parent_category__my_category_name',
