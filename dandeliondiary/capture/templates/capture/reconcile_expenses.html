@@ -223,6 +223,7 @@
                                                                        data-toggle="modal" href="#addExpenseModal">
                                                                         Add
                                                                     </a>
+                                                                    <a onclick="removeRow({{ count }});">Ignore</a>
                                                                     {% else %}
                                                                 <td id="row_{{ count }}-col_{{ forloop.counter0 }}">
                                                                     {{ item }}</td>
@@ -375,6 +376,10 @@
             $('select[name=modalCategory]').val('0');
             $('#modalNote').val('');
         });
+
+        function removeRow(row) {
+            $('#table_row_'+row).remove();
+        }
 
     </script>
 
