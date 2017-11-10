@@ -37,14 +37,7 @@
                 onOpen: function(value, inst) {
                     $(this).val($('#id_amount_receipt').val());
             }});
-	        $('#id_amount_split').calculator({
-                onOpen: function(value, inst) {
-                    var starting_amount = $('#id_amount').val();
-                    if (starting_amount == 0) {
-                        starting_amount = $('#id_amount_receipt').val()
-                    }
-                    $(this).val(starting_amount);
-            }});
+	        $('#id_amount_split').calculator();
         });
 
         $( document ).ready(function() {
