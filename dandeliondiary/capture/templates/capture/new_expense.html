@@ -12,12 +12,39 @@
     <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"
           rel="stylesheet" type="text/css" />
 
+    <!-- Include jQuery inline calculator -->
+    <link href="{% static "plugins/calculator/jquery.calculator.css" %}" rel="stylesheet" type="text/css" />
+    <script src="{% static "plugins/calculator/jquery.plugin.js" %}" type="text/javascript"></script>
+    <script src="{% static "plugins/calculator/jquery.calculator.js" %}" type="text/javascript"></script>
+
     <script>
 
         $(function() {
             $( "#id_expense_date" ).datepicker({
                 dateFormat: 'yy-mm-dd'
             });
+        });
+
+        $(function () {
+	        $.calculator.setDefaults({
+                showOn: 'button',
+                buttonImageOnly: true,
+                buttonImage: '{% static "plugins/calculator/calculator.png" %}',
+                showAnim: 'explode',
+                showFormula: true
+            });
+	        $('#id_amount').calculator({
+                onOpen: function(value, inst) {
+                    $(this).val($('#id_amount_receipt').val());
+            }});
+	        $('#id_amount_split').calculator({
+                onOpen: function(value, inst) {
+                    var starting_amount = $('#id_amount').val();
+                    if (starting_amount == 0) {
+                        starting_amount = $('#id_amount_receipt').val()
+                    }
+                    $(this).val(starting_amount);
+            }});
         });
 
         $( document ).ready(function() {
@@ -431,7 +458,7 @@
      
     </script>
 
-    <script type="text/javascript">var plugin_path = "{% static "plugins/" %}";</script>
-    <script type="text/javascript" src="{% static "js/scripts.js" %}"></script>
+    <script type="text/javascript">var plugin_path = '{% static "plugins/" %}';</script>
+    <script type="text/javascript" src="{% static 'js/scripts.js' %}"></script>
 
 {% endblock %}
