@@ -1,4 +1,5 @@
 import datetime
+import operator
 
 from decimal import *
 from django.forms import fields
@@ -410,6 +411,133 @@ def ajax_dashboard_month_series(request, from_date, to_date, category):
     response_data['status'] = 'OK'
     response_data['monthSeries'] = column_chart
     response_data['analysis'] = analysis
+
+    return JsonResponse(response_data)
+
+
+@login_required
+def ajax_dashboard_budget_drivers(request, from_date, to_date):
+    """
+    Gets the top (or bottom TBD) postive and negative budget drivers for the given year or rolling past 12 months.
+    Note that although dates require "day" being 01, the entire month of expenses are retrieved.
+
+    :param request:
+    :param from_date: Must use format 2016-01-01 where day is always set to 01
+    :param to_date: Must use format 2016-12-01 where day is always set to 01
+    :return:
+    """
+
+    response_data = {}
+
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        response_data['status'] = 'ERROR'
+        return JsonResponse(response_data)
+
+    f_dt = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
+    t_dt = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
+    today = datetime.datetime.now().date()
+
+    # setup for column chart - positive
+    column_chart_1 = {}
+    cols_1 = [
+        {'id': 'category', 'label': 'Category', 'type': 'string'},
+        {'id': 'amount', 'label': 'Net Amount', 'type': 'number'},
+        {'type': 'string', 'role': 'style'}
+    ]
+    rows_1 = []
+
+    # setup for column chart - negative
+    column_chart_2 = {}
+    cols_2 = [
+        {'id': 'category', 'label': 'Category', 'type': 'string'},
+        {'id': 'amount', 'label': 'Net Amount', 'type': 'number'},
+        {'type': 'string', 'role': 'style'}
+    ]
+    rows_2 = []
+
+    # Create dictionary object to store analysis data
+    analysis_data = {}
+
+    this_date = f_dt
+
+    while this_date <= t_dt:
+
+        # Select effective budget based on last day of month (period) being processed, not first day
+        future_date = this_date + datetime.timedelta(days=32)
+        full_month = future_date.replace(day=1) - datetime.timedelta(days=1)
+
+        # Get all, most current, budget records for the household
+        budgets = MyBudget.objects.filter(category__my_budget_group__household=me.get('household_key')) \
+            .filter(effective_date__year__lte=this_date.year, effective_date__lte=full_month) \
+            .values('pk', 'category', 'category__my_category_name', 'category__parent_category', 'amount',
+                    'annual_payment_month') \
+            .order_by('category', '-effective_date') \
+            .distinct('category')
+
+        # For each budget, get net result for the month
+        for budget in budgets:
+
+            month_net = 0
+
+            if budget['annual_payment_month'] == 0 or budget['annual_payment_month'] == this_date.month:
+                month_net += budget['amount']
+
+            expenses = MyExpenseItem.objects.filter(household=me.get('household_key')) \
+                .filter(expense_date__year=this_date.year, expense_date__month=this_date.month) \
+                .filter(category=budget['category']) \
+                .aggregate(Sum('amount'))
+
+            if expenses.get('amount__sum') is None:
+                pass
+            else:
+                month_net -= expenses.get('amount__sum')
+
+            if analysis_data.get(budget['category'], None):
+                analysis_data[budget['category']] += month_net
+            else:
+                analysis_data[budget['category']] = month_net
+
+        this_date += datetime.timedelta(days=32)
+        this_date = this_date.replace(day=1)
+
+    # Sort dictionary by amounts, storing in a list of tuples.
+    sorted_categories = sorted(analysis_data.items(), key=operator.itemgetter(1))
+
+    # Store top 5 positive drivers (net amount, across all months for a given category being positive)
+    count, color = 1, '#8EAF17'
+    for item in sorted_categories:
+        if item[1] >= 0:
+            row = {'c': [{'v': item[0]},
+                         {'v': int(item[1])},
+                         {'v': color}
+                         ]}
+
+            rows_1.append(row)
+        else:
+            break
+        if count == 5:
+            break
+        count += 1
+    column_chart_1['cols'] = cols_1
+    column_chart_1['rows'] = rows_1
+
+    # Store top 5 negative drivers (net amount, across all months for a given category being negative)
+    color = '#FA490F'
+    for item in sorted_categories[len(sorted_categories)-4:]:
+        if item[1] < 0:
+            row = {'c': [{'v': item[0]},
+                         {'v': int(item[1])},
+                         {'v': color}
+                         ]}
+
+            rows_2.append(row)
+    column_chart_2['cols'] = cols_2
+    column_chart_2['rows'] = rows_2
+
+    response_data['status'] = 'OK'
+    response_data['positiveDrivers'] = column_chart_1
+    response_data['negativeDrivers'] = column_chart_2
 
     return JsonResponse(response_data)
 

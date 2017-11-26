@@ -32,6 +32,8 @@
                     <li class="active"><a href="#Monthly_Snapshot" data-toggle="tab" onclick="drawMonthlySnapshot();">
                         Monthly Snapshot</a></li>
                     <li><a href="#Year_View" data-toggle="tab" onclick="drawYearView();">Year View</a></li>
+                    <li><a href="#Top_Bottom_View" data-toggle="tab" onclick="drawTopBottomView();">
+                        Top/Bottom 5 View</a></li>
                     <li><a href="#Budget_View" data-toggle="tab" onclick="drawBudgetView();">Budget View</a></li>
                 </ul>
 
@@ -92,6 +94,21 @@
                                 </table>
                             </div>
                         </div>
+                    </div>
+
+                    <div id="Top_Bottom_View" class="tab-pane fade">
+                        <span style="margin-left:1em;">For year:</span> <select id="chooseYear" >
+                            {% for yr in years %}
+                                <option value="{{ yr }}">{{ yr }}</option>
+                            {% endfor %}
+                        </select>
+                        <script>
+                            document.getElementById("chooseYear").onchange = function () {
+                                drawTopBottomView();
+                            };
+                        </script>
+                        <div class="col-md-12" id="chart_positive_view"></div>
+                        <div class="col-md-12" id="chart_negative_view"></div>
                     </div>
 
                     <div id="Budget_View" class="tab-pane fade">
@@ -222,6 +239,56 @@
             };
             var chart2 = new google.visualization.ColumnChart(document.getElementById('chart_year_view'));
             chart2.draw(data2, options2);
+
+        }
+
+        function drawTopBottomView() {
+
+            var year = document.getElementById('chooseYear').value;
+
+            var from_date = year + '-01-01';
+            var to_date = year + '-12-01';
+
+            var jsonData = $.ajax({
+                url: "/compare/ajax/dashboard_budget_drivers/" + from_date + '/' + to_date + '/',
+                dataType: "json",
+                async: false
+            }).responseText;
+            var data = JSON.parse(jsonData);
+
+            // Draw top or bottom positive budget drivers column chart
+            var data2 = new google.visualization.DataTable(data.positiveDrivers);
+            var options2 = {
+                title: 'Top 5 Positive (under budget) Categories',
+                width: 775,
+                legend: 'none',
+                animation: {
+                    startup: true,
+                    duration: 1000,
+                    easing: 'out',
+                },
+                hAxis: {title: 'Category'},
+                vAxis: {title: 'Dollars'}
+            };
+            var chart2 = new google.visualization.ColumnChart(document.getElementById('chart_positive_view'));
+            chart2.draw(data2, options2);
+
+            // Draw top or bottom negative budget drivers column chart
+            var data3 = new google.visualization.DataTable(data.negativeDrivers);
+            var options3 = {
+                title: 'Top 5 Negative (over budget) Categories',
+                width: 775,
+                legend: 'none',
+                animation: {
+                    startup: true,
+                    duration: 1000,
+                    easing: 'out',
+                },
+                hAxis: {title: 'Category'},
+                vAxis: {title: 'Dollars'}
+            };
+            var chart3 = new google.visualization.ColumnChart(document.getElementById('chart_negative_view'));
+            chart3.draw(data3, options3);
 
         }
 

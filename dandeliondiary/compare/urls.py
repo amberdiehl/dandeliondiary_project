@@ -10,6 +10,9 @@ urlpatterns = [
     url(r'^ajax/dashboard_month_series/(?P<from_date>\d{4}-\d{2}-\d{2})/'
         r'(?P<to_date>\d{4}-\d{2}-\d{2})/(?P<category>[0-9]+)/$',
         views.ajax_dashboard_month_series),
+    url(r'^ajax/dashboard_budget_drivers/(?P<from_date>\d{4}-\d{2}-\d{2})/'
+        r'(?P<to_date>\d{4}-\d{2}-\d{2})/$',
+        views.ajax_dashboard_budget_drivers),
     url(r'^ajax/dashboard_budget/(?P<dt>\d{4}-\d{2}-\d{2})/$', views.ajax_dashboard_budget),
     url(r'^ajax/list_groups/$', views.ajax_list_groups),
     url(r'^ajax/create_group/$', views.ajax_create_group),
