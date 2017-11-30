@@ -467,6 +467,12 @@ def ajax_dashboard_budget_drivers(request, from_date, to_date):
         future_date = this_date + datetime.timedelta(days=32)
         full_month = future_date.replace(day=1) - datetime.timedelta(days=1)
 
+        # Don't process future month(s) because they'll skew the results; include a month if most of it has
+        # transpired.
+        if today < full_month:
+            if full_month - today > datetime.timedelta(days=5):
+                break
+
         # Get all, most current, budget records for the household
         budgets = MyBudget.objects.filter(category__my_budget_group__household=me.get('household_key')) \
             .filter(effective_date__year__lte=this_date.year, effective_date__lte=full_month) \
