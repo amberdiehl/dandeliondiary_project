@@ -427,6 +427,10 @@ def ajax_dashboard_budget_drivers(request, from_date, to_date):
     :return:
     """
 
+    # TODO: Add auto-rolling feature.
+    # TODO: Add total for positive and negative drivers to provide context or even another graph.
+    # TODO: Add analysis; e.g. how frequently item was over/under budget. Make recommendation regarding new budget amt.
+
     response_data = {}
 
     me = helper_get_me(request.user.pk)
