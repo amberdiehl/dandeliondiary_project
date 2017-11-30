@@ -11,7 +11,7 @@ from django.db.models import Count, Sum
 
 from hashids import Hashids
 
-from capture.helpers import helper_budget_categories
+from capture.helpers import helper_budget_categories, composite_category_name
 from household.helpers import helper_get_me
 from .helpers import *
 
@@ -504,11 +504,12 @@ def ajax_dashboard_budget_drivers(request, from_date, to_date):
     # Sort dictionary by amounts, storing in a list of tuples.
     sorted_categories = sorted(analysis_data.items(), key=operator.itemgetter(1))
 
-    # Store top 5 positive drivers (net amount, across all months for a given category being positive)
-    count, color = 1, '#8EAF17'
+    # Store top 5 negative drivers (net amount, across all months for a given category being negative)
+    count, color = 1, '#FA490F'
     for item in sorted_categories:
-        if item[1] >= 0:
-            row = {'c': [{'v': item[0]},
+        if item[1] < 0:
+            cat = MyBudgetCategory.objects.get(pk=item[0])
+            row = {'c': [{'v': composite_category_name(cat.my_category_name, cat.parent_category, cat.my_budget_group)},
                          {'v': int(item[1])},
                          {'v': color}
                          ]}
@@ -522,11 +523,12 @@ def ajax_dashboard_budget_drivers(request, from_date, to_date):
     column_chart_1['cols'] = cols_1
     column_chart_1['rows'] = rows_1
 
-    # Store top 5 negative drivers (net amount, across all months for a given category being negative)
-    color = '#FA490F'
-    for item in sorted_categories[len(sorted_categories)-4:]:
-        if item[1] < 0:
-            row = {'c': [{'v': item[0]},
+    # Store top 5 positive drivers (net amount, across all months for a given category being positive)
+    color = '#8EAF17'
+    for item in sorted_categories[len(sorted_categories)-5:]:
+        if item[1] >= 0:
+            cat = MyBudgetCategory.objects.get(pk=item[0])
+            row = {'c': [{'v': composite_category_name(cat.my_category_name, cat.parent_category, cat.my_budget_group)},
                          {'v': int(item[1])},
                          {'v': color}
                          ]}
@@ -536,8 +538,8 @@ def ajax_dashboard_budget_drivers(request, from_date, to_date):
     column_chart_2['rows'] = rows_2
 
     response_data['status'] = 'OK'
-    response_data['positiveDrivers'] = column_chart_1
-    response_data['negativeDrivers'] = column_chart_2
+    response_data['positiveDrivers'] = column_chart_2
+    response_data['negativeDrivers'] = column_chart_1
 
     return JsonResponse(response_data)
 

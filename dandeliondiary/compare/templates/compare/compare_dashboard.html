@@ -19,7 +19,7 @@
 
     {% include "./menu.html" %}
 
-    <div class="col-md-8 col-md-offset-2">
+    <div class="col-md-10 col-md-offset-1">
 
         <div class="margin-top-30 margin-bottom-30 box-static box-transparent box-bordered box-white">
 
@@ -97,13 +97,13 @@
                     </div>
 
                     <div id="Top_Bottom_View" class="tab-pane fade">
-                        <span style="margin-left:1em;">For year:</span> <select id="chooseYear" >
+                        <span style="margin-left:1em;">For year:</span> <select id="chooseYearDrivers" >
                             {% for yr in years %}
                                 <option value="{{ yr }}">{{ yr }}</option>
                             {% endfor %}
                         </select>
                         <script>
-                            document.getElementById("chooseYear").onchange = function () {
+                            document.getElementById("chooseYearDrivers").onchange = function () {
                                 drawTopBottomView();
                             };
                         </script>
@@ -122,7 +122,7 @@
                             };
                         </script>
                         <div class="col-md-12" id="chart_budget"></div>
-                        <div id="budgetViewTotalBudget" style="margin-left:1em;"></div>
+                        <span id="budgetViewTotalBudget" style="margin-left:1em;"></span>
 
                     </div>
 
@@ -182,8 +182,8 @@
             var options2 = {
                 title: 'Expenses to Budget',
                 legend: {position: 'top', alignment: 'start'},
-                width: 775,
-                height: 450,
+                width: 900,
+                height: 500,
                 animation: {
                     startup: true,
                     duration: 1000,
@@ -227,7 +227,7 @@
             var data2 = new google.visualization.DataTable(data.monthSeries);
             var options2 = {
                 title: 'Budget to Expense Net Result',
-                width: 775,
+                width: 900,
                 legend: 'none',
                 animation: {
                     startup: true,
@@ -244,7 +244,7 @@
 
         function drawTopBottomView() {
 
-            var year = document.getElementById('chooseYear').value;
+            var year = document.getElementById('chooseYearDrivers').value;
 
             var from_date = year + '-01-01';
             var to_date = year + '-12-01';
@@ -260,7 +260,7 @@
             var data2 = new google.visualization.DataTable(data.positiveDrivers);
             var options2 = {
                 title: 'Top 5 Positive (under budget) Categories',
-                width: 775,
+                width: 900,
                 legend: 'none',
                 animation: {
                     startup: true,
@@ -277,7 +277,7 @@
             var data3 = new google.visualization.DataTable(data.negativeDrivers);
             var options3 = {
                 title: 'Top 5 Negative (over budget) Categories',
-                width: 775,
+                width: 900,
                 legend: 'none',
                 animation: {
                     startup: true,
@@ -310,8 +310,8 @@
             var options1 = {
                 title: 'Budget Allocation',
                 is3D: true,
-                width: 500,
-                height: 300
+                width: 900,
+                height: 500
             };
             var chart1 = new google.visualization.PieChart(document.getElementById('chart_budget'));
             chart1.draw(data1, options1);
