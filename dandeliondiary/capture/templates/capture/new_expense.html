@@ -430,11 +430,13 @@
 
                     } else {
 
+                        createPlacePlaceholder();
                         $('#geoMessage').html('No categories were found based on geo location.');
                     }
 
                 } else {
 
+                    createPlacePlaceholder();
                     $('#geoMessage').removeClass('alert-error').removeClass('alert-success').addClass('alert-warning')
                         .html(result.Message);
                 }
@@ -442,11 +444,19 @@
 
             request.fail(function (jqXHR, textStatus) {
 
+                createPlacePlaceholder();
                 $('#geoMessage').removeClass('alert-error').removeClass('alert-success').addClass('alert-warning')
                     .html('Oops! Something went wrong. Categories by geo location not available.');
 
             });
 
+            // Create placeholder option so that form won't get hung up with an empty place field
+            function createPlacePlaceholder() {
+                var $el = $('#id_choose_place');
+                $el.append("<option value='0'>------</option>");
+                $el.find("option").eq(0).attr('selected', 'selected');
+                $("select#id_choose_place")[0].selectedIndex = 0;
+            }
         }
      
     </script>
