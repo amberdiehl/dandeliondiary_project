@@ -150,6 +150,9 @@ def new_expense(request):
     form.fields['choose_category_split'].choices = category_choices
 
     tags = MyNoteTag.objects.filter(household=me.get('household_obj')).order_by('tag')
+    default_tags = tags.filter(is_default=True)
+    if default_tags:
+        form.initial = {'note': ' '.join(t.tag for t in default_tags)}
 
     context = {
         'form': form,
@@ -185,7 +188,8 @@ def maintain_tags(request):
         return redirect('household:household_dashboard')
     else:
 
-        TagFormSet = modelformset_factory(MyNoteTag, form=MyNoteTagForm, fields=('tag', ), can_delete=True, extra=3)
+        TagFormSet = modelformset_factory(
+            MyNoteTag, form=MyNoteTagForm, fields=('tag', 'is_default', ), can_delete=True, extra=2)
 
         if request.method == 'POST':
 

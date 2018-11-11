@@ -35,12 +35,26 @@ class MyReceipt(models.Model):
 class MyNoteTag(models.Model):
     household = models.ForeignKey('household.Household')
     tag = models.CharField(max_length=30)
+    is_default = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("household", "tag")
 
     def __str__(self):
         return self.tag
+
+
+# MyQuickAddCategoryAssociations enables preselection of category in the Quick Add feature based on Payee info.
+class MyQuickAddCategoryAssociation(models.Model):
+    household = models.ForeignKey('household.Household')
+    payee_contains = models.CharField(max_length=80)
+    category = models.ForeignKey('compare.MyBudgetCategory')
+
+    class Meta:
+        unique_together = ("household", "payee_contains")
+
+    def __str__(self):
+        return self.payee_contains
 
 
 # Handler to delete receipt image file when receipt object is deleted

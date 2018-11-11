@@ -42,7 +42,11 @@
                             <div>
                             {% for field in form %}
                                 {% if field.field.widget|get_widget_class == "CheckboxInput" %}
-                                   <span>&nbsp;Delete?&nbsp;</span>
+                                    {%  if field.name == 'is_default' %}
+                                        <span>&nbsp;&nbsp;&nbsp;Default? </span>
+                                    {% else %}
+                                        <span>&nbsp;&nbsp;&nbsp;Delete?&nbsp;</span>
+                                    {%  endif %}
                                 {% endif %}
                                 {{ field }}
                             {% endfor %}

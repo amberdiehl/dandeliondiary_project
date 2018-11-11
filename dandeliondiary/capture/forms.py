@@ -180,10 +180,9 @@ class NewExpenseForm(forms.Form):
 
 
 class MyNoteTagForm(forms.ModelForm):
-
     class Meta:
         model = MyNoteTag
-        fields = ['tag', ]
+        fields = ['tag', 'is_default', ]
         widgets = {
             'tag': forms.TextInput(attrs={'placeholder': 'Note tag'}),
         }
