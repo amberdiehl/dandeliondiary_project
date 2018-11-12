@@ -26,9 +26,9 @@ from .helpers import \
 
 from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
-from capture.models import MyExpenseItem, MyReceipt, MyNoteTag
+from capture.models import MyExpenseItem, MyReceipt, MyNoteTag, MyQuickAddCategoryAssociation
 
-from .forms import NewExpenseForm, MyNoteTagForm, UploadFileForm
+from .forms import NewExpenseForm, MyNoteTagForm, UploadFileForm, MyQuickAddCategoryAssociationForm
 
 from hashids import Hashids
 
@@ -254,6 +254,83 @@ def maintain_tags(request):
         }
 
     return render(request, 'capture/tags.html', context)
+
+
+@login_required
+def maintain_payee_associations(request):
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        return redirect('household:household_dashboard')
+    else:
+
+        PayeeAssociationsFormSet = modelformset_factory(
+            MyQuickAddCategoryAssociation, form=MyQuickAddCategoryAssociationForm,
+            fields=('payee_contains', 'category', ), can_delete=True, extra=2)
+
+        if request.method == 'POST':
+
+            formset = PayeeAssociationsFormSet(request.POST)
+            if formset.is_valid():
+
+                for ndx, form in enumerate(formset):
+                    if form.is_valid() and not form.empty_permitted:
+
+                        if ndx in formset._deleted_form_indexes:
+                            messages.warning(
+                                request,
+                                "'{}' has been deleted.".format(form.cleaned_data.get('payee_contains'))
+                            )
+                            formset.save()
+
+                        else:
+
+                            if form.changed_data:
+                                form.save()
+                                messages.success(request, 'Your information has been saved.')
+
+                    else:
+
+                        if form.changed_data:
+
+                            try:
+                                new_association = form.save(commit=False)
+
+                            except ValueError:
+                                pass  # Error is raised when tag is empty but delete was selected
+
+                            else:
+                                new_association.household = me.get('household_obj')
+                                try:
+                                    new_association.save()
+
+                                except IntegrityError:
+                                    messages.warning(
+                                        request,
+                                        "'{}' was not saved because it is a duplicate."
+                                            .format(form.cleaned_data.get('payee_contains'))
+                                    )
+
+                                else:
+                                    messages.success(request, "'{}' has been added."
+                                                     .format(form.cleaned_data.get('payee_contains')))
+
+                return redirect('capture:maintain_payee_associations')
+
+            else:
+                messages.warning(request, "Please fix the error(s) noted below.")
+
+        else:
+
+            formset = PayeeAssociationsFormSet(queryset=MyQuickAddCategoryAssociation.objects
+                                               .filter(household=me.get('household_obj')).order_by('payee_contains'))
+
+        context = {
+            'formset': formset,
+            'page_title': 'Maintain Payee and Expense Associations',
+            'url': 'capture:maintain_payee_associations',
+        }
+
+    return render(request, 'capture/payee_contains.html', context)
 
 
 @login_required

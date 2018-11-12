@@ -6,12 +6,13 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
 from compare.helpers import get_month_options
-from helpers import validate_expense_note_input
-from models import MyNoteTag
+from helpers import validate_expense_note_input, helper_budget_categories
+from models import MyNoteTag, MyQuickAddCategoryAssociation
 
 
 RE_VALID_CHOICE_VALUE = re.compile(r'^[\d]*$')
 RE_VALID_CHOICE_PLACE = re.compile(r'^[\w\' .&-^]*$')
+RE_VALID_PAYEE_CONTAINS = re.compile(r'^[\w\d ,.\-()*&]{0,80}$')
 
 
 def validate_option_value(value):
@@ -180,6 +181,7 @@ class NewExpenseForm(forms.Form):
 
 
 class MyNoteTagForm(forms.ModelForm):
+
     class Meta:
         model = MyNoteTag
         fields = ['tag', 'is_default', ]
@@ -196,6 +198,29 @@ class MyNoteTagForm(forms.ModelForm):
         return new_tag
 
 
+class MyQuickAddCategoryAssociationForm(forms.ModelForm):
+
+    class Meta:
+        model = MyQuickAddCategoryAssociation
+        fields = ['payee_contains', 'category', ]
+        widgets = {
+            'payee_contains': forms.TextInput(attrs={'placeholder': 'Partial description to match'}),
+        }
+
+    def __init__(self, household=0, *args, **kwargs):
+        super(MyQuickAddCategoryAssociationForm, self).__init__(*args, **kwargs)
+        category_choices = helper_budget_categories(household, top_load=True)
+        self.fields['category'].choices = category_choices
+
+    def clean_payee_contains(self):
+        payee_contains = self.cleaned_data['payee_contains']
+        # Validate use of special characters
+        if not re.match(RE_VALID_PAYEE_CONTAINS, payee_contains):
+            error = 'Limited special characters to: . , ( ) + - ='
+            raise forms.ValidationError(_(error))
+        return payee_contains
+
+
 class UploadFileForm(forms.Form):
     file = forms.FileField(
         label=_("CSV file:"),
@@ -207,6 +232,6 @@ class UploadFileForm(forms.Form):
         required=True,
     )
     date_format = forms.ChoiceField(
-        choices=[('%m-%d-%Y','m-d-y'), ('%Y-%m-%d', 'y-m-d')],
-        required = True,
+        choices=[('%m-%d-%Y', 'm-d-y'), ('%Y-%m-%d', 'y-m-d')],
+        required=True,
     )
