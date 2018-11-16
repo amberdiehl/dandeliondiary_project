@@ -12,7 +12,7 @@ from models import MyNoteTag, MyQuickAddCategoryAssociation
 
 RE_VALID_CHOICE_VALUE = re.compile(r'^[\d]*$')
 RE_VALID_CHOICE_PLACE = re.compile(r'^[\w\' .&-^]*$')
-RE_VALID_PAYEE_CONTAINS = re.compile(r'^[\w\d ,.\-()*&]{0,80}$')
+RE_VALID_PAYEE_CONTAINS = re.compile(r'^[a-zA-Z0-9 ]{0,80}$')
 
 
 def validate_option_value(value):
@@ -207,8 +207,14 @@ class MyQuickAddCategoryAssociationForm(forms.ModelForm):
             'payee_contains': forms.TextInput(attrs={'placeholder': 'Partial description to match'}),
         }
 
-    def __init__(self, household=0, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+
+        household = kwargs.pop('household')
+
         super(MyQuickAddCategoryAssociationForm, self).__init__(*args, **kwargs)
+
+        # self.queryset = MyQuickAddCategoryAssociation.objects.filter(household=household).order_by('payee_contains')
+
         category_choices = helper_budget_categories(household, top_load=True)
         self.fields['category'].choices = category_choices
 
