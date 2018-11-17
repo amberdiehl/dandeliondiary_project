@@ -257,12 +257,6 @@ def maintain_tags(request):
     return render(request, 'capture/tags.html', context)
 
 
-class BasePayeeAssociationsFormSet(BaseModelFormSet):
-
-    def clean(self):
-        for form in self.forms:
-            pass
-
 @login_required
 def maintain_payee_associations(request):
     me = helper_get_me(request.user.pk)
@@ -272,7 +266,6 @@ def maintain_payee_associations(request):
 
         PayeeAssociationsFormSet = modelformset_factory(MyQuickAddCategoryAssociation,
                                                         form=MyQuickAddCategoryAssociationForm,
-                                                        formset=BasePayeeAssociationsFormSet,
                                                         fields=('payee_contains', 'category', ),
                                                         can_delete=True, extra=1)
 
@@ -284,7 +277,7 @@ def maintain_payee_associations(request):
                 for ndx, form in enumerate(formset):
                     if form.is_valid() and not form.empty_permitted:
 
-                        if ndx in formset._deleted_form_indexes:
+                        if form.cleaned_data['DELETE']:
                             messages.warning(
                                 request,
                                 "'{}' has been deleted.".format(form.cleaned_data.get('payee_contains'))

@@ -35,31 +35,38 @@
                 {% endif %}
                 <!-- /ALERTS -->
 
-                <div class="row">
-                    <fieldset>
-
-                        {% for form in formset %}
-                            <div>
-                            {% for field in form %}
-                                {% if field.field.widget|get_widget_class == "CheckboxInput" %}
-                                    <span>&nbsp;&nbsp;&nbsp;Delete?&nbsp;</span>
-                                {% endif %}
-                                {{ field }}
-                            {% endfor %}
-                            {% if form.payee_contains.errors or form.category.errors %}
-                                <div class="alert alert-mini alert-danger margin-bottom-15 margin-top-10">
-                                    {% for error in form.payee_contains.errors %}{{ error }}{% endfor %}
-                                    {% for error in form.category.errors %}{{ error }}{% endfor %}
+                <fieldset>
+                    {% for form in formset %}
+                        <div class="row">
+                            <div class="form-group">
+                                <div class="col-md-12">
+                                    {% for field in form %}
+                                        {% if field.field.widget|get_widget_class == "CheckboxInput" %}
+                                            <span>&nbsp;&nbsp;&nbsp;Delete?&nbsp;</span>
+                                        {% endif %}
+                                        {% if field.field.widget|get_widget_class == "TextInput" %}
+                                            <label class="input margin-bottom-10">
+                                                {{ field }}
+                                            </label>
+                                        {% else %}
+                                            {{ field }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if form.payee_contains.errors or form.category.errors %}
+                                        <div class="alert alert-mini alert-danger margin-bottom-15 margin-top-10">
+                                            {% for error in form.payee_contains.errors %}{{ error }}{% endfor %}
+                                            {% for error in form.category.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                            {% endif %}
-                            </div><br>
-                        {% endfor %}
+                            </div>
+                        </div><br><br>
+                    {% endfor %}
 
-                        <button type="submit" class="btn btn-primary btn-bordered pull-right">
-                            <i class="fa fa-check"></i>{% trans "Save" %}</button>
+                    <button type="submit" class="btn btn-primary btn-bordered pull-right">
+                        <i class="fa fa-check"></i>{% trans "Save" %}</button>
 
-                    </fieldset>
-                </div>
+                </fieldset>
 
             </div>
 

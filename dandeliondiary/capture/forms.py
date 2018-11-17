@@ -13,7 +13,7 @@ from models import MyNoteTag, MyQuickAddCategoryAssociation
 
 RE_VALID_CHOICE_VALUE = re.compile(r'^[\d]*$')
 RE_VALID_CHOICE_PLACE = re.compile(r'^[\w\' .&-^]*$')
-RE_VALID_PAYEE_CONTAINS = re.compile(r'^[a-zA-Z0-9 ]{0,80}$')
+RE_VALID_PAYEE_CONTAINS = re.compile(r'^[a-zA-Z0-9&*\' ]{0,80}$')
 
 
 def validate_option_value(value):
@@ -194,7 +194,7 @@ class MyNoteTagForm(forms.ModelForm):
         new_tag = self.cleaned_data['tag']
         # Validate use of special characters
         if not validate_expense_note_input(new_tag):
-            error = 'Limited special characters to: . , ( ) + - ='
+            error = 'Limit special characters to: . , ( ) + - ='
             raise forms.ValidationError(_(error))
         return new_tag
 
@@ -224,7 +224,7 @@ class MyQuickAddCategoryAssociationForm(forms.ModelForm):
         payee_contains = self.cleaned_data['payee_contains']
         # Validate use of special characters
         if not re.match(RE_VALID_PAYEE_CONTAINS, payee_contains):
-            error = 'Limited special characters to: . , ( ) + - ='
+            error = "Limit special characters to: ' & *"
             raise forms.ValidationError(_(error))
         return payee_contains
 
