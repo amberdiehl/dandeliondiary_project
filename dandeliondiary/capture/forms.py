@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
+from compare.models import MyBudgetCategory
 from compare.helpers import get_month_options
 from helpers import validate_expense_note_input, helper_budget_categories
 from models import MyNoteTag, MyQuickAddCategoryAssociation
@@ -200,6 +201,9 @@ class MyNoteTagForm(forms.ModelForm):
 
 class MyQuickAddCategoryAssociationForm(forms.ModelForm):
 
+    # PLACEHOLDER_CHOICES = (('0', '-----'), )
+    # category = forms.ChoiceField(choices=PLACEHOLDER_CHOICES, initial='0')
+
     class Meta:
         model = MyQuickAddCategoryAssociation
         fields = ['payee_contains', 'category', ]
@@ -208,15 +212,13 @@ class MyQuickAddCategoryAssociationForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-
         household = kwargs.pop('household')
-
         super(MyQuickAddCategoryAssociationForm, self).__init__(*args, **kwargs)
-
-        # self.queryset = MyQuickAddCategoryAssociation.objects.filter(household=household).order_by('payee_contains')
-
-        category_choices = helper_budget_categories(household, top_load=True)
-        self.fields['category'].choices = category_choices
+        # category_choices = helper_budget_categories(household, top_load=True)
+        # self.fields['category'].choices = category_choices
+        category_choices = MyBudgetCategory.objects.filter(my_budget_group__household=household)\
+            .order_by('my_budget_group__group_list_order', 'parent_category', 'my_category_name')
+        self.fields['category'] = forms.ModelChoiceField(queryset=category_choices)
 
     def clean_payee_contains(self):
         payee_contains = self.cleaned_data['payee_contains']

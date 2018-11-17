@@ -46,9 +46,10 @@
                                 {% endif %}
                                 {{ field }}
                             {% endfor %}
-                            {% if form.payee_contains.errors %}
+                            {% if form.payee_contains.errors or form.category.errors %}
                                 <div class="alert alert-mini alert-danger margin-bottom-15 margin-top-10">
                                     {% for error in form.payee_contains.errors %}{{ error }}{% endfor %}
+                                    {% for error in form.category.errors %}{{ error }}{% endfor %}
                                 </div>
                             {% endif %}
                             </div><br>

@@ -9,7 +9,7 @@ from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.forms import modelformset_factory, fields, formset_factory, BaseModelFormSet
+from django.forms import modelformset_factory, fields, BaseModelFormSet
 
 
 from google import get_nearby_places, byteify
@@ -258,10 +258,10 @@ def maintain_tags(request):
 
 
 class BasePayeeAssociationsFormSet(BaseModelFormSet):
-    def __init__(self, *args, **kwargs):
-        super(BasePayeeAssociationsFormSet, self).__init__(*args, **kwargs)
-        self.queryset = MyQuickAddCategoryAssociation.objects.filter(household=26).order_by('payee_contains')
 
+    def clean(self):
+        for form in self.forms:
+            pass
 
 @login_required
 def maintain_payee_associations(request):
@@ -270,17 +270,15 @@ def maintain_payee_associations(request):
         return redirect('household:household_dashboard')
     else:
 
-        qs = MyQuickAddCategoryAssociation.objects.filter(household=me.get('household_obj')).order_by('payee_contains')
-        PayeeAssociationsFormSet = \
-            modelformset_factory(wraps(MyQuickAddCategoryAssociationForm)
-                            (partial(MyQuickAddCategoryAssociationForm, household=me.get('household_key'))), fields=('payee_contains', 'category', ), formset=BasePayeeAssociationsFormSet, can_delete=True, extra=1)
-        # PayeeAssociationsFormSet = modelformset_factory(
-        #     MyQuickAddCategoryAssociation, form=MyQuickAddCategoryAssociationForm,
-        #     fields=('payee_contains', 'category', ), can_delete=True, extra=2)
+        PayeeAssociationsFormSet = modelformset_factory(MyQuickAddCategoryAssociation,
+                                                        form=MyQuickAddCategoryAssociationForm,
+                                                        formset=BasePayeeAssociationsFormSet,
+                                                        fields=('payee_contains', 'category', ),
+                                                        can_delete=True, extra=1)
 
         if request.method == 'POST':
 
-            formset = PayeeAssociationsFormSet(request.POST)
+            formset = PayeeAssociationsFormSet(request.POST, form_kwargs={'household': me.get('household_key')})
             if formset.is_valid():
 
                 for ndx, form in enumerate(formset):
@@ -332,7 +330,9 @@ def maintain_payee_associations(request):
 
         else:
 
-            formset = PayeeAssociationsFormSet()
+            formset = PayeeAssociationsFormSet(form_kwargs={'household': me.get('household_key')},
+                                               queryset=MyQuickAddCategoryAssociation.objects
+                                               .filter(household=me.get('household_obj')).order_by('payee_contains'))
 
         context = {
             'formset': formset,
