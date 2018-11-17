@@ -8,7 +8,7 @@ from compare.helpers import helper_get_category_budget_and_expenses
 
 from .models import MyExpenseItem
 
-RE_VALID_EXPENSE_NOTE = re.compile(r'^[\w\d ,.\-=()*\+]{0,512}$')
+RE_VALID_EXPENSE_NOTE = re.compile(r'^[\w\d ,.\-=()*+]{0,512}$')
 RE_VALID_CATEGORY_NAME = re.compile(r'^[\w ]{1,50}$')
 RE_VALID_DATE = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 RE_VALID_AMOUNT = re.compile(r'^[\d.]+$')

@@ -4,7 +4,7 @@
 
 {% load capture_extras %}
 
-{% block title %}{% trans "Capture - New Expense" %}{% endblock %}
+{% block title %}{% trans "Capture - Maintain Note Tags" %}{% endblock %}
 
 {% block static %}
 {% endblock %}
@@ -42,7 +42,11 @@
                             <div>
                             {% for field in form %}
                                 {% if field.field.widget|get_widget_class == "CheckboxInput" %}
-                                   <span>&nbsp;Delete?&nbsp;</span>
+                                    {%  if field.name == 'is_default' %}
+                                        <span>&nbsp;&nbsp;&nbsp;Default? </span>
+                                    {% else %}
+                                        <span>&nbsp;&nbsp;&nbsp;Delete?&nbsp;</span>
+                                    {%  endif %}
                                 {% endif %}
                                 {{ field }}
                             {% endfor %}

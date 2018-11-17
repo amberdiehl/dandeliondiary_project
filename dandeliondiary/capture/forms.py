@@ -5,13 +5,15 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
+from compare.models import MyBudgetCategory
 from compare.helpers import get_month_options
-from helpers import validate_expense_note_input
-from models import MyNoteTag
+from helpers import validate_expense_note_input, helper_budget_categories
+from models import MyNoteTag, MyQuickAddCategoryAssociation
 
 
 RE_VALID_CHOICE_VALUE = re.compile(r'^[\d]*$')
 RE_VALID_CHOICE_PLACE = re.compile(r'^[\w\' .&-^]*$')
+RE_VALID_PAYEE_CONTAINS = re.compile(r'^[a-zA-Z0-9&*\' ]{0,80}$')
 
 
 def validate_option_value(value):
@@ -183,7 +185,7 @@ class MyNoteTagForm(forms.ModelForm):
 
     class Meta:
         model = MyNoteTag
-        fields = ['tag', ]
+        fields = ['tag', 'is_default', ]
         widgets = {
             'tag': forms.TextInput(attrs={'placeholder': 'Note tag'}),
         }
@@ -192,9 +194,39 @@ class MyNoteTagForm(forms.ModelForm):
         new_tag = self.cleaned_data['tag']
         # Validate use of special characters
         if not validate_expense_note_input(new_tag):
-            error = 'Limited special characters to: . , ( ) + - ='
+            error = 'Limit special characters to: . , ( ) + - ='
             raise forms.ValidationError(_(error))
         return new_tag
+
+
+class MyQuickAddCategoryAssociationForm(forms.ModelForm):
+
+    # PLACEHOLDER_CHOICES = (('0', '-----'), )
+    # category = forms.ChoiceField(choices=PLACEHOLDER_CHOICES, initial='0')
+
+    class Meta:
+        model = MyQuickAddCategoryAssociation
+        fields = ['payee_contains', 'category', ]
+        widgets = {
+            'payee_contains': forms.TextInput(attrs={'placeholder': 'Partial description to match'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        household = kwargs.pop('household')
+        super(MyQuickAddCategoryAssociationForm, self).__init__(*args, **kwargs)
+        # category_choices = helper_budget_categories(household, top_load=True)
+        # self.fields['category'].choices = category_choices
+        category_choices = MyBudgetCategory.objects.filter(my_budget_group__household=household)\
+            .order_by('my_budget_group__group_list_order', 'parent_category', 'my_category_name')
+        self.fields['category'] = forms.ModelChoiceField(queryset=category_choices)
+
+    def clean_payee_contains(self):
+        payee_contains = self.cleaned_data['payee_contains']
+        # Validate use of special characters
+        if not re.match(RE_VALID_PAYEE_CONTAINS, payee_contains):
+            error = "Limit special characters to: ' & *"
+            raise forms.ValidationError(_(error))
+        return payee_contains
 
 
 class UploadFileForm(forms.Form):
@@ -208,6 +240,6 @@ class UploadFileForm(forms.Form):
         required=True,
     )
     date_format = forms.ChoiceField(
-        choices=[('%m-%d-%Y','m-d-y'), ('%Y-%m-%d', 'y-m-d')],
-        required = True,
+        choices=[('%m-%d-%Y', 'm-d-y'), ('%Y-%m-%d', 'y-m-d')],
+        required=True,
     )

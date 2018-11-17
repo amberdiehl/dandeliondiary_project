@@ -26,7 +26,9 @@ class MyBudgetCategory(models.Model):
     created_at = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
-        return str(self.my_category_name)
+        if self.parent_category:
+            return '{}-{}'.format(self.parent_category.my_category_name, self.my_category_name)
+        return '{}-{}'.format(self.my_budget_group.my_group_name, self.my_category_name)
 
 
 # Link google place types to categories

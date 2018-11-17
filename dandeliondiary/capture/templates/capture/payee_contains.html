@@ -1,0 +1,81 @@
+{% extends "site_base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+
+{% load capture_extras %}
+
+{% block title %}{% trans "Capture - Associate Payees to Categories" %}{% endblock %}
+
+{% block static %}
+{% endblock %}
+
+{% block body_classes %} bg-grey {% endblock %}{% block body_attributes %}{% endblock %}
+
+{% block body_container %}
+
+    {% include "./menu.html" %}
+
+    <div class="col-md-8 col-md-offset-2">
+
+        <form id="tag-form" class="margin-top-30 sky-form boxed centered" method="POST"
+              action="{% url url %}" {% if form.is_multipart %}enctype="multipart/form-data"{% endif %}>
+            {% csrf_token %}
+
+            <div class="box-static box-transparent box-bordered">
+
+                <h2>{% trans page_title %}</h2>
+
+                {{ formset.management_form }}
+
+                <!-- ALERTS -->
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="alert alert-{{msg.level_tag}} margin-bottom-15" role="alert">{{msg.message}}</div>
+                    {% endfor %}
+                {% endif %}
+                <!-- /ALERTS -->
+
+                <fieldset>
+                    {% for form in formset %}
+                        <div class="row">
+                            <div class="form-group">
+                                <div class="col-md-12">
+                                    {% for field in form %}
+                                        {% if field.field.widget|get_widget_class == "CheckboxInput" %}
+                                            <span>&nbsp;&nbsp;&nbsp;Delete?&nbsp;</span>
+                                        {% endif %}
+                                        {% if field.field.widget|get_widget_class == "TextInput" %}
+                                            <label class="input margin-bottom-10">
+                                                {{ field }}
+                                            </label>
+                                        {% else %}
+                                            {{ field }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if form.payee_contains.errors or form.category.errors %}
+                                        <div class="alert alert-mini alert-danger margin-bottom-15 margin-top-10">
+                                            {% for error in form.payee_contains.errors %}{{ error }}{% endfor %}
+                                            {% for error in form.category.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div><br><br>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary btn-bordered pull-right">
+                        <i class="fa fa-check"></i>{% trans "Save" %}</button>
+
+                </fieldset>
+
+            </div>
+
+        </form>
+
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

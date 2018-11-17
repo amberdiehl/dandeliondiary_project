@@ -1,4 +1,4 @@
-import csv, datetime, random, decimal, operator, urllib
+import csv, datetime, random, decimal, operator, urllib, json
 
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
@@ -9,6 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.forms import modelformset_factory, fields
+from django.utils.html import mark_safe
 
 
 from google import get_nearby_places, byteify
@@ -26,9 +27,9 @@ from .helpers import \
 
 from core.models import GooglePlaceType
 from compare.models import MyBudgetCategory
-from capture.models import MyExpenseItem, MyReceipt, MyNoteTag
+from capture.models import MyExpenseItem, MyReceipt, MyNoteTag, MyQuickAddCategoryAssociation
 
-from .forms import NewExpenseForm, MyNoteTagForm, UploadFileForm
+from .forms import NewExpenseForm, MyNoteTagForm, UploadFileForm, MyQuickAddCategoryAssociationForm
 
 from hashids import Hashids
 
@@ -150,6 +151,9 @@ def new_expense(request):
     form.fields['choose_category_split'].choices = category_choices
 
     tags = MyNoteTag.objects.filter(household=me.get('household_obj')).order_by('tag')
+    default_tags = tags.filter(is_default=True)
+    if default_tags:
+        form.initial = {'note': ' '.join(t.tag for t in default_tags)}
 
     context = {
         'form': form,
@@ -185,7 +189,8 @@ def maintain_tags(request):
         return redirect('household:household_dashboard')
     else:
 
-        TagFormSet = modelformset_factory(MyNoteTag, form=MyNoteTagForm, fields=('tag', ), can_delete=True, extra=3)
+        TagFormSet = modelformset_factory(
+            MyNoteTag, form=MyNoteTagForm, fields=('tag', 'is_default', ), can_delete=True, extra=2)
 
         if request.method == 'POST':
 
@@ -250,6 +255,85 @@ def maintain_tags(request):
         }
 
     return render(request, 'capture/tags.html', context)
+
+
+@login_required
+def maintain_payee_associations(request):
+    me = helper_get_me(request.user.pk)
+    if me.get('redirect'):
+        return redirect('household:household_dashboard')
+    else:
+
+        PayeeAssociationsFormSet = modelformset_factory(MyQuickAddCategoryAssociation,
+                                                        form=MyQuickAddCategoryAssociationForm,
+                                                        fields=('payee_contains', 'category', ),
+                                                        can_delete=True, extra=1)
+
+        if request.method == 'POST':
+
+            formset = PayeeAssociationsFormSet(request.POST, form_kwargs={'household': me.get('household_key')})
+            if formset.is_valid():
+
+                for ndx, form in enumerate(formset):
+                    if form.is_valid() and not form.empty_permitted:
+
+                        if form.cleaned_data['DELETE']:
+                            messages.warning(
+                                request,
+                                "'{}' has been deleted.".format(form.cleaned_data.get('payee_contains'))
+                            )
+                            formset.save()
+
+                        else:
+
+                            if form.changed_data:
+                                form.save()
+                                messages.success(request, 'Your information has been saved.')
+
+                    else:
+
+                        if form.changed_data:
+
+                            try:
+                                new_association = form.save(commit=False)
+
+                            except ValueError:
+                                pass  # Error is raised when tag is empty but delete was selected
+
+                            else:
+                                new_association.household = me.get('household_obj')
+                                try:
+                                    new_association.save()
+
+                                except IntegrityError:
+                                    messages.warning(
+                                        request,
+                                        "'{}' was not saved because it is a duplicate."
+                                            .format(form.cleaned_data.get('payee_contains'))
+                                    )
+
+                                else:
+                                    messages.success(request, "'{}' has been added."
+                                                     .format(form.cleaned_data.get('payee_contains')))
+
+                return redirect('capture:maintain_payee_associations')
+
+            else:
+                messages.warning(request, "Please fix the error(s) noted below.")
+
+        else:
+
+            formset = PayeeAssociationsFormSet(form_kwargs={'household': me.get('household_key')},
+                                               queryset=MyQuickAddCategoryAssociation.objects
+                                               .filter(household=me.get('household_obj')).order_by('payee_contains'))
+
+        context = {
+            'formset': formset,
+            'page_title': 'Maintain Payee and Expense Associations',
+            'url': 'capture:maintain_payee_associations',
+        }
+
+    return render(request, 'capture/payee_contains.html', context)
 
 
 @login_required
@@ -760,6 +844,8 @@ def reconcile_expenses(request):
     category_html = category.widget.render(field_name, 0)
 
     tags = MyNoteTag.objects.filter(household=me.get('household_obj')).order_by('tag')
+    payee_associations = MyQuickAddCategoryAssociation.objects.filter(household=me.get('household_obj'))
+    associations = {item.category.pk: item.payee_contains for item in payee_associations}
 
     context = {
         'page_title': 'Reconcile Expenses',
@@ -771,6 +857,7 @@ def reconcile_expenses(request):
         'headings': headings,
         'category': category_html,
         'tags': tags,
+        'associations': mark_safe(json.dumps(associations))
     }
 
     return render(request, 'capture/reconcile_expenses.html', context)
