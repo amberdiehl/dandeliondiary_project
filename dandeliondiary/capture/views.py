@@ -1,5 +1,4 @@
-import csv, datetime, random, decimal, operator, urllib
-from functools import partial, wraps
+import csv, datetime, random, decimal, operator, urllib, json
 
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
@@ -9,7 +8,8 @@ from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.forms import modelformset_factory, fields, BaseModelFormSet
+from django.forms import modelformset_factory, fields
+from django.utils.html import mark_safe
 
 
 from google import get_nearby_places, byteify
@@ -844,6 +844,8 @@ def reconcile_expenses(request):
     category_html = category.widget.render(field_name, 0)
 
     tags = MyNoteTag.objects.filter(household=me.get('household_obj')).order_by('tag')
+    payee_associations = MyQuickAddCategoryAssociation.objects.filter(household=me.get('household_obj'))
+    associations = {item.category.pk: item.payee_contains for item in payee_associations}
 
     context = {
         'page_title': 'Reconcile Expenses',
@@ -855,6 +857,7 @@ def reconcile_expenses(request):
         'headings': headings,
         'category': category_html,
         'tags': tags,
+        'associations': mark_safe(json.dumps(associations))
     }
 
     return render(request, 'capture/reconcile_expenses.html', context)

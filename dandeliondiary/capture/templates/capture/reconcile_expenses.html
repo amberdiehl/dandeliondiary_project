@@ -302,6 +302,8 @@
 
     <script>
 
+        var payees = {{ associations }};
+
         // Preload date and amount into the modal form.
         $('.modal').on('show.bs.modal', function (e) {
 
@@ -312,6 +314,18 @@
 
             var rowDate = $('#'+buttonID+'-col_0').html();
             var rowAmount = $('#'+buttonID+'-col_1').html();
+            var rowPayee = $('#'+buttonID+'-col_2').html().toString().trim();
+
+            // If payee to category association is found, automatically select correct category.
+            for (var k in payees) {
+                if (payees.hasOwnProperty(k)) {
+                    var modifiedKeyValue = payees[k].replace(/&/g, '&amp;');
+                    var payeeFound = rowPayee.indexOf(modifiedKeyValue);
+                    if (payeeFound >= 0) {
+                        $('option[value="'+k+'"]').prop("selected", true);
+                    }
+                }
+            }
 
             $('#modalDate').val(rowDate.trim());
             $('#modalAmount').val(parseFloat(rowAmount));
