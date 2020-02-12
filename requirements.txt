@@ -8,7 +8,7 @@ cffi==1.9.1
 chardet==3.0.4
 coverage==3.6
 cryptography==1.7.2
-Django==1.10
+Django==1.11.28
 django-appconf==1.0.2
 django-avatar==3.1.0
 django-bootstrap3==11.0.0
