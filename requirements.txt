@@ -7,7 +7,7 @@ certifi==2018.10.15
 cffi==1.9.1
 chardet==3.0.4
 coverage==3.6
-cryptography==1.7.2
+cryptography==3.2
 Django==1.10
 django-appconf==1.0.2
 django-avatar==3.1.0
